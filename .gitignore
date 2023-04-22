@@ -1,0 +1,23 @@
+node_modules
+.env
+coverage
+coverage.json
+typechain
+typechain-types
+
+# Hardhat files
+cache
+artifacts
+
+#foundry files
+cache_forge
+out
+
+#IDE
+.idea
+.vscode
+
+#access tokens
+.npmrc
+
+yarn-error.log
