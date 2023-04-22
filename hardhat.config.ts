@@ -36,10 +36,11 @@ const config: HardhatUserConfig = {
     },
     goerli: {
       url: `https://eth-goerli.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
-      accounts:
-          process.env.GOERLI_PRIVATE_KEY !== undefined
-              ? [process.env.GOERLI_PRIVATE_KEY]
-              : [],
+      accounts: {
+        mnemonic: process.env.GOERLI || "female like problem scare over lizard client bonus pioneer submit myth collect",
+        path: "m/44'/60'/0'/0",
+      },
+      chainId: 5,
     },
   },
   gasReporter: {
