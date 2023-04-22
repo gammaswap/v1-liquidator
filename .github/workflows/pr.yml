@@ -3,7 +3,7 @@ name: Compile/Test
 on:
   push:
     branches:
-      - *
+      - "*"
 
 jobs:
   compile-test:
