@@ -1,6 +1,6 @@
 {
   "name": "v1-liquidator",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Liquidation bot for GammaSwap V1",
   "main": "index.js",
   "repository": "git@github.com:gammaswap/v1-liquidator.git",
