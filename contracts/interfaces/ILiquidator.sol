@@ -8,6 +8,12 @@ import "@gammaswap/v1-core/contracts/interfaces/IGammaPool.sol";
 /// @dev Helps liquidation of loans in GammaPools
 interface ILiquidator {
 
+    /// @dev Calculate liquidity debt as CFMM LP Tokens
+    /// @param pool - address of GammaPool loan belongs to
+    /// @param tokenId - tokenId of loan in GammaPool (`pool`) to check
+    /// @return lpTokens - liquidity debt of loan as CFMM LP Tokens
+    function calcLPTokenDebt(address pool, uint256 tokenId) external view returns(uint256 lpTokens);
+
     /// @dev Check if loan in `pool` identified by `tokenId` can be liquidated
     /// @param pool - address of GammaPool loan belongs to
     /// @param tokenId - tokenId of loan in GammaPool (`pool`) to check
@@ -18,7 +24,7 @@ interface ILiquidator {
     /// @dev Check if loans in `pool` identified by `tokenIds` can be liquidated
     /// @param pool - address of GammaPool loan belongs to
     /// @param tokenIds - list of tokenIds of loans in GammaPool (`pool`) to check
-    /// @return _tokenIds - list of tokenIds of loans that can be liquidated
+    /// @return _tokenIds - list of tokenIds of loans that can be liquidated. The array may be larger
     /// @return _liquidity - summed liquidity debt of loans (not written down) that can be liquidated. If a loan can't be liquidate it is not summed
     /// @return _collateral - liquidity collateral backing loan that can be liquidated. If a loan can't be liquidate it is not summed
     function canLiquidate(address pool, uint256[] calldata tokenIds) external view returns(uint256[] memory _tokenIds, uint256 _liquidity, uint256 _collateral);
@@ -26,14 +32,18 @@ interface ILiquidator {
     /// @dev Liquidate loan in `pool` identified by `tokenId` using the loan's own collateral tokens
     /// @param pool - address of GammaPool loan belongs to
     /// @param tokenId - tokenId of loan in GammaPool (`pool`) to check
+    /// @param collateralId - index of token you wish to use up to liquidate the loan. You will receive refunds in terms of the other token
+    /// @param fees - transfer fees
     /// @return refunds - collateral tokens that are refunded to liquidator
-    function liquidate(address pool, uint256 tokenId) external returns(uint256[] memory refunds);
+    function liquidate(address pool, uint256 tokenId, uint256 collateralId, uint256[] calldata fees) external returns(uint256[] memory refunds);
 
     /// @dev Liquidate loan in `pool` identified by `tokenId` using CFMM LP tokens of the CFMM liquidity was borrowed from
     /// @param pool - address of GammaPool loan belongs to
     /// @param tokenId - tokenId of loan in GammaPool (`pool`) to check
+    /// @param lpTokens - CFMM LP tokens to transfer to liquidate
+    /// @param calcLpTokens - if true calculate how many CFMM LP Tokens to liquidate
     /// @return refunds - collateral tokens that are refunded to liquidator
-    function liquidateWithLP(address pool, uint256 tokenId) external returns(uint256[] memory refunds);
+    function liquidateWithLP(address pool, uint256 tokenId, uint256 lpTokens, bool calcLpTokens) external returns(uint256[] memory refunds);
 
     /// @dev Liquidate loan in `pool` identified by `tokenId` using the loan's own collateral tokens
     /// @param pool - address of GammaPool loan belongs to

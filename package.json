@@ -35,7 +35,8 @@
     "typescript": ">=4.5.0"
   },
   "dependencies": {
-    "@gammaswap/v1-core": "^0.4.11",
-    "@gammaswap/v1-periphery": "^0.4.2"
+    "@gammaswap/v1-core": "0.4.16",
+    "@gammaswap/v1-periphery": "0.4.4",
+    "@gammaswap/v1-implementations": "0.4.13"
   }
 }
