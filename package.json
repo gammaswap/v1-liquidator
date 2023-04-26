@@ -23,6 +23,8 @@
     "@types/chai": "^4.2.0",
     "@types/mocha": ">=9.1.0",
     "@types/node": ">=12.0.0",
+    "@uniswap/v2-core": "^1.0.1",
+    "@uniswap/v2-periphery": "^1.1.0-beta.0",
     "chai": "^4.2.0",
     "dotenv": "^16.0.3",
     "ethers": "^5.4.7",
@@ -36,7 +38,7 @@
   },
   "dependencies": {
     "@gammaswap/v1-core": "0.4.16",
-    "@gammaswap/v1-periphery": "0.4.4",
-    "@gammaswap/v1-implementations": "0.4.13"
+    "@gammaswap/v1-implementations": "0.4.13",
+    "@gammaswap/v1-periphery": "0.4.4"
   }
 }
