@@ -9,6 +9,9 @@
   "scripts": {
     "test": "yarn hardhat test"
   },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/@gammaswap"
+  },
   "devDependencies": {
     "@ethersproject/abi": "^5.4.7",
     "@ethersproject/providers": "^5.4.7",
