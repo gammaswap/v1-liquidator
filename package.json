@@ -3,12 +3,16 @@
   "version": "0.0.3",
   "description": "Liquidation bot for GammaSwap V1",
   "main": "index.js",
+  "homepage": "https://gammaswap.com",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/@gammaswap"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/gammaswap/v1-liquidator",
+    "url": "https://github.com/gammaswap/v1-liquidator"
+  },
+  "engines": {
+    "node": ">=16"
   },
   "author": "Daniel Alcarraz <dalcarraz@gammaswap.com>",
   "license": "GPL-v3",
