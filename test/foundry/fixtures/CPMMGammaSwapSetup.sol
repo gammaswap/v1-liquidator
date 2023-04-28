@@ -87,11 +87,32 @@ contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
         uint256 lpTokens = IERC20(cfmm).balanceOf(addr);
         pool.deposit(lpTokens, addr1);
         vm.stopPrank();
-
     }
+
     function depositLiquidityInCFMM(address addr, uint256 usdcAmount, uint256 wethAmount) public {
         vm.startPrank(addr);
         addLiquidity(address(usdc), address(weth), usdcAmount, wethAmount, addr); // 1 weth = 1,000 USDC
         vm.stopPrank();
+    }
+
+    function calcInvariant(uint128[] memory tokensHeld) internal pure returns (uint256) {
+        return Math.sqrt(uint256(tokensHeld[0]) * tokensHeld[1]);
+    }
+
+    function calcTokensFromInvariant(uint256 liquidity) internal view returns(uint256[] memory amounts) {
+        IGammaPool.PoolData memory poolData = pool.getLatestPoolData();
+        uint256 lastCFMMInvariant = calcInvariant(poolData.CFMM_RESERVES);
+
+        amounts = new uint256[](2);
+        amounts[0] = liquidity * poolData.CFMM_RESERVES[0] / lastCFMMInvariant;
+        amounts[1] = liquidity * poolData.CFMM_RESERVES[1] / lastCFMMInvariant;
+    }
+
+    function convertLPToInvariant(uint256 lpTokens) internal view returns (uint256) {
+        IGammaPool.PoolData memory poolData = pool.getLatestPoolData();
+        uint128 cfmmInvariant = poolData.lastCFMMInvariant;
+        uint256 cfmmTotalSupply = poolData.lastCFMMTotalSupply;
+
+        return cfmmTotalSupply == 0 ? 0 : lpTokens * cfmmInvariant / cfmmTotalSupply;
     }
 }
