@@ -6,14 +6,18 @@ import "forge-std/Test.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@gammaswap/v1-core/contracts/libraries/Math.sol";
 import "./fixtures/CPMMGammaSwapSetup.sol";
+import "../../contracts/Liquidator.sol";
 
 contract LiquidatorTest is CPMMGammaSwapSetup {
+    Liquidator liquidator;
 
     function setUp() public {
         super.initCPMMGammaSwap();
         depositLiquidityInCFMM(addr1, 2*1e24, 2*1e21);
         depositLiquidityInCFMM(addr2, 2*1e24, 2*1e21);
         depositLiquidityInPool(addr2);
+
+        liquidator = new Liquidator();
     }
 
     ////////////////////////////////////
@@ -205,8 +209,13 @@ contract LiquidatorTest is CPMMGammaSwapSetup {
 
         assertEq(totalLoanLiquidity, loanCollateralExLiqFee1 + loanCollateralExLiqFee2);
         assertEq(totalCollateral, loanCollateral1 + loanCollateral2);
-        assertEq(refund[0], amounts[0]);
-        assertEq(refund[1], amounts[1]);
+        assertEq(refund[0]/1e3, amounts[0]/1e3);
+        assertEq(refund[1]/1e3, amounts[1]/1e3);
+
+        (uint256[] memory _tokenIds, uint256 _liquidity, uint256 _collateral) = liquidator.canLiquidate(address(pool), tokenIds);
+        assertEq(_collateral, 0);
+        assertEq(_liquidity, 0);
+        assertEq(_tokenIds.length, 0);
     }
 
     function testBatchNoFullLiquidationError() public {

@@ -43,6 +43,6 @@
   "dependencies": {
     "@gammaswap/v1-core": "^0.4.17",
     "@gammaswap/v1-implementations": "^0.4.15",
-    "@gammaswap/v1-periphery": "0.4.4"
+    "@gammaswap/v1-periphery": "0.4.6"
   }
 }
