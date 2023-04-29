@@ -7,6 +7,10 @@
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/@gammaswap"
   },
+  "files": [
+    "artifacts",
+    "contracts"
+  ],
   "repository": "git@github.com:gammaswap/v1-liquidator.git",
   "author": "Daniel Alcarraz <dalcarraz@gammaswap.com>",
   "license": "GPL-v3",
