@@ -162,4 +162,107 @@ contract LiquidatorTest is CPMMGammaSwapSetup {
         vm.expectRevert(bytes4(keccak256("NoLiquidityProvided()")));
         pool.liquidateWithLP(tokenId);
     }
+
+    ///////////////////////////////////////
+    ////////// BATCH LIQUIDATE ////////////
+    ///////////////////////////////////////
+    function testBatchLiquidate() public {
+        uint256 lpTokens = IERC20(cfmm).balanceOf(address(pool));
+
+        vm.startPrank(addr1);
+
+        uint256 tokenId1 = pool.createLoan();   // Loan 1
+        usdc.transfer(address(pool), 150_000 * 1e18);
+        weth.transfer(address(pool), 150 * 1e18);
+        pool.increaseCollateral(tokenId1);
+        pool.borrowLiquidity(tokenId1, lpTokens/4, new uint256[](0));
+
+        uint256 tokenId2 = pool.createLoan();   // Loan 2
+        usdc.transfer(address(pool), 150_000 * 1e18);
+        weth.transfer(address(pool), 150 * 1e18);
+        pool.increaseCollateral(tokenId2);
+        pool.borrowLiquidity(tokenId2, lpTokens/4, new uint256[](0));
+
+        vm.roll(100000000);
+
+        // Send enough lp tokens for full liquidation
+        GammaSwapLibrary.safeTransfer(cfmm, address(pool), lpTokens * 4/5);
+
+        IGammaPool.LoanData memory loanData1 = pool.loan(tokenId1);
+        IGammaPool.LoanData memory loanData2 = pool.loan(tokenId2);
+        uint256 loanCollateral1 = calcInvariant(loanData1.tokensHeld);
+        uint256 loanCollateralExLiqFee1 = loanCollateral1 * (10000 - 250) / 10000;
+        uint256 loanCollateral2 = calcInvariant(loanData2.tokensHeld);
+        uint256 loanCollateralExLiqFee2 = loanCollateral2 * (10000 - 250) / 10000;
+
+        uint256 loanCollateralForLiq = loanCollateral1 + loanCollateral2;
+        uint256[] memory amounts = calcTokensFromInvariant(loanCollateralForLiq);
+
+        uint256[] memory tokenIds = new uint256[](2);
+        tokenIds[0] = tokenId1;
+        tokenIds[1] = tokenId2;
+        (uint256 totalLoanLiquidity, uint256 totalCollateral, uint256[] memory refund) = pool.batchLiquidations(tokenIds);
+
+        assertEq(totalLoanLiquidity, loanCollateralExLiqFee1 + loanCollateralExLiqFee2);
+        assertEq(totalCollateral, loanCollateral1 + loanCollateral2);
+        assertEq(refund[0], amounts[0]);
+        assertEq(refund[1], amounts[1]);
+    }
+
+    function testBatchNoFullLiquidationError() public {
+        uint256 lpTokens = IERC20(cfmm).balanceOf(address(pool));
+
+        vm.startPrank(addr1);
+
+        uint256 tokenId1 = pool.createLoan();   // Loan 1
+        usdc.transfer(address(pool), 150_000 * 1e18);
+        weth.transfer(address(pool), 150 * 1e18);
+        pool.increaseCollateral(tokenId1);
+        pool.borrowLiquidity(tokenId1, lpTokens/4, new uint256[](0));
+
+        uint256 tokenId2 = pool.createLoan();   // Loan 2
+        usdc.transfer(address(pool), 150_000 * 1e18);
+        weth.transfer(address(pool), 150 * 1e18);
+        pool.increaseCollateral(tokenId2);
+        pool.borrowLiquidity(tokenId2, lpTokens/4, new uint256[](0));
+
+        vm.roll(100000000);
+
+        // Send insufficient lp tokens for full liquidation
+        GammaSwapLibrary.safeTransfer(cfmm, address(pool), lpTokens/2);
+
+        uint256[] memory tokenIds = new uint256[](2);
+        tokenIds[0] = tokenId1;
+        tokenIds[1] = tokenId2;
+
+        vm.expectRevert(bytes4(keccak256("NotFullLiquidation()")));
+        pool.batchLiquidations(tokenIds);
+    }
+
+    function testBatchLiquidateNoDebtError() public {
+        uint256 lpTokens = IERC20(cfmm).balanceOf(address(pool));
+
+        vm.startPrank(addr1);
+
+        uint256 tokenId1 = pool.createLoan();   // Loan 1
+        usdc.transfer(address(pool), 150_000 * 1e18);
+        weth.transfer(address(pool), 150 * 1e18);
+        pool.increaseCollateral(tokenId1);
+        pool.borrowLiquidity(tokenId1, lpTokens/4, new uint256[](0));
+
+        uint256 tokenId2 = pool.createLoan();   // Loan 2
+        usdc.transfer(address(pool), 150_000 * 1e18);
+        weth.transfer(address(pool), 150 * 1e18);
+        pool.increaseCollateral(tokenId2);
+        pool.borrowLiquidity(tokenId2, lpTokens/4, new uint256[](0));
+
+        vm.roll(1000);
+
+        uint256[] memory tokenIds = new uint256[](2);
+        tokenIds[0] = tokenId1;
+        tokenIds[1] = tokenId2;
+
+        vm.expectRevert(bytes4(keccak256("NoLiquidityDebt()")));
+        pool.batchLiquidations(tokenIds);
+    }
 }
