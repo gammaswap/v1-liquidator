@@ -11,7 +11,9 @@
   "author": "Daniel Alcarraz <dalcarraz@gammaswap.com>",
   "license": "GPL-v3",
   "scripts": {
-    "test": "yarn hardhat test"
+    "hardhat": "hardhat",
+    "test": "hardhat test",
+    "fuzz": "forge test"
   },
   "devDependencies": {
     "@ethersproject/abi": "^5.4.7",
