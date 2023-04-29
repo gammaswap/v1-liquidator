@@ -1,12 +1,16 @@
 {
   "name": "@gammaswap/v1-liquidator",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Liquidation bot for GammaSwap V1",
   "main": "index.js",
   "homepage": "https://gammaswap.com",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/@gammaswap"
   },
+  "files": [
+    "artifacts",
+    "contracts"
+  ],
   "repository": "git@github.com:gammaswap/v1-liquidator.git",
   "author": "Daniel Alcarraz <dalcarraz@gammaswap.com>",
   "license": "GPL-v3",
@@ -43,8 +47,8 @@
     "typescript": ">=4.5.0"
   },
   "dependencies": {
-    "@gammaswap/v1-core": "0.4.16",
-    "@gammaswap/v1-implementations": "0.4.13",
-    "@gammaswap/v1-periphery": "0.4.4"
+    "@gammaswap/v1-core": "0.4.17",
+    "@gammaswap/v1-implementations": "0.4.15",
+    "@gammaswap/v1-periphery": "0.4.6"
   }
 }
