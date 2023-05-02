@@ -1,17 +1,23 @@
 {
   "name": "@gammaswap/v1-liquidator",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Liquidation bot for GammaSwap V1",
   "main": "index.js",
   "homepage": "https://gammaswap.com",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/@gammaswap"
   },
+  "files": [
+    "artifacts",
+    "contracts"
+  ],
   "repository": "git@github.com:gammaswap/v1-liquidator.git",
   "author": "Daniel Alcarraz <dalcarraz@gammaswap.com>",
   "license": "GPL-v3",
   "scripts": {
-    "test": "yarn hardhat test"
+    "hardhat": "hardhat",
+    "test": "hardhat test",
+    "fuzz": "forge test"
   },
   "devDependencies": {
     "@ethersproject/abi": "^5.4.7",
