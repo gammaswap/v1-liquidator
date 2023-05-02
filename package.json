@@ -1,6 +1,6 @@
 {
   "name": "@gammaswap/v1-liquidator",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Liquidation bot for GammaSwap V1",
   "main": "index.js",
   "homepage": "https://gammaswap.com",
@@ -47,8 +47,8 @@
     "typescript": ">=4.5.0"
   },
   "dependencies": {
-    "@gammaswap/v1-core": "0.4.17",
-    "@gammaswap/v1-implementations": "0.4.15",
+    "@gammaswap/v1-core": "^0.4.17",
+    "@gammaswap/v1-implementations": "^0.4.15",
     "@gammaswap/v1-periphery": "0.4.6"
   }
 }
