@@ -14,7 +14,7 @@ contract Liquidator is ILiquidator {
     }
 
     /// @dev See {ILiquidator-canLiquidate}.
-    function canLiquidate(address pool, uint256 tokenId) external override virtual view returns(uint256 liquidity, uint256 collateral) {
+    function canLiquidate(address pool, uint256 tokenId) public override virtual view returns(uint256 liquidity, uint256 collateral) {
         if(IGammaPool(pool).canLiquidate(tokenId)) {
             IGammaPool.LoanData memory loan = IGammaPool(pool).loan(tokenId);
             liquidity = loan.liquidity;
@@ -57,10 +57,11 @@ contract Liquidator is ILiquidator {
 
     /// @dev See {ILiquidator-liquidate}.
     function liquidate(address pool, uint256 tokenId, uint256 collateralId, uint256[] calldata fees) external override virtual returns(uint256[] memory refunds) {
-        if(IGammaPool(pool).canLiquidate(tokenId)){
+        if(IGammaPool(pool).canLiquidate(tokenId)) {
+            uint256 writedownAmt = _calcWritedown(pool, tokenId);
             IGammaPool.LoanData memory _loan = IGammaPool(pool).loan(tokenId);
             int256[] memory deltas = IGammaPool(pool).calcDeltasToClose(_loan.tokensHeld, IGammaPool(pool).getLatestCFMMReserves(),
-                _loan.liquidity, collateralId);
+                _loan.liquidity - writedownAmt, collateralId);
             (,refunds) = IGammaPool(pool).liquidate(tokenId, deltas, fees);
             _transferRefunds(pool, refunds, msg.sender);
         }
@@ -155,5 +156,19 @@ contract Liquidator is ILiquidator {
     /// @param lpTokens - CFMM LP token amounts refunded
     function _transferLPTokens(address pool, uint256 lpTokens) internal virtual {
         IERC20(IGammaPool(pool).cfmm()).transferFrom(msg.sender,pool,lpTokens);
+    }
+
+    function _calcWritedown(address pool, uint256 tokenId) internal virtual returns (uint256) {
+        address liquidationStrategy = IGammaPool(pool).liquidationStrategy();
+        (bool success, bytes memory data) = liquidationStrategy.staticcall(abi.encodeWithSignature("LIQUIDATION_FEE()"));
+        if (success && data.length > 0) {
+            uint16 liquidationFee = abi.decode(data, (uint16));
+            (uint256 debt, uint256 collateral) = canLiquidate(pool, tokenId);
+            collateral = collateral * (1e4 - liquidationFee) / 1e4;
+
+            return collateral >= debt ? 0 : debt - collateral;
+        }
+
+        return 0;
     }
 }
