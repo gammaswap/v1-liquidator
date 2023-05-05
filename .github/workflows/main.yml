@@ -20,7 +20,7 @@ jobs:
       - run: yarn install
         env:
           NODE_AUTH_TOKEN: ${{secrets.GS_TOKEN}}
-      - run: yarn run test
+      - run: yarn run fuzz
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.GS_TOKEN}}
