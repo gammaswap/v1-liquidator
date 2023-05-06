@@ -1,6 +1,6 @@
 {
   "name": "@gammaswap/v1-liquidator",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "Smart contract for GammaSwap V1 liquidation bot",
   "homepage": "https://gammaswap.com",
   "main": "index.js",
@@ -21,7 +21,8 @@
   },
   "files": [
     "artifacts",
-    "contracts"
+    "contracts",
+    "typechain-types"
   ],
   "keywords": [
     "gammaswap",
