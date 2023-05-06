@@ -11,6 +11,7 @@ tasks
 .solhint.json
 .solhintignore
 .gitmodules
+.gitignore
 tsconfig.json
 foundry.toml
 lib
