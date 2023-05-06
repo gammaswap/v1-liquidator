@@ -1,24 +1,37 @@
 {
   "name": "@gammaswap/v1-liquidator",
-  "version": "0.0.10",
-  "description": "Liquidation bot for GammaSwap V1",
-  "main": "index.js",
+  "version": "0.0.11",
+  "description": "Smart contract for GammaSwap V1 liquidator bot",
   "homepage": "https://gammaswap.com",
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com/@gammaswap"
-  },
-  "files": [
-    "artifacts",
-    "contracts"
-  ],
-  "repository": "git@github.com:gammaswap/v1-liquidator.git",
-  "author": "Daniel Alcarraz <dalcarraz@gammaswap.com>",
-  "license": "GPL-v3",
+  "main": "index.js",
   "scripts": {
     "hardhat": "hardhat",
     "test": "hardhat test",
     "fuzz": "forge test"
   },
+  "engines": {
+    "node": ">=16"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/@gammaswap"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gammaswap/v1-liquidator"
+  },
+  "files": [
+    "artifacts",
+    "contracts"
+  ],
+  "keywords": [
+    "gammaswap",
+    "ethereum",
+    "liquidator",
+    "v1",
+    "gammaswap-v1"
+  ],
+  "author": "Daniel Alcarraz <dalcarraz@gammaswap.com>",
+  "license": "GPL-v3",
   "devDependencies": {
     "@ethersproject/abi": "^5.4.7",
     "@ethersproject/providers": "^5.4.7",
