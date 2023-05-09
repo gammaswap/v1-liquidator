@@ -39,6 +39,10 @@ contract LiquidatorTest is CPMMGammaSwapSetup {
 
         vm.roll(100000000);  // After a while
 
+        (uint256 liquidity, uint256 collateral) = liquidator.canLiquidate(address(pool), tokenId);
+        assertGt(liquidity, 0);
+        assertGt(collateral, 0);
+
         liquidator.liquidate(address(pool), tokenId, 0, new uint256[](0));
         IGammaPool.LoanData memory loanData = pool.loan(tokenId);
 
@@ -109,10 +113,20 @@ contract LiquidatorTest is CPMMGammaSwapSetup {
 
         vm.roll(50000000);
 
-        GammaSwapLibrary.safeApprove(cfmm, address(liquidator), type(uint256).max);
         uint256[] memory tokenIds = new uint256[](2);
         tokenIds[0] = tokenId1;
         tokenIds[1] = tokenId2;
+
+        assertTrue(IGammaPool(pool).canLiquidate(tokenId1));
+        assertTrue(IGammaPool(pool).canLiquidate(tokenId2));
+
+        (uint256[] memory _tokenIds, uint256 _liquidity, uint256 _collateral) = liquidator.canBatchLiquidate(address(pool), tokenIds);
+        assertGt(_liquidity, 0);
+        assertGt(_collateral, 0);
+        assertEq(tokenIds[0], _tokenIds[0]);
+        assertEq(tokenIds[1], _tokenIds[1]);
+
+        GammaSwapLibrary.safeApprove(cfmm, address(liquidator), type(uint256).max);
         liquidator.batchLiquidate(address(pool), tokenIds);
 
         assertFalse(IGammaPool(pool).canLiquidate(tokenId1));
