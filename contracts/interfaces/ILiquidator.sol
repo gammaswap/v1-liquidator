@@ -27,7 +27,7 @@ interface ILiquidator {
     /// @return _tokenIds - list of tokenIds of loans that can be liquidated. The array may be larger
     /// @return _liquidity - summed liquidity debt of loans (not written down) that can be liquidated. If a loan can't be liquidate it is not summed
     /// @return _collateral - liquidity collateral backing loan that can be liquidated. If a loan can't be liquidate it is not summed
-    function canLiquidate(address pool, uint256[] calldata tokenIds) external view returns(uint256[] memory _tokenIds, uint256 _liquidity, uint256 _collateral);
+    function canBatchLiquidate(address pool, uint256[] calldata tokenIds) external view returns(uint256[] memory _tokenIds, uint256 _liquidity, uint256 _collateral);
 
     /// @dev Liquidate loan in `pool` identified by `tokenId` using the loan's own collateral tokens
     /// @param pool - address of GammaPool loan belongs to

@@ -26,12 +26,12 @@ contract Liquidator is ILiquidator {
         }
     }
 
-    /// @dev See {ILiquidator-canLiquidate}.
-    function canLiquidate(address pool, uint256[] calldata tokenIds) external override virtual view returns(uint256[] memory _tokenIds, uint256 _liquidity, uint256 _collateral) {
-        return _canLiquidate(pool, tokenIds);
+    /// @dev See {ILiquidator-canBatchLiquidate}.
+    function canBatchLiquidate(address pool, uint256[] calldata tokenIds) external override virtual view returns(uint256[] memory _tokenIds, uint256 _liquidity, uint256 _collateral) {
+        return _canBatchLiquidate(pool, tokenIds);
     }
 
-    function _canLiquidate(address pool, uint256[] calldata tokenIds) internal virtual view returns(uint256[] memory _tokenIds, uint256 _liquidity, uint256 _collateral) {
+    function _canBatchLiquidate(address pool, uint256[] calldata tokenIds) internal virtual view returns(uint256[] memory _tokenIds, uint256 _liquidity, uint256 _collateral) {
         IGammaPool.LoanData[] memory _loans = IGammaPool(pool).getLoansById(tokenIds, true);
         uint256[] memory __tokenIds = new uint256[](_loans.length);
         uint256 k = 0;
@@ -103,7 +103,7 @@ contract Liquidator is ILiquidator {
     function batchLiquidate(address pool, uint256[] calldata tokenIds) external override virtual returns(uint256[] memory _tokenIds, uint256[] memory refunds) {
         //call canLiquidate first
         uint256 _liquidity;
-        (_tokenIds, _liquidity,) = _canLiquidate(pool, tokenIds);
+        (_tokenIds, _liquidity,) = _canBatchLiquidate(pool, tokenIds);
         if(_liquidity > 0) {
             uint256 lpTokens = _convertLiquidityToLPTokens(pool, _liquidity) * 1001 / 1000;
             // transfer CFMM LP Tokens
