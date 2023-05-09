@@ -14,7 +14,11 @@ contract Liquidator is ILiquidator {
     }
 
     /// @dev See {ILiquidator-canLiquidate}.
-    function canLiquidate(address pool, uint256 tokenId) public override virtual view returns(uint256 liquidity, uint256 collateral) {
+    function canLiquidate(address pool, uint256 tokenId) external override view returns(uint256 liquidity, uint256 collateral) {
+        return _canLiquidate(pool, tokenId);
+    }
+
+    function _canLiquidate(address pool, uint256 tokenId) internal virtual view returns(uint256 liquidity, uint256 collateral) {
         if(IGammaPool(pool).canLiquidate(tokenId)) {
             IGammaPool.LoanData memory loan = IGammaPool(pool).loan(tokenId);
             liquidity = loan.liquidity;
@@ -23,7 +27,11 @@ contract Liquidator is ILiquidator {
     }
 
     /// @dev See {ILiquidator-canLiquidate}.
-    function canLiquidate(address pool, uint256[] calldata tokenIds) public override virtual view returns(uint256[] memory _tokenIds, uint256 _liquidity, uint256 _collateral) {
+    function canLiquidate(address pool, uint256[] calldata tokenIds) external override virtual view returns(uint256[] memory _tokenIds, uint256 _liquidity, uint256 _collateral) {
+        return _canLiquidate(pool, tokenIds);
+    }
+
+    function _canLiquidate(address pool, uint256[] calldata tokenIds) internal virtual view returns(uint256[] memory _tokenIds, uint256 _liquidity, uint256 _collateral) {
         IGammaPool.LoanData[] memory _loans = IGammaPool(pool).getLoansById(tokenIds, true);
         uint256[] memory __tokenIds = new uint256[](_loans.length);
         uint256 k = 0;
@@ -68,7 +76,11 @@ contract Liquidator is ILiquidator {
     }
 
     /// @dev See {ILiquidator-calcLPTokenDebt}.
-    function calcLPTokenDebt(address pool, uint256 tokenId) public override virtual view returns(uint256 lpTokens) {
+    function calcLPTokenDebt(address pool, uint256 tokenId) external override virtual view returns(uint256 lpTokens) {
+        return _calcLPTokenDebt(pool, tokenId);
+    }
+
+    function _calcLPTokenDebt(address pool, uint256 tokenId) internal virtual view returns(uint256 lpTokens) {
         IGammaPool.LoanData memory _loan = IGammaPool(pool).loan(tokenId);
         lpTokens = _convertLiquidityToLPTokens(pool, _loan.liquidity);
     }
@@ -78,7 +90,7 @@ contract Liquidator is ILiquidator {
         //check can liquidate first
         if(IGammaPool(pool).canLiquidate(tokenId)){
             if(calcLpTokens) {
-                lpTokens = calcLPTokenDebt(pool, tokenId) * 1001 / 1000; // adding 0.1% to avoid rounding issues
+                lpTokens = _calcLPTokenDebt(pool, tokenId) * 1001 / 1000; // adding 0.1% to avoid rounding issues
             }
             // transfer CFMM LP Tokens
             _transferLPTokens(pool, lpTokens);
@@ -91,7 +103,7 @@ contract Liquidator is ILiquidator {
     function batchLiquidate(address pool, uint256[] calldata tokenIds) external override virtual returns(uint256[] memory _tokenIds, uint256[] memory refunds) {
         //call canLiquidate first
         uint256 _liquidity;
-        (_tokenIds, _liquidity,) = canLiquidate(pool, tokenIds);
+        (_tokenIds, _liquidity,) = _canLiquidate(pool, tokenIds);
         if(_liquidity > 0) {
             uint256 lpTokens = _convertLiquidityToLPTokens(pool, _liquidity) * 1001 / 1000;
             // transfer CFMM LP Tokens
@@ -163,7 +175,7 @@ contract Liquidator is ILiquidator {
         (bool success, bytes memory data) = liquidationStrategy.staticcall(abi.encodeWithSignature("LIQUIDATION_FEE()"));
         if (success && data.length > 0) {
             uint16 liquidationFee = abi.decode(data, (uint16));
-            (uint256 debt, uint256 collateral) = canLiquidate(pool, tokenId);
+            (uint256 debt, uint256 collateral) = _canLiquidate(pool, tokenId);
             collateral = collateral * (1e4 - liquidationFee) / 1e4;
 
             return collateral >= debt ? 0 : debt - collateral;
