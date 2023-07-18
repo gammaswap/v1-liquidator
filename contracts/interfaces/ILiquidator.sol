@@ -32,10 +32,8 @@ interface ILiquidator {
     /// @dev Liquidate loan in `pool` identified by `tokenId` using the loan's own collateral tokens
     /// @param pool - address of GammaPool loan belongs to
     /// @param tokenId - tokenId of loan in GammaPool (`pool`) to check
-    /// @param collateralId - index of token you wish to use up to liquidate the loan. You will receive refunds in terms of the other token
-    /// @param fees - transfer fees
-    /// @return refunds - collateral tokens that are refunded to liquidator
-    function liquidate(address pool, uint256 tokenId, uint256 collateralId, uint256[] calldata fees) external returns(uint256[] memory refunds);
+    /// @return refund - CFMM LP tokens that are refunded to liquidator
+    function liquidate(address pool, uint256 tokenId) external returns(uint256 refund);
 
     /// @dev Liquidate loan in `pool` identified by `tokenId` using CFMM LP tokens of the CFMM liquidity was borrowed from
     /// @param pool - address of GammaPool loan belongs to

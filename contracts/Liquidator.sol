@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@gammaswap/v1-core/contracts/interfaces/IPoolViewer.sol";
 import "@gammaswap/v1-core/contracts/libraries/Math.sol";
 import "./interfaces/ILiquidator.sol";
 
@@ -19,8 +20,9 @@ contract Liquidator is ILiquidator {
     }
 
     function _canLiquidate(address pool, uint256 tokenId) internal virtual view returns(uint256 liquidity, uint256 collateral) {
-        if(IGammaPool(pool).canLiquidate(tokenId)) {
-            IGammaPool.LoanData memory loan = IGammaPool(pool).loan(tokenId);
+        IPoolViewer viewer = IPoolViewer(IGammaPool(pool).viewer());
+        if(viewer.canLiquidate(pool, tokenId)) {
+            IGammaPool.LoanData memory loan = viewer.loan(pool, tokenId);
             liquidity = loan.liquidity;
             collateral = Math.sqrt(uint256(loan.tokensHeld[0])*loan.tokensHeld[1]);
         }
@@ -32,7 +34,7 @@ contract Liquidator is ILiquidator {
     }
 
     function _canBatchLiquidate(address pool, uint256[] calldata tokenIds) internal virtual view returns(uint256[] memory _tokenIds, uint256 _liquidity, uint256 _collateral) {
-        IGammaPool.LoanData[] memory _loans = IGammaPool(pool).getLoansById(tokenIds, true);
+        IGammaPool.LoanData[] memory _loans = IPoolViewer(IGammaPool(pool).viewer()).getLoansById(pool, tokenIds, true);
         uint256[] memory __tokenIds = new uint256[](_loans.length);
         uint256 k = 0;
         IGammaPool.LoanData memory _loan;
@@ -44,34 +46,36 @@ contract Liquidator is ILiquidator {
                     _liquidity += _loan.liquidity;
                     _collateral += Math.sqrt(uint256(_loan.tokensHeld[0]) * _loan.tokensHeld[1]);
                     unchecked {
-                        k++;
+                        ++k;
                     }
                 }
             } else {
                 break;
             }
             unchecked {
-                i++;
+                ++i;
             }
         }
         _tokenIds = new uint256[](k);
         for(uint256 j = 0; j < _tokenIds.length;) {
             _tokenIds[j] = __tokenIds[j];
             unchecked {
-                j++;
+                ++j;
             }
         }
     }
 
     /// @dev See {ILiquidator-liquidate}.
-    function liquidate(address pool, uint256 tokenId, uint256 collateralId, uint256[] calldata fees) external override virtual returns(uint256[] memory refunds) {
-        if(IGammaPool(pool).canLiquidate(tokenId)) {
-            uint256 writedownAmt = _calcWritedown(pool, tokenId);
-            IGammaPool.LoanData memory _loan = IGammaPool(pool).loan(tokenId);
-            int256[] memory deltas = IGammaPool(pool).calcDeltasToClose(_loan.tokensHeld, IGammaPool(pool).getLatestCFMMReserves(),
-                _loan.liquidity - writedownAmt, collateralId);
-            (,refunds) = IGammaPool(pool).liquidate(tokenId, deltas, fees);
-            _transferRefunds(pool, refunds, msg.sender);
+    function liquidate(address pool, uint256 tokenId) external override virtual returns(uint256 refund) {
+        IPoolViewer viewer = IPoolViewer(IGammaPool(pool).viewer());
+        if(viewer.canLiquidate(pool, tokenId)) {
+            address cfmm = IGammaPool(pool).cfmm();
+            uint256 beforeBalance = IERC20(cfmm).balanceOf(address(this));
+            (,refund) = IGammaPool(pool).liquidate(tokenId);
+            uint256 afterBalance = IERC20(cfmm).balanceOf(address(this));
+            if(afterBalance > beforeBalance) {
+                IERC20(cfmm).transfer(msg.sender,afterBalance - beforeBalance);
+            }
         }
     }
 
@@ -81,21 +85,28 @@ contract Liquidator is ILiquidator {
     }
 
     function _calcLPTokenDebt(address pool, uint256 tokenId) internal virtual view returns(uint256 lpTokens) {
-        IGammaPool.LoanData memory _loan = IGammaPool(pool).loan(tokenId);
+        IGammaPool.LoanData memory _loan = IPoolViewer(IGammaPool(pool).viewer()).loan(pool, tokenId);
         lpTokens = _convertLiquidityToLPTokens(pool, _loan.liquidity);
     }
 
     /// @dev See {ILiquidator-liquidateWithLP}.
     function liquidateWithLP(address pool, uint256 tokenId, uint256 lpTokens, bool calcLpTokens) external override virtual returns(uint256[] memory refunds) {
         //check can liquidate first
-        if(IGammaPool(pool).canLiquidate(tokenId)){
+        IPoolViewer viewer = IPoolViewer(IGammaPool(pool).viewer());
+        if(viewer.canLiquidate(pool, tokenId)){
             if(calcLpTokens) {
-                lpTokens = _calcLPTokenDebt(pool, tokenId) * 1001 / 1000; // adding 0.1% to avoid rounding issues
+                lpTokens = _calcLPTokenDebt(pool, tokenId) * 10002 / 10000; // adding 0.02% to avoid rounding issues
             }
             // transfer CFMM LP Tokens
-            _transferLPTokens(pool, lpTokens);
+            address cfmm = IGammaPool(pool).cfmm();
+            uint256 beforeBalance = IERC20(cfmm).balanceOf(address(this));
+            _transferLPTokensFrom(pool, lpTokens, msg.sender);
             (,refunds) = IGammaPool(pool).liquidateWithLP(tokenId);
+            uint256 afterBalance = IERC20(cfmm).balanceOf(address(this));
             _transferRefunds(pool, refunds, msg.sender);
+            if(afterBalance > beforeBalance) {
+                IERC20(cfmm).transfer(msg.sender,afterBalance - beforeBalance);
+            }
         }
     }
 
@@ -105,17 +116,23 @@ contract Liquidator is ILiquidator {
         uint256 _liquidity;
         (_tokenIds, _liquidity,) = _canBatchLiquidate(pool, tokenIds);
         if(_liquidity > 0) {
-            uint256 lpTokens = _convertLiquidityToLPTokens(pool, _liquidity) * 1001 / 1000;
+            uint256 lpTokens = _convertLiquidityToLPTokens(pool, _liquidity) * 10002 / 10000;
+            address cfmm = IGammaPool(pool).cfmm();
+            uint256 beforeBalance = IERC20(cfmm).balanceOf(address(this));
             // transfer CFMM LP Tokens
-            _transferLPTokens(pool, lpTokens);
-            (,,refunds) = IGammaPool(pool).batchLiquidations(_tokenIds);
+            _transferLPTokensFrom(pool, lpTokens, msg.sender);
+            (,refunds) = IGammaPool(pool).batchLiquidations(_tokenIds);
+            uint256 afterBalance = IERC20(cfmm).balanceOf(address(this));
             _transferRefunds(pool, refunds, msg.sender);
+            if(afterBalance > beforeBalance) {
+                IERC20(cfmm).transfer(msg.sender,afterBalance - beforeBalance);
+            }
         }
     }
 
     /// @dev See {ILiquidator-getLoan}.
     function getLoan(address pool, uint256 tokenId) external override virtual view returns(IGammaPool.LoanData memory loan) {
-        loan = IGammaPool(pool).loan(tokenId);
+        loan = IPoolViewer(IGammaPool(pool).viewer()).loan(pool, tokenId);
     }
 
     /// @dev See {ILiquidator-getLoans}.
@@ -135,7 +152,7 @@ contract Liquidator is ILiquidator {
         for(uint256 i = 0; i < loans.length;) {
             tokenIds[i] = loans[i].tokenId;
             unchecked {
-                i++;
+                ++i;
             }
         }
     }
@@ -158,20 +175,21 @@ contract Liquidator is ILiquidator {
         for(uint256 i = 0; i < refunds.length;) {
             IERC20(tokens[i]).transfer(to, refunds[i]);
             unchecked {
-                i++;
+                ++i;
             }
         }
     }
 
-    /// @dev transfer refunded amounts to `to` address
+    /// @dev transfer refunded amounts from `from` address
     /// @param pool - address of GammaPool that will receive the LP tokens
     /// @param lpTokens - CFMM LP token amounts refunded
-    function _transferLPTokens(address pool, uint256 lpTokens) internal virtual {
-        IERC20(IGammaPool(pool).cfmm()).transferFrom(msg.sender,pool,lpTokens);
+    /// @param from - sender of CFMM LP tokens
+    function _transferLPTokensFrom(address pool, uint256 lpTokens, address from) internal virtual {
+        IERC20(IGammaPool(pool).cfmm()).transferFrom(from,pool,lpTokens);
     }
 
     function _calcWritedown(address pool, uint256 tokenId) internal virtual returns (uint256) {
-        address liquidationStrategy = IGammaPool(pool).liquidationStrategy();
+        address liquidationStrategy = IGammaPool(pool).singleLiquidationStrategy();
         (bool success, bytes memory data) = liquidationStrategy.staticcall(abi.encodeWithSignature("LIQUIDATION_FEE()"));
         if (success && data.length > 0) {
             uint16 liquidationFee = abi.decode(data, (uint16));

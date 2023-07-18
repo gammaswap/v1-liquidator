@@ -28,13 +28,13 @@ contract LiquidatorTest is CPMMGammaSwapSetup {
         assertGt(lpTokens, 0);
 
         vm.startPrank(addr1);
-        uint256 tokenId = pool.createLoan();
+        uint256 tokenId = pool.createLoan(0);
         assertGt(tokenId, 0);
 
         usdc.transfer(address(pool), 150_000 * 1e18);
         weth.transfer(address(pool), 150 * 1e18);
 
-        pool.increaseCollateral(tokenId);
+        pool.increaseCollateral(tokenId, new uint256[](0));
         pool.borrowLiquidity(tokenId, lpTokens/4, new uint256[](0));
 
         vm.roll(100000000);  // After a while
@@ -43,31 +43,43 @@ contract LiquidatorTest is CPMMGammaSwapSetup {
         assertGt(liquidity, 0);
         assertGt(collateral, 0);
 
-        liquidator.liquidate(address(pool), tokenId, 0, new uint256[](0));
-        IGammaPool.LoanData memory loanData = pool.loan(tokenId);
+        IPoolViewer viewer = IPoolViewer(pool.viewer());
 
-        assertFalse(IGammaPool(pool).canLiquidate(tokenId));
+        address cfmm = pool.cfmm();
+        uint256 beforeBalance = IERC20(cfmm).balanceOf(addr1);
+        IGammaPool.LoanData memory loanData = viewer.loan(address(pool), tokenId);
+        assertGt(loanData.tokensHeld[0]/1e3, 0);
+        assertGt(loanData.tokensHeld[1]/1e3, 0);
+
+        liquidator.liquidate(address(pool), tokenId);
+
+        IGammaPool.LoanData memory loanData1 = viewer.loan(address(pool), tokenId);
+
+        uint256 afterBalance = IERC20(cfmm).balanceOf(addr1);
+        assertGt(afterBalance, beforeBalance);
+
+        assertFalse(viewer.canLiquidate(address(pool), tokenId));
 
         // All paid out! No collateral left
-        assertEq(loanData.tokensHeld[0], 0);
-        assertEq(loanData.tokensHeld[1], 0);
+        assertEq(loanData1.tokensHeld[0]/1e3, 0);
+        assertEq(loanData1.tokensHeld[1]/1e3, 0);
     }
 
-    function testLiquidatePartialWithLp(uint256 lpAmount) public {
+    function testFailLiquidatePartialWithLp(uint256 lpAmount) public {
         uint256 lpTokens = IERC20(cfmm).balanceOf(address(pool));
         lpAmount = bound(lpAmount, 1e18, lpTokens/10);
 
         vm.startPrank(addr1);
-        uint256 tokenId = pool.createLoan();
+        uint256 tokenId = pool.createLoan(0);
         assertGt(tokenId, 0);
 
         usdc.transfer(address(pool), 150_000 * 1e18);
         weth.transfer(address(pool), 150 * 1e18);
 
-        pool.increaseCollateral(tokenId);
+        pool.increaseCollateral(tokenId, new uint256[](0));
         pool.borrowLiquidity(tokenId, lpTokens/4, new uint256[](0));
 
-        vm.roll(100000000);  // After a while
+        vm.roll(100000000); // After a while
 
         GammaSwapLibrary.safeApprove(cfmm, address(liquidator), lpAmount);
         liquidator.liquidateWithLP(address(pool), tokenId, lpAmount, false);
@@ -77,21 +89,41 @@ contract LiquidatorTest is CPMMGammaSwapSetup {
         uint256 lpTokens = IERC20(cfmm).balanceOf(address(pool));
 
         vm.startPrank(addr1);
-        uint256 tokenId = pool.createLoan();
+        uint256 tokenId = pool.createLoan(0);
         assertGt(tokenId, 0);
 
         usdc.transfer(address(pool), 150_000 * 1e18);
         weth.transfer(address(pool), 150 * 1e18);
 
-        pool.increaseCollateral(tokenId);
+        pool.increaseCollateral(tokenId, new uint256[](0));
         pool.borrowLiquidity(tokenId, lpTokens/4, new uint256[](0));
 
-        vm.roll(100000000);  // After a while
+        vm.roll(100000000); // After a while
 
         GammaSwapLibrary.safeApprove(cfmm, address(liquidator), type(uint256).max);
-        liquidator.liquidateWithLP(address(pool), tokenId, 0, true);
+        IPoolViewer viewer = IPoolViewer(pool.viewer());
 
-        assertFalse(IGammaPool(pool).canLiquidate(tokenId));
+        IGammaPool.LoanData memory loanData = viewer.loan(address(pool), tokenId);
+        console.log(convertInvariantToLP(loanData.liquidity));
+
+        address cfmm = pool.cfmm();
+        uint256 beforeBalance = IERC20(cfmm).balanceOf(addr1);
+        uint256 usdcBal0 = usdc.balanceOf(addr1);
+        uint256 wethBal0 = weth.balanceOf(addr1);
+
+        liquidator.liquidateWithLP(address(pool), tokenId, 0, true);
+        assertFalse(viewer.canLiquidate(address(pool), tokenId));
+
+        uint256 afterBalance = IERC20(cfmm).balanceOf(addr1);
+        uint256 usdcBal1 = usdc.balanceOf(addr1);
+        uint256 wethBal1 = weth.balanceOf(addr1);
+
+        assertGt(usdcBal1, usdcBal0);
+        assertGt(wethBal1, wethBal0);
+
+        uint256 usdcDiff = usdcBal1 - usdcBal0;
+        uint256 wethDiff = wethBal1 - wethBal0;
+        assertGt(afterBalance + convertInvariantToLP(Math.sqrt(usdcDiff * wethDiff)),beforeBalance);
     }
 
     function testLiquidateBatch() public {
@@ -99,16 +131,16 @@ contract LiquidatorTest is CPMMGammaSwapSetup {
 
         vm.startPrank(addr1);
 
-        uint256 tokenId1 = pool.createLoan();   // Loan 1
+        uint256 tokenId1 = pool.createLoan(0);   // Loan 1
         usdc.transfer(address(pool), 150_000 * 1e18);
         weth.transfer(address(pool), 150 * 1e18);
-        pool.increaseCollateral(tokenId1);
+        pool.increaseCollateral(tokenId1, new uint256[](0));
         pool.borrowLiquidity(tokenId1, lpTokens/4, new uint256[](0));
 
-        uint256 tokenId2 = pool.createLoan();   // Loan 2
+        uint256 tokenId2 = pool.createLoan(0);   // Loan 2
         usdc.transfer(address(pool), 150_000 * 1e18);
         weth.transfer(address(pool), 150 * 1e18);
-        pool.increaseCollateral(tokenId2);
+        pool.increaseCollateral(tokenId2, new uint256[](0));
         pool.borrowLiquidity(tokenId2, lpTokens/4, new uint256[](0));
 
         vm.roll(50000000);
@@ -117,8 +149,10 @@ contract LiquidatorTest is CPMMGammaSwapSetup {
         tokenIds[0] = tokenId1;
         tokenIds[1] = tokenId2;
 
-        assertTrue(IGammaPool(pool).canLiquidate(tokenId1));
-        assertTrue(IGammaPool(pool).canLiquidate(tokenId2));
+        IPoolViewer viewer = IPoolViewer(pool.viewer());
+
+        assertTrue(viewer.canLiquidate(address(pool), tokenId1));
+        assertTrue(viewer.canLiquidate(address(pool), tokenId2));
 
         (uint256[] memory _tokenIds, uint256 _liquidity, uint256 _collateral) = liquidator.canBatchLiquidate(address(pool), tokenIds);
         assertGt(_liquidity, 0);
@@ -126,10 +160,26 @@ contract LiquidatorTest is CPMMGammaSwapSetup {
         assertEq(tokenIds[0], _tokenIds[0]);
         assertEq(tokenIds[1], _tokenIds[1]);
 
+        address cfmm = pool.cfmm();
+        uint256 beforeBalance = IERC20(cfmm).balanceOf(addr1);
+        uint256 usdcBal0 = usdc.balanceOf(addr1);
+        uint256 wethBal0 = weth.balanceOf(addr1);
+
         GammaSwapLibrary.safeApprove(cfmm, address(liquidator), type(uint256).max);
         liquidator.batchLiquidate(address(pool), tokenIds);
 
-        assertFalse(IGammaPool(pool).canLiquidate(tokenId1));
-        assertFalse(IGammaPool(pool).canLiquidate(tokenId2));
+        assertFalse(viewer.canLiquidate(address(pool), tokenId1));
+        assertFalse(viewer.canLiquidate(address(pool), tokenId2));
+
+        uint256 afterBalance = IERC20(cfmm).balanceOf(addr1);
+        uint256 usdcBal1 = usdc.balanceOf(addr1);
+        uint256 wethBal1 = weth.balanceOf(addr1);
+
+        assertGt(usdcBal1, usdcBal0);
+        assertGt(wethBal1, wethBal0);
+
+        uint256 usdcDiff = usdcBal1 - usdcBal0;
+        uint256 wethDiff = wethBal1 - wethBal0;
+        assertGt(afterBalance + convertInvariantToLP(Math.sqrt(usdcDiff * wethDiff)),beforeBalance);
     }
 }
