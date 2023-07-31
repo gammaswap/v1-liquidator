@@ -1,6 +1,6 @@
 {
   "name": "@gammaswap/v1-liquidator",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Smart contract for GammaSwap V1 liquidation bot",
   "homepage": "https://gammaswap.com",
   "main": "index.js",
@@ -61,8 +61,8 @@
     "typescript": ">=4.5.0"
   },
   "dependencies": {
-    "@gammaswap/v1-core": "^0.5.19",
-    "@gammaswap/v1-implementations": "^0.5.7",
-    "@gammaswap/v1-periphery": "0.5.3"
+    "@gammaswap/v1-core": "^0.5.23",
+    "@gammaswap/v1-implementations": "^0.5.8",
+    "@gammaswap/v1-periphery": "0.5.5"
   }
 }
