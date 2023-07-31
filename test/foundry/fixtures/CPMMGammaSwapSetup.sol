@@ -49,13 +49,11 @@ contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
 
         mathLib = new CPMMMath();
         viewer = new PoolViewer();
-        longStrategy = new CPMMBorrowStrategy(address(mathLib), 8000, maxTotalApy, 2252571, 0, 997, 1000, baseRate, factor, maxApy);
-        repayStrategy = new CPMMRepayStrategy(address(mathLib), 8000, maxTotalApy, 2252571, 0, 997, 1000, baseRate, factor, maxApy);
+        longStrategy = new CPMMBorrowStrategy(address(mathLib), maxTotalApy, 2252571, 997, 1000, baseRate, factor, maxApy);
+        repayStrategy = new CPMMRepayStrategy(address(mathLib), maxTotalApy, 2252571, 997, 1000, baseRate, factor, maxApy);
         shortStrategy = new CPMMShortStrategy(maxTotalApy, 2252571, baseRate, factor, maxApy);
-        liquidationStrategy = new CPMMLiquidationStrategy(address(mathLib), 9500, 250, maxTotalApy, 2252571, 997, 1000, baseRate, factor, maxApy);
-        batchLiquidationStrategy = new CPMMBatchLiquidationStrategy(address(mathLib), 9500, 250, maxTotalApy, 2252571, 997, 1000, baseRate, factor, maxApy);
-
-
+        liquidationStrategy = new CPMMLiquidationStrategy(address(mathLib), maxTotalApy, 2252571, 997, 1000, baseRate, factor, maxApy);
+        batchLiquidationStrategy = new CPMMBatchLiquidationStrategy(address(mathLib), maxTotalApy, 2252571, 997, 1000, baseRate, factor, maxApy);
 
         bytes32 cfmmHash = hex'96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f'; // UniV2Pair init_code_hash
 
@@ -71,6 +69,8 @@ contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
         cfmm = createPair(tokens[0], tokens[1]);
 
         pool = CPMMGammaPool(factory.createPool(PROTOCOL_ID, cfmm, tokens, new bytes(0)));
+
+        factory.setPoolParams(address(pool), 0, 0, 10, 100, 100, 250, 200);// setting origination fees to zero
 
         approvePool();
     }
