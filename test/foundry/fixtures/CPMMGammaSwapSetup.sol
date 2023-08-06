@@ -70,7 +70,7 @@ contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
 
         pool = CPMMGammaPool(factory.createPool(PROTOCOL_ID, cfmm, tokens, new bytes(0)));
 
-        factory.setPoolParams(address(pool), 0, 0, 10, 100, 100, 250, 200);// setting origination fees to zero
+        factory.setPoolParams(address(pool), 0, 0, 10, 100, 100, 0, 250, 200);// setting origination fees to zero
 
         approvePool();
     }
