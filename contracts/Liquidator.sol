@@ -3,7 +3,7 @@ pragma solidity 0.8.21;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@gammaswap/v1-core/contracts/interfaces/IPoolViewer.sol";
-import "@gammaswap/v1-core/contracts/libraries/Math.sol";
+import "@gammaswap/v1-core/contracts/libraries/GSMath.sol";
 import "./interfaces/ILiquidator.sol";
 
 /// @title Liquidator Smart Contract
@@ -24,7 +24,7 @@ contract Liquidator is ILiquidator {
         if(viewer.canLiquidate(pool, tokenId)) {
             IGammaPool.LoanData memory loan = viewer.loan(pool, tokenId);
             liquidity = loan.liquidity;
-            collateral = Math.sqrt(uint256(loan.tokensHeld[0])*loan.tokensHeld[1]);
+            collateral = GSMath.sqrt(uint256(loan.tokensHeld[0])*loan.tokensHeld[1]);
         }
     }
 
@@ -44,7 +44,7 @@ contract Liquidator is ILiquidator {
                 if(_loan.canLiquidate) {
                     __tokenIds[k] = _loan.tokenId;
                     _liquidity += _loan.liquidity;
-                    _collateral += Math.sqrt(uint256(_loan.tokensHeld[0]) * _loan.tokensHeld[1]);
+                    _collateral += GSMath.sqrt(uint256(_loan.tokensHeld[0]) * _loan.tokensHeld[1]);
                     unchecked {
                         ++k;
                     }

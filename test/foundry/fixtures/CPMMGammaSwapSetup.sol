@@ -113,7 +113,7 @@ contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
     }
 
     function calcInvariant(uint128[] memory tokensHeld) internal pure returns (uint256) {
-        return Math.sqrt(uint256(tokensHeld[0]) * tokensHeld[1]);
+        return GSMath.sqrt(uint256(tokensHeld[0]) * tokensHeld[1]);
     }
 
     function calcTokensFromInvariant(uint256 liquidity) internal view returns(uint256[] memory amounts) {

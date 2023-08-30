@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import "forge-std/Test.sol";
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@gammaswap/v1-core/contracts/libraries/Math.sol";
+import "@gammaswap/v1-core/contracts/libraries/GSMath.sol";
 import "./fixtures/CPMMGammaSwapSetup.sol";
 
 contract LiquidationStrategyTest is CPMMGammaSwapSetup {

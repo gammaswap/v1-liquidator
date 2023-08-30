@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import "forge-std/Test.sol";
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@gammaswap/v1-core/contracts/libraries/Math.sol";
+import "@gammaswap/v1-core/contracts/libraries/GSMath.sol";
 import "./fixtures/CPMMGammaSwapSetup.sol";
 import "../../contracts/Liquidator.sol";
 
@@ -123,7 +123,7 @@ contract LiquidatorTest is CPMMGammaSwapSetup {
 
         uint256 usdcDiff = usdcBal1 - usdcBal0;
         uint256 wethDiff = wethBal1 - wethBal0;
-        assertGt(afterBalance + convertInvariantToLP(Math.sqrt(usdcDiff * wethDiff)),beforeBalance);
+        assertGt(afterBalance + convertInvariantToLP(GSMath.sqrt(usdcDiff * wethDiff)),beforeBalance);
     }
 
     function testLiquidateBatch() public {
@@ -180,6 +180,6 @@ contract LiquidatorTest is CPMMGammaSwapSetup {
 
         uint256 usdcDiff = usdcBal1 - usdcBal0;
         uint256 wethDiff = wethBal1 - wethBal0;
-        assertGt(afterBalance + convertInvariantToLP(Math.sqrt(usdcDiff * wethDiff)),beforeBalance);
+        assertGt(afterBalance + convertInvariantToLP(GSMath.sqrt(usdcDiff * wethDiff)),beforeBalance);
     }
 }
