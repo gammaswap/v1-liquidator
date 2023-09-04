@@ -475,32 +475,32 @@
     "@ethersproject/properties" "^5.7.0"
     "@ethersproject/strings" "^5.7.0"
 
-"@gammaswap/v1-core@^0.5.30":
-  version "0.5.30"
-  resolved "https://npm.pkg.github.com/download/@gammaswap/v1-core/0.5.30/6410816521a987cd79efee30685d59e6cbc8dff6#6410816521a987cd79efee30685d59e6cbc8dff6"
-  integrity sha512-0VA898UIWjifZuBcLhlsMXgCgNnU6VWqvn3J1p+UvXd/QpdVHxJRU5X8m/9X1tJmj0bdGxzlo+GRTR7NR4VPrQ==
+"@gammaswap/v1-core@^0.5.31":
+  version "0.5.31"
+  resolved "https://npm.pkg.github.com/download/@gammaswap/v1-core/0.5.31/79f81813335484a75ff9f5fe9f9b1201e88fba3d#79f81813335484a75ff9f5fe9f9b1201e88fba3d"
+  integrity sha512-ZLRtsMmAQv/+2mYJUmg4enU18k2t7+QNeivdUX+82sZdkfilF/vGYN2YIskmKjlfaoiHedFOcbWG26x7YKYeUA==
   dependencies:
     "@openzeppelin/contracts" "^4.7.0"
 
-"@gammaswap/v1-implementations@^0.5.13":
-  version "0.5.13"
-  resolved "https://npm.pkg.github.com/download/@gammaswap/v1-implementations/0.5.13/73cfc875edadd65aff7828fdbd56e58d483b81e8#73cfc875edadd65aff7828fdbd56e58d483b81e8"
-  integrity sha512-TEioChSPfP67GPQA/Nhx0egznfG3tQslJWKibQ8QvC2rS0KDujMiTnhoF3ZSD7foNc8Rz/eeBLy/td7E71frEQ==
+"@gammaswap/v1-implementations@^0.5.14":
+  version "0.5.14"
+  resolved "https://npm.pkg.github.com/download/@gammaswap/v1-implementations/0.5.14/751e48290457779663a6609da032cee5218e7155#751e48290457779663a6609da032cee5218e7155"
+  integrity sha512-TzirAT8tuZMCI4TzanQyfeF8+2/TgPVDTuw2NxVEqHqHUkj0k1WOyS0H6iCEUZo+vZRxFqnsw+o3Ka8MZB6r9w==
   dependencies:
     "@balancer-labs/v2-pool-utils" "^3.0.1"
     "@balancer-labs/v2-pool-weighted" "^2.0.1"
     "@balancer-labs/v2-solidity-utils" "^3.0.1"
     "@balancer-labs/v2-vault" "^3.0.1"
-    "@gammaswap/v1-core" "^0.5.30"
+    "@gammaswap/v1-core" "^0.5.31"
     "@openzeppelin/contracts" "^4.7.0"
     "@prb/math" "^3.1.0"
 
-"@gammaswap/v1-periphery@0.5.10":
-  version "0.5.10"
-  resolved "https://npm.pkg.github.com/download/@gammaswap/v1-periphery/0.5.10/137ac4e6b9aac2e60ef1af858fe54fcaa16447c5#137ac4e6b9aac2e60ef1af858fe54fcaa16447c5"
-  integrity sha512-Xip3gZvi+OUogse1uLp+HGacc57zn1RHQaVDkVnSMXCpoAE2DveSjJI1zbz4AEK9aJ6Jo2uQ4KOfrsVKQN/wMA==
+"@gammaswap/v1-periphery@0.5.11":
+  version "0.5.11"
+  resolved "https://npm.pkg.github.com/download/@gammaswap/v1-periphery/0.5.11/dfc7d31210f35ce935ab3ad5fcc19541dceef09e#dfc7d31210f35ce935ab3ad5fcc19541dceef09e"
+  integrity sha512-N+WdEjyux966/a1teyNjgbZXhgrldnKsY6WglcqO/EuPr4msMswIyw2QVLnzn88A67yRmIbYAKgZdwI3n2bFXg==
   dependencies:
-    "@gammaswap/v1-core" "^0.5.30"
+    "@gammaswap/v1-core" "^0.5.31"
     "@openzeppelin/contracts" "^4.7.0"
 
 "@jridgewell/resolve-uri@^3.0.3":

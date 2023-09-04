@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-v3
-pragma solidity ^0.8.0;
+pragma solidity >=0.8.0;
 
 import "@gammaswap/v1-core/contracts/interfaces/IGammaPool.sol";
 
