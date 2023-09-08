@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: BUSL-1.1
+// SPDX-License-Identifier: GPL-v3
 pragma solidity 0.8.19;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -9,7 +9,7 @@ contract TestERC20 is ERC20 {
 
     constructor(string memory name_, string memory symbol_) ERC20(name_, symbol_) {
         owner = msg.sender;
-        _mint(msg.sender, 100000 * 1e18);
+        _mint(msg.sender, 100000 * (10 ** decimals()));
     }
 
     function getSender() public virtual view returns(address) {
