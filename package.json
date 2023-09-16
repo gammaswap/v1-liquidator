@@ -1,15 +1,14 @@
 {
   "name": "@gammaswap/v1-liquidator",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Smart contract for GammaSwap V1 liquidation bot",
   "homepage": "https://gammaswap.com",
   "scripts": {
-    "hardhat": "hardhat",
     "test": "hardhat test",
     "fuzz": "forge test"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/@gammaswap"
@@ -30,7 +29,8 @@
     "v1",
     "gammaswap-v1"
   ],
-  "author": "Daniel Alcarraz <dalcarraz@gammaswap.com>",
+  "author": "Daniel D. Alcarraz <dalcarraz@gammaswap.com>",
+  "contributors": ["Simon Mall"],
   "license": "GPL-v3",
   "devDependencies": {
     "@ethersproject/abi": "^5.4.7",
@@ -60,8 +60,8 @@
     "typescript": ">=4.5.0"
   },
   "dependencies": {
-    "@gammaswap/v1-core": "^0.5.35",
-    "@gammaswap/v1-implementations": "^0.5.16",
-    "@gammaswap/v1-periphery": "0.5.13"
+    "@gammaswap/v1-core": "^0.5.38",
+    "@gammaswap/v1-implementations": "^0.5.17",
+    "@gammaswap/v1-periphery": "0.5.14"
   }
 }
