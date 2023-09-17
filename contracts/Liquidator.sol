@@ -105,7 +105,7 @@ contract Liquidator is ILiquidator {
             uint256 afterBalance = IERC20(cfmm).balanceOf(address(this));
             _transferRefunds(pool, refunds, to);
             if(afterBalance > beforeBalance) {
-                IERC20(cfmm).transfer(to,afterBalance - beforeBalance);
+                IERC20(cfmm).transfer(msg.sender,afterBalance - beforeBalance);
             }
         }
     }
@@ -125,7 +125,7 @@ contract Liquidator is ILiquidator {
             uint256 afterBalance = IERC20(cfmm).balanceOf(address(this));
             _transferRefunds(pool, refunds, to);
             if(afterBalance > beforeBalance) {
-                IERC20(cfmm).transfer(to,afterBalance - beforeBalance);
+                IERC20(cfmm).transfer(msg.sender,afterBalance - beforeBalance);
             }
         }
     }

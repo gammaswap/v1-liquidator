@@ -166,6 +166,7 @@ contract LiquidatorTest is CPMMGammaSwapSetup {
         uint256 usdcDiff = usdcBal1 - usdcBal0;
         uint256 wethDiff = wethBal1 - wethBal0;
         assertGt(afterBalance + convertInvariantToLP(GSMath.sqrt(usdcDiff * wethDiff)),beforeBalance);
+        assertEq((afterBalance + convertInvariantToLP(GSMath.sqrt(usdcDiff * wethDiff)) * 975/1000)/10,beforeBalance/10);
     }
 
     function testLiquidateFullWithLpTo() public {
@@ -190,13 +191,17 @@ contract LiquidatorTest is CPMMGammaSwapSetup {
         console.log(convertInvariantToLP(loanData.liquidity));
 
         address cfmm = pool.cfmm();
+        IERC20(cfmm).transfer(addr2,1000);
+        uint256 beforeBalanceSender = IERC20(cfmm).balanceOf(addr1);
         uint256 beforeBalance = IERC20(cfmm).balanceOf(addr2);
+        assertEq(beforeBalance, 1000);
         uint256 usdcBal0 = usdc.balanceOf(addr2);
         uint256 wethBal0 = weth.balanceOf(addr2);
 
         liquidator.liquidateWithLP(address(pool), tokenId, 0, true, addr2);
         assertFalse(viewer.canLiquidate(address(pool), tokenId));
 
+        uint256 afterBalanceSender = IERC20(cfmm).balanceOf(addr1);
         uint256 afterBalance = IERC20(cfmm).balanceOf(addr2);
         uint256 usdcBal1 = usdc.balanceOf(addr2);
         uint256 wethBal1 = weth.balanceOf(addr2);
@@ -206,7 +211,9 @@ contract LiquidatorTest is CPMMGammaSwapSetup {
 
         uint256 usdcDiff = usdcBal1 - usdcBal0;
         uint256 wethDiff = wethBal1 - wethBal0;
-        assertGt(afterBalance + convertInvariantToLP(GSMath.sqrt(usdcDiff * wethDiff)),beforeBalance);
+        assertEq(afterBalance,beforeBalance);
+        assertGt(afterBalanceSender + convertInvariantToLP(GSMath.sqrt(usdcDiff * wethDiff)),beforeBalanceSender);
+        assertEq((afterBalanceSender + convertInvariantToLP(GSMath.sqrt(usdcDiff * wethDiff)) * 975/1000)/10,beforeBalanceSender/10);
     }
 
     function testLiquidateBatch() public {
@@ -264,6 +271,7 @@ contract LiquidatorTest is CPMMGammaSwapSetup {
         uint256 usdcDiff = usdcBal1 - usdcBal0;
         uint256 wethDiff = wethBal1 - wethBal0;
         assertGt(afterBalance + convertInvariantToLP(GSMath.sqrt(usdcDiff * wethDiff)),beforeBalance);
+        assertEq((afterBalance + convertInvariantToLP(GSMath.sqrt(usdcDiff * wethDiff)) * 975/1000)/10,beforeBalance/10);
     }
 
     function testLiquidateBatchTo() public {
@@ -301,7 +309,11 @@ contract LiquidatorTest is CPMMGammaSwapSetup {
         assertEq(tokenIds[1], _tokenIds[1]);
 
         address cfmm = pool.cfmm();
+        IERC20(cfmm).transfer(addr2, 1000);
+
+        uint256 beforeBalanceSender = IERC20(cfmm).balanceOf(addr1);
         uint256 beforeBalance = IERC20(cfmm).balanceOf(addr2);
+        assertEq(beforeBalance, 1000);
         uint256 usdcBal0 = usdc.balanceOf(addr2);
         uint256 wethBal0 = weth.balanceOf(addr2);
 
@@ -311,6 +323,7 @@ contract LiquidatorTest is CPMMGammaSwapSetup {
         assertFalse(viewer.canLiquidate(address(pool), tokenId1));
         assertFalse(viewer.canLiquidate(address(pool), tokenId2));
 
+        uint256 afterBalanceSender = IERC20(cfmm).balanceOf(addr1);
         uint256 afterBalance = IERC20(cfmm).balanceOf(addr2);
         uint256 usdcBal1 = usdc.balanceOf(addr2);
         uint256 wethBal1 = weth.balanceOf(addr2);
@@ -320,6 +333,8 @@ contract LiquidatorTest is CPMMGammaSwapSetup {
 
         uint256 usdcDiff = usdcBal1 - usdcBal0;
         uint256 wethDiff = wethBal1 - wethBal0;
-        assertGt(afterBalance + convertInvariantToLP(GSMath.sqrt(usdcDiff * wethDiff)),beforeBalance);
+        assertEq(afterBalance, beforeBalance);
+        assertGt(afterBalanceSender + convertInvariantToLP(GSMath.sqrt(usdcDiff * wethDiff)),beforeBalanceSender);
+        assertEq((afterBalanceSender + convertInvariantToLP(GSMath.sqrt(usdcDiff * wethDiff)) * 975/1000)/10,beforeBalanceSender/10);
     }
 }
