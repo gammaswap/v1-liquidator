@@ -32,23 +32,26 @@ interface ILiquidator {
     /// @dev Liquidate loan in `pool` identified by `tokenId` using the loan's own collateral tokens
     /// @param pool - address of GammaPool loan belongs to
     /// @param tokenId - tokenId of loan in GammaPool (`pool`) to check
+    /// @param to - receiver of liquidation fee
     /// @return refund - CFMM LP tokens that are refunded to liquidator
-    function liquidate(address pool, uint256 tokenId) external returns(uint256 refund);
+    function liquidate(address pool, uint256 tokenId, address to) external returns(uint256 refund);
 
     /// @dev Liquidate loan in `pool` identified by `tokenId` using CFMM LP tokens of the CFMM liquidity was borrowed from
     /// @param pool - address of GammaPool loan belongs to
     /// @param tokenId - tokenId of loan in GammaPool (`pool`) to check
     /// @param lpTokens - CFMM LP tokens to transfer to liquidate
     /// @param calcLpTokens - if true calculate how many CFMM LP Tokens to liquidate
+    /// @param to - receiver of liquidation fee
     /// @return refunds - collateral tokens that are refunded to liquidator
-    function liquidateWithLP(address pool, uint256 tokenId, uint256 lpTokens, bool calcLpTokens) external returns(uint256[] memory refunds);
+    function liquidateWithLP(address pool, uint256 tokenId, uint256 lpTokens, bool calcLpTokens, address to) external returns(uint256[] memory refunds);
 
     /// @dev Liquidate loan in `pool` identified by `tokenId` using the loan's own collateral tokens
     /// @param pool - address of GammaPool loan belongs to
     /// @param tokenId - tokenId of loan in GammaPool (`pool`) to check
+    /// @param to - receiver of liquidation fee
     /// @return _tokenIds - list of tokenIds of loans that were liquidated
     /// @return refunds - collateral tokens that are refunded to liquidator from all loans that were liquidated
-    function batchLiquidate(address pool, uint256[] calldata tokenId) external returns(uint256[] memory _tokenIds, uint256[] memory refunds);
+    function batchLiquidate(address pool, uint256[] calldata tokenId, address to) external returns(uint256[] memory _tokenIds, uint256[] memory refunds);
 
     /// @dev Get most updated loan information for a loan identified by `tokenId` in `pool`
     /// @param pool - address of GammaPool loan belongs to

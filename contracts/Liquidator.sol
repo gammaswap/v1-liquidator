@@ -66,7 +66,7 @@ contract Liquidator is ILiquidator {
     }
 
     /// @dev See {ILiquidator-liquidate}.
-    function liquidate(address pool, uint256 tokenId) external override virtual returns(uint256 refund) {
+    function liquidate(address pool, uint256 tokenId, address to) external override virtual returns(uint256 refund) {
         IPoolViewer viewer = IPoolViewer(IGammaPool(pool).viewer());
         if(viewer.canLiquidate(pool, tokenId)) {
             address cfmm = IGammaPool(pool).cfmm();
@@ -74,7 +74,7 @@ contract Liquidator is ILiquidator {
             (,refund) = IGammaPool(pool).liquidate(tokenId);
             uint256 afterBalance = IERC20(cfmm).balanceOf(address(this));
             if(afterBalance > beforeBalance) {
-                IERC20(cfmm).transfer(msg.sender,afterBalance - beforeBalance);
+                IERC20(cfmm).transfer(to,afterBalance - beforeBalance);
             }
         }
     }
@@ -90,7 +90,7 @@ contract Liquidator is ILiquidator {
     }
 
     /// @dev See {ILiquidator-liquidateWithLP}.
-    function liquidateWithLP(address pool, uint256 tokenId, uint256 lpTokens, bool calcLpTokens) external override virtual returns(uint256[] memory refunds) {
+    function liquidateWithLP(address pool, uint256 tokenId, uint256 lpTokens, bool calcLpTokens, address to) external override virtual returns(uint256[] memory refunds) {
         //check can liquidate first
         IPoolViewer viewer = IPoolViewer(IGammaPool(pool).viewer());
         if(viewer.canLiquidate(pool, tokenId)){
@@ -103,7 +103,7 @@ contract Liquidator is ILiquidator {
             _transferLPTokensFrom(pool, lpTokens, msg.sender);
             (,refunds) = IGammaPool(pool).liquidateWithLP(tokenId);
             uint256 afterBalance = IERC20(cfmm).balanceOf(address(this));
-            _transferRefunds(pool, refunds, msg.sender);
+            _transferRefunds(pool, refunds, to);
             if(afterBalance > beforeBalance) {
                 IERC20(cfmm).transfer(msg.sender,afterBalance - beforeBalance);
             }
@@ -111,7 +111,7 @@ contract Liquidator is ILiquidator {
     }
 
     /// @dev See {ILiquidator-batchLiquidate}.
-    function batchLiquidate(address pool, uint256[] calldata tokenIds) external override virtual returns(uint256[] memory _tokenIds, uint256[] memory refunds) {
+    function batchLiquidate(address pool, uint256[] calldata tokenIds, address to) external override virtual returns(uint256[] memory _tokenIds, uint256[] memory refunds) {
         //call canLiquidate first
         uint256 _liquidity;
         (_tokenIds, _liquidity,) = _canBatchLiquidate(pool, tokenIds);
@@ -123,7 +123,7 @@ contract Liquidator is ILiquidator {
             _transferLPTokensFrom(pool, lpTokens, msg.sender);
             (,refunds) = IGammaPool(pool).batchLiquidations(_tokenIds);
             uint256 afterBalance = IERC20(cfmm).balanceOf(address(this));
-            _transferRefunds(pool, refunds, msg.sender);
+            _transferRefunds(pool, refunds, to);
             if(afterBalance > beforeBalance) {
                 IERC20(cfmm).transfer(msg.sender,afterBalance - beforeBalance);
             }
