@@ -31,16 +31,21 @@ const config: HardhatUserConfig = {
     },
   },
   networks: {
-    hardhat: {
-      chainId: 31337,
-    },
-    goerli: {
-      url: `https://eth-goerli.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
+    arbitrumGoerli: {
+      url: `https://arb-goerli.g.alchemy.com/v2/${process.env.ALCHEMY_ARBITRUM_GOERLI_API_KEY}`,
       accounts: {
-        mnemonic: process.env.GOERLI || "female like problem scare over lizard client bonus pioneer submit myth collect",
+        mnemonic: process.env.ARBITRUM_GOERLI_MNEMONIC || "female like problem scare over lizard client bonus pioneer submit myth collect",
         path: "m/44'/60'/0'/0",
       },
-      chainId: 5,
+      chainId: 421613,
+    },
+    arbitrum: {
+      url: `https://arb-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_ARBITRUM_API_KEY}`,
+      accounts: {
+        mnemonic: process.env.ARBITRUM_MNEMONIC || "female like problem scare over lizard client bonus pioneer submit myth collect",
+        path: "m/44'/60'/0'/0",
+      },
+      chainId: 42161,
     },
   },
   gasReporter: {
