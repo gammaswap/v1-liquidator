@@ -30,7 +30,9 @@
     "gammaswap-v1"
   ],
   "author": "Daniel D. Alcarraz <dalcarraz@gammaswap.com>",
-  "contributors": ["Simon Mall"],
+  "contributors": [
+    "Simon Mall"
+  ],
   "license": "GPL-v3",
   "devDependencies": {
     "@ethersproject/abi": "^5.4.7",

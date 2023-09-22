@@ -2,89 +2,6 @@
 # yarn lockfile v1
 
 
-"@balancer-labs/v2-asset-manager-utils@0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@balancer-labs/v2-asset-manager-utils/-/v2-asset-manager-utils-0.2.0.tgz#e7570fdc1b621047017a4653d8f06362477a24d2"
-  integrity sha512-6ti1pzbpgB5aT1WzbGwo69ILTNAJdAnaJcw3L9QB2aBsAhQ41H+MF3tjPvuv6P84RgJ9z42EhtwLYZqklRF0rg==
-  dependencies:
-    "@balancer-labs/v2-solidity-utils" "2.0.0"
-    "@balancer-labs/v2-vault" "2.0.0"
-
-"@balancer-labs/v2-interfaces@0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@balancer-labs/v2-interfaces/-/v2-interfaces-0.2.0.tgz#327c6a6d663c5e07872c59c590bb687e5b2e0f4e"
-  integrity sha512-p317Ojk3iZ6ja689u72HZvi03mG02LRkS+40J/EO2o1SDdOxbKThP7cWaZNbNJBC3IP8hzRcsZI+zmLqGa6Emw==
-
-"@balancer-labs/v2-interfaces@0.2.1":
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/@balancer-labs/v2-interfaces/-/v2-interfaces-0.2.1.tgz#df6f02496939fe1599fc17232fbb6704cef63cc8"
-  integrity sha512-CBbUKjIJKdPwPGW5PCjqwStbvu9+qonnx0sY8vhIn1hJ17kopio6HCe7SsyMF7vWOd4YqzUq4Zc/6kyHH+8Bpg==
-
-"@balancer-labs/v2-interfaces@0.3.0":
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/@balancer-labs/v2-interfaces/-/v2-interfaces-0.3.0.tgz#02d9118f0a9ad6f1945a885467aa541cda9f5e06"
-  integrity sha512-QgzUUHxqruuRzhTDb0ug49oYniK5zXupTkDSvsy/VKLWQQcHzci1WTyTHUGHaLV+TvNRzHx7fLgdSogxlLa4Bg==
-
-"@balancer-labs/v2-pool-utils@2.0.1":
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/@balancer-labs/v2-pool-utils/-/v2-pool-utils-2.0.1.tgz#a98b7b10a8f7d6cbb8890394427334943eda81e8"
-  integrity sha512-Xt3d8LqJnqq5JkuSgvf0sZuWqaywg9JxrCT1myVsG6zgbtfvcraJgSCLERUdqxP47aUPHwKvm5/+mdT9xayCXA==
-  dependencies:
-    "@balancer-labs/v2-asset-manager-utils" "0.2.0"
-    "@balancer-labs/v2-solidity-utils" "2.0.0"
-    "@balancer-labs/v2-vault" "2.0.0"
-
-"@balancer-labs/v2-pool-utils@^3.0.1":
-  version "3.1.2"
-  resolved "https://registry.yarnpkg.com/@balancer-labs/v2-pool-utils/-/v2-pool-utils-3.1.2.tgz#2e4f4083df7439d8a7212719cbd37ad822f86d11"
-  integrity sha512-sosx05+RXtCaXHSJhAmBe/CEvK1lIRBgi/k3uxi55OYJAH12RIT38FGZcNDxzF7D8TEmjtj+Mpea9DLXIbY3zw==
-  dependencies:
-    "@balancer-labs/v2-interfaces" "0.3.0"
-    "@balancer-labs/v2-solidity-utils" "3.0.2"
-
-"@balancer-labs/v2-pool-weighted@^2.0.1":
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/@balancer-labs/v2-pool-weighted/-/v2-pool-weighted-2.0.1.tgz#08090cb3a5455b4ff75aea0fb3e849d48d7641bd"
-  integrity sha512-0rNdK/7grQ1UlqmEtZV2nldSlNrGaBevfoiIbhYK3K+GHRTBs4cyCtuucDvEgtmDxbKIoO4W4p0xcrfCtMiyBw==
-  dependencies:
-    "@balancer-labs/v2-pool-utils" "2.0.1"
-    "@balancer-labs/v2-solidity-utils" "2.0.0"
-    "@balancer-labs/v2-vault" "2.0.0"
-
-"@balancer-labs/v2-solidity-utils@2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@balancer-labs/v2-solidity-utils/-/v2-solidity-utils-2.0.0.tgz#a3d8942873b4adc216c8276d150743ede5c459ca"
-  integrity sha512-OB+05vJqrs35B1d40y7tnSm6oYWnsmfRa/wpI2owJXhwx/8qr2buE+RDmT0x6Upr/c7wBdUh8v4UVk9l0+CNiA==
-
-"@balancer-labs/v2-solidity-utils@3.0.1":
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/@balancer-labs/v2-solidity-utils/-/v2-solidity-utils-3.0.1.tgz#8af2b5bab500577c0af05232890025f73b0febfb"
-  integrity sha512-uhaQbgFyT5uRWW39aPWH0ZARzqIICJvwZXKJpv7EPG2NAUrf03ZsF/Zb3gxpTZXfNoKsKznJWtxgJ1W0rnLu9w==
-  dependencies:
-    "@balancer-labs/v2-interfaces" "0.2.0"
-
-"@balancer-labs/v2-solidity-utils@3.0.2", "@balancer-labs/v2-solidity-utils@^3.0.1":
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/@balancer-labs/v2-solidity-utils/-/v2-solidity-utils-3.0.2.tgz#c2ccc3fafd72f18d1874283a3009904c7aff4b33"
-  integrity sha512-r0tFP0ywPK2+U37F491zaXwDtnzyU9HKVnLhFXD4YpxDLT4gqkrn2aJM8aW3tJWB7IHQDqGGj6zPFqQRMkONoA==
-  dependencies:
-    "@balancer-labs/v2-interfaces" "0.3.0"
-
-"@balancer-labs/v2-vault@2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@balancer-labs/v2-vault/-/v2-vault-2.0.0.tgz#def6f8d4b777f421224118e473b5115f09819768"
-  integrity sha512-GwPY84j6g7OY1z13wRYYGQeupb6DI3U+s22Ebg2v32djS9CnPzM04GJapURRbKZkpraUOYIcqhEF3Cm1AafAKg==
-  dependencies:
-    "@balancer-labs/v2-solidity-utils" "2.0.0"
-
-"@balancer-labs/v2-vault@^3.0.1":
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/@balancer-labs/v2-vault/-/v2-vault-3.0.1.tgz#dc13d4faf84ec833aa96d0f6ad180c20ba049068"
-  integrity sha512-uVvHWDR8sGUCxdMOluYPEjeqeNYHo9/47ALYnpv4NLdXwNH8nw7PWun+cExLLdTBJ3XEc/6IyuYUlfcoWWpfcw==
-  dependencies:
-    "@balancer-labs/v2-interfaces" "0.2.1"
-    "@balancer-labs/v2-solidity-utils" "3.0.1"
-
 "@chainsafe/as-sha256@^0.3.1":
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/@chainsafe/as-sha256/-/as-sha256-0.3.1.tgz#3639df0e1435cab03f4d9870cc3ac079e57a6fc9"
@@ -484,16 +401,11 @@
 
 "@gammaswap/v1-implementations@^1.0.0":
   version "1.0.0"
-  resolved "https://npm.pkg.github.com/download/@gammaswap/v1-implementations/1.0.0/df56265798d5d77ca5ce01e679a54532b0dd856c#df56265798d5d77ca5ce01e679a54532b0dd856c"
-  integrity sha512-rvwKABxd1dpo2u9IBnunhwVkPPMeE0JWIkkHZZKt/sRkSIN0MJUe3TRWx7W1B+d1TpWMVs+GN4K0RQF4eHg4bQ==
+  resolved "https://npm.pkg.github.com/download/@gammaswap/v1-implementations/1.0.0/9156f35639e214134be247c0da0dd6e25b26c2de#9156f35639e214134be247c0da0dd6e25b26c2de"
+  integrity sha512-FTc7R7SFQYvw1fSXbXlbGda3FsxJN2qSoopBh8UGkO1dVAsaXD0qU6Y+fh4IqBnzz0PlIk0X3I1O7DwgCSZ6pA==
   dependencies:
-    "@balancer-labs/v2-pool-utils" "^3.0.1"
-    "@balancer-labs/v2-pool-weighted" "^2.0.1"
-    "@balancer-labs/v2-solidity-utils" "^3.0.1"
-    "@balancer-labs/v2-vault" "^3.0.1"
     "@gammaswap/v1-core" "^1.0.0"
     "@openzeppelin/contracts" "^4.7.0"
-    "@prb/math" "^3.1.0"
 
 "@gammaswap/v1-periphery@^1.0.0":
   version "1.0.0"
@@ -826,11 +738,6 @@
   version "4.8.3"
   resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-4.8.3.tgz#cbef3146bfc570849405f59cba18235da95a252a"
   integrity sha512-bQHV8R9Me8IaJoJ2vPG4rXcL7seB7YVuskr4f+f5RyOStSZetwzkWtoqDMl5erkBJy0lDRUnIR2WIkPiC0GJlg==
-
-"@prb/math@^3.1.0":
-  version "3.3.1"
-  resolved "https://registry.yarnpkg.com/@prb/math/-/math-3.3.1.tgz#ace7bb7f2f6ae8dcdf20c5ddd858b0bb97ac94c9"
-  integrity sha512-k1nnpZwCvvztainqJfvkYpBQuZ3pHKnS6vovUAp+i1hSzlcSWluM+nRxxZbb6wsXqyCJAxrw8Vd7bAG/VeMIUA==
 
 "@scure/base@~1.1.0":
   version "1.1.1"
