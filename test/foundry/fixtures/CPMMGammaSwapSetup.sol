@@ -16,6 +16,12 @@ import "@gammaswap/v1-implementations/contracts/libraries/cpmm/CPMMMath.sol";
 
 contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
 
+    struct LogRateParams {
+        uint64 baseRate;
+        uint80 factor;
+        uint80 maxApy;
+    }
+
     GammaPoolFactory public factory;
 
     CPMMBorrowStrategy public longStrategy;

@@ -392,27 +392,19 @@
     "@ethersproject/properties" "^5.7.0"
     "@ethersproject/strings" "^5.7.0"
 
-"@gammaswap/v1-core@^1.0.0":
-  version "1.0.0"
-  resolved "https://npm.pkg.github.com/download/@gammaswap/v1-core/1.0.0/0c0b492b9c164a5a4c2c287f205598d2162a3585#0c0b492b9c164a5a4c2c287f205598d2162a3585"
-  integrity sha512-TJ5hCjTsmmQQR6pILxRmURNrS+TnNb675dAD+g9aQnbDa3uK0baatQvcwNKVZtSTMJTN35A7nJ10maUtWaGkqg==
+"@gammaswap/v1-core@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@gammaswap/v1-core/-/v1-core-1.0.1.tgz#8b958796ad8bd00349884fcc66df61c0228f5be5"
+  integrity sha512-tzI38G5k/0rMMwStYcoA2yMvDazm7C3+CyUhIsU68Llc3rzU1cDP3RFRa9so9rHO7aUDHfMarjP1oOxYMzMIHQ==
   dependencies:
     "@openzeppelin/contracts" "^4.7.0"
 
-"@gammaswap/v1-implementations@^1.0.0":
-  version "1.0.0"
-  resolved "https://npm.pkg.github.com/download/@gammaswap/v1-implementations/1.0.0/9156f35639e214134be247c0da0dd6e25b26c2de#9156f35639e214134be247c0da0dd6e25b26c2de"
-  integrity sha512-FTc7R7SFQYvw1fSXbXlbGda3FsxJN2qSoopBh8UGkO1dVAsaXD0qU6Y+fh4IqBnzz0PlIk0X3I1O7DwgCSZ6pA==
+"@gammaswap/v1-implementations@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@gammaswap/v1-implementations/-/v1-implementations-1.0.1.tgz#8f217df57000a8c49499e4b850d0041e30f9e035"
+  integrity sha512-WF53Nc00lIFo21o9zYGg+BFavLmQxJQ8vHKEKmJ26WcdVIDhcyPIbfCJu5myPXEQPTQrLvAM0eiMjMRlDSrygg==
   dependencies:
-    "@gammaswap/v1-core" "^1.0.0"
-    "@openzeppelin/contracts" "^4.7.0"
-
-"@gammaswap/v1-periphery@^1.0.0":
-  version "1.0.0"
-  resolved "https://npm.pkg.github.com/download/@gammaswap/v1-periphery/1.0.0/8cbc981010f2af82df64cc6ca8388c6c87909678#8cbc981010f2af82df64cc6ca8388c6c87909678"
-  integrity sha512-6gd4kFAWn4LPhlAZEq5P9ISf27fqX3yVtJyhEfb6EQdQx/6X3ERAP+PzlqMQvEi/MOur603xamRILan4rGMImA==
-  dependencies:
-    "@gammaswap/v1-core" "^1.0.0"
+    "@gammaswap/v1-core" "^1.0.1"
     "@openzeppelin/contracts" "^4.7.0"
 
 "@jridgewell/resolve-uri@^3.0.3":
@@ -735,9 +727,9 @@
     undici "^5.14.0"
 
 "@openzeppelin/contracts@^4.7.0":
-  version "4.8.3"
-  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-4.8.3.tgz#cbef3146bfc570849405f59cba18235da95a252a"
-  integrity sha512-bQHV8R9Me8IaJoJ2vPG4rXcL7seB7YVuskr4f+f5RyOStSZetwzkWtoqDMl5erkBJy0lDRUnIR2WIkPiC0GJlg==
+  version "4.9.3"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-4.9.3.tgz#00d7a8cf35a475b160b3f0293a6403c511099364"
+  integrity sha512-He3LieZ1pP2TNt5JbkPA4PNT9WC3gOTOlDcFGJW4Le4QKqwmiNJCRt44APfxMxvq7OugU/cqYuPcSBzOw38DAg==
 
 "@scure/base@~1.1.0":
   version "1.1.1"
