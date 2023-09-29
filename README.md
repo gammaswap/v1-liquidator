@@ -14,7 +14,7 @@
 
 ## Description
 This is the repository for the liquidation bot smart contract for the GammaSwap V1 protocol. The tests for the
-CPMM implementation of GammaSwap pools that use the UniswapV2 AMM are also found here.
+CPMM implementation of GammaSwap pools that use the UniswapV2 AMM (v1-implementations repo) are also found here.
 
 ## Steps to Run GammaSwap Tests Locally
 
