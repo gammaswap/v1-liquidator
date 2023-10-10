@@ -1,4 +1,4 @@
-name: Compile/Test/Publish
+name: Compile/Test
 
 on:
   push:

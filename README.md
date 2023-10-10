@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://github.com/gammaswap/v1-liquidator/actions/workflows/main.yml">
-    <img src="https://github.com/gammaswap/v1-liquidator/actions/workflows/main.yml/badge.svg?branch=main" alt="Compile/Test/Publish">
+    <img src="https://github.com/gammaswap/v1-liquidator/actions/workflows/main.yml/badge.svg?branch=main" alt="Compile/Test">
   </a>
 </p>
 
