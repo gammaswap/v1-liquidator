@@ -62,6 +62,57 @@ contract LiquidationStrategyTest is CPMMGammaSwapSetup {
         assertEq(loanData1.tokensHeld[1]/1e3, 0);
     }
 
+    function testLiquidateWithWritedownSync() public {
+        uint256 lpTokens = IERC20(cfmm).balanceOf(address(pool));
+        assertGt(lpTokens, 0);
+
+        vm.startPrank(addr1);
+        uint256 tokenId = pool.createLoan(0);
+        assertGt(tokenId, 0);
+
+        usdc.transfer(address(pool), 150_000 * 1e18);
+        weth.transfer(address(pool), 150 * 1e18);
+
+        pool.increaseCollateral(tokenId, new uint256[](0));
+        (uint256 liquidityBorrowed,) = pool.borrowLiquidity(tokenId, lpTokens/4, new uint256[](0));
+
+        IPoolViewer viewer = IPoolViewer(pool.viewer());
+
+        IGammaPool.LoanData memory loanData = viewer.loan(address(pool), tokenId);
+        assertEq(loanData.liquidity, liquidityBorrowed);
+
+        vm.roll(100000000); // After a while
+
+        loanData = viewer.loan(address(pool), tokenId);
+        assertGt(loanData.liquidity, liquidityBorrowed);
+
+        uint256 loanCollateral = calcInvariant(loanData.tokensHeld);
+        uint256 loanCollateralForLiq = loanCollateral * 250 / 10000;
+        uint256 loanCollateralExLiqFee = loanCollateral - loanCollateralForLiq;
+
+        uint256 writeDown = loanData.liquidity - loanCollateralExLiqFee;
+        assertGt(writeDown, 0);
+
+        uint256 collateralAsLP = convertInvariantToLP(loanCollateralForLiq) - 1000;
+
+        IERC20(cfmm).transfer(address(pool), 100);
+        IGammaPool.PoolData memory poolData = pool.getPoolData();
+        assertLt(poolData.LP_TOKEN_BALANCE, IERC20(cfmm).balanceOf(address(pool)));
+
+        (uint256 loanLiquidity, uint256 refund) = pool.liquidate(tokenId);
+        poolData = pool.getPoolData();
+        assertEq(poolData.LP_TOKEN_BALANCE, IERC20(cfmm).balanceOf(address(pool)));
+
+        IGammaPool.LoanData memory loanData1 = viewer.loan(address(pool), tokenId);
+
+        assertEq(loanLiquidity/1e3, loanData.liquidity/1e3);
+        assertEq(refund, collateralAsLP);
+
+        // All paid out! No collateral left
+        assertEq(loanData1.tokensHeld[0]/1e3, 0);
+        assertEq(loanData1.tokensHeld[1]/1e3, 0);
+    }
+
     function testLiquidateNoWritedown() public {
         uint256 lpTokens = IERC20(cfmm).balanceOf(address(pool));
 
@@ -99,6 +150,53 @@ contract LiquidationStrategyTest is CPMMGammaSwapSetup {
         assertEq(refund, expectedRefund);
         assertGt(cfmmBal1, cfmmBal0);
         assertEq(cfmmBal1 - cfmmBal0, refund);
+    }
+
+    function testLiquidateNoWritedownSync() public {
+        uint256 lpTokens = IERC20(cfmm).balanceOf(address(pool));
+
+        vm.startPrank(addr1);
+        uint256 tokenId = pool.createLoan(0);
+
+        usdc.transfer(address(pool), 150_000 * 1e18);
+        weth.transfer(address(pool), 150 * 1e18);
+
+        pool.increaseCollateral(tokenId, new uint256[](0));
+        (uint256 liquidityBorrowed,) = pool.borrowLiquidity(tokenId, lpTokens/4, new uint256[](0));
+
+        IGammaPool.LoanData memory loanData = viewer.loan(address(pool), tokenId);
+        assertEq(loanData.liquidity, liquidityBorrowed);
+
+        vm.roll(45000000);
+
+        loanData = viewer.loan(address(pool), tokenId);
+        assertGt(loanData.liquidity, liquidityBorrowed);
+
+        uint256 loanCollateral = calcInvariant(loanData.tokensHeld);
+        uint256 loanCollateralForLiq = loanCollateral * 250 / 10000;
+        uint256 loanCollateralExLiqFee = loanCollateral - loanCollateralForLiq;
+
+        assertGt(loanCollateralExLiqFee, loanData.liquidity);   // No writedown
+
+        uint256 expectedRefund = convertInvariantToLP(loanData.liquidity * 250 / 10000) - 1000;
+
+        uint256 cfmmBal0 = IERC20(cfmm).balanceOf(addr1);
+
+        IERC20(cfmm).transfer(address(pool), 100);
+        IGammaPool.PoolData memory poolData = pool.getPoolData();
+        assertLt(poolData.LP_TOKEN_BALANCE, IERC20(cfmm).balanceOf(address(pool)));
+
+        (uint256 loanLiquidity, uint256 refund) = pool.liquidate(tokenId);
+        poolData = pool.getPoolData();
+        assertEq(poolData.LP_TOKEN_BALANCE, IERC20(cfmm).balanceOf(address(pool)));
+
+        uint256 cfmmBal1 = IERC20(cfmm).balanceOf(addr1);
+        loanData = viewer.loan(address(pool), tokenId);
+
+        assertGt(loanCollateralExLiqFee, loanLiquidity);
+        assertEq(refund, expectedRefund);
+        assertGt(cfmmBal1, cfmmBal0);
+        assertGt(cfmmBal1 - cfmmBal0, refund);
     }
 
     function testLiquidateHasMarginError() public {
