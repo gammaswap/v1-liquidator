@@ -395,7 +395,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         assertLt(poolData.LP_TOKEN_BALANCE, IERC20(cfmm).balanceOf(address(pool)));
 
         uint256 liquidityPaid;
-        (liquidityPaid, amounts) = pool.repayLiquidity(tokenId, loanData.liquidity, new uint256[](0), 1, addr1);
+        (liquidityPaid, amounts) = pool.repayLiquidity(tokenId, loanData.liquidity, 1, addr1);
         assertEq(liquidityPaid, loanData.liquidity);
         poolData = pool.getPoolData();
         assertEq(poolData.LP_TOKEN_BALANCE, IERC20(cfmm).balanceOf(address(pool)));
@@ -461,7 +461,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         assertGt(price1,price);
 
         uint256 liquidityPaid;
-        (liquidityPaid, amounts) = pool.repayLiquidity(tokenId, loanData.liquidity, new uint256[](0), 1, addr1);
+        (liquidityPaid, amounts) = pool.repayLiquidity(tokenId, loanData.liquidity, 1, addr1);
         assertEq(liquidityPaid, loanData.liquidity);
 
         loanData = viewer.loan(address(pool), tokenId);
@@ -525,7 +525,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         assertGt(price1,price);
 
         uint256 liquidityPaid;
-        (liquidityPaid, amounts) = pool.repayLiquidity(tokenId, loanData.liquidity, new uint256[](0), 2, addr1);
+        (liquidityPaid, amounts) = pool.repayLiquidity(tokenId, loanData.liquidity, 2, addr1);
         assertEq(liquidityPaid, loanData.liquidity);
 
         loanData = viewer.loan(address(pool), tokenId);
@@ -589,7 +589,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         assertGt(price1,price);
 
         uint256 liquidityPaid;
-        (liquidityPaid, amounts) = pool.repayLiquidity(tokenId, loanData.liquidity/2, new uint256[](0), 1, addr1);
+        (liquidityPaid, amounts) = pool.repayLiquidity(tokenId, loanData.liquidity/2, 1, addr1);
         assertEq(liquidityPaid/1e9, (loanData.liquidity/2)/1e9);
 
         loanData = viewer.loan(address(pool), tokenId);
@@ -653,7 +653,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         assertGt(price1,price);
 
         uint256 liquidityPaid;
-        (liquidityPaid, amounts) = pool.repayLiquidity(tokenId, loanData.liquidity/2, new uint256[](0), 2, addr1);
+        (liquidityPaid, amounts) = pool.repayLiquidity(tokenId, loanData.liquidity/2, 2, addr1);
         assertEq(liquidityPaid/1e9, (loanData.liquidity/2)/1e9);
 
         loanData = viewer.loan(address(pool), tokenId);
@@ -716,7 +716,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         assertLt(price1,price);
 
         uint256 liquidityPaid;
-        (liquidityPaid, amounts) = pool.repayLiquidity(tokenId, loanData.liquidity, new uint256[](0), 1, addr1);
+        (liquidityPaid, amounts) = pool.repayLiquidity(tokenId, loanData.liquidity, 1, addr1);
         assertEq(liquidityPaid, loanData.liquidity);
 
         loanData = viewer.loan(address(pool), tokenId);
@@ -780,7 +780,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         assertLt(price1,price);
 
         uint256 liquidityPaid;
-        (liquidityPaid, amounts) = pool.repayLiquidity(tokenId, loanData.liquidity, new uint256[](0), 2, addr1);
+        (liquidityPaid, amounts) = pool.repayLiquidity(tokenId, loanData.liquidity, 2, addr1);
         assertEq(liquidityPaid, loanData.liquidity);
 
         loanData = viewer.loan(address(pool), tokenId);
@@ -844,7 +844,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         assertLt(price1,price);
 
         uint256 liquidityPaid;
-        (liquidityPaid, amounts) = pool.repayLiquidity(tokenId, loanData.liquidity/2, new uint256[](0), 1, addr1);
+        (liquidityPaid, amounts) = pool.repayLiquidity(tokenId, loanData.liquidity/2, 1, addr1);
         assertEq(liquidityPaid/1e9, (loanData.liquidity/2)/1e9);
 
         loanData = viewer.loan(address(pool), tokenId);
@@ -908,7 +908,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         assertLt(price1,price);
 
         uint256 liquidityPaid;
-        (liquidityPaid, amounts) = pool.repayLiquidity(tokenId, loanData.liquidity/2, new uint256[](0), 2, addr1);
+        (liquidityPaid, amounts) = pool.repayLiquidity(tokenId, loanData.liquidity/2, 2, addr1);
         assertEq(liquidityPaid/1e9, (loanData.liquidity/2)/1e9);
 
         loanData = viewer.loan(address(pool), tokenId);
@@ -972,23 +972,15 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         assertGt(price1, 0);
         assertLt(price1,price);
 
-        uint256[] memory fees = new uint256[](2);
-        fees[0] = 0;
-        fees[1] = _amountIn > 100 ? 1 : 0; // adding a bit more otherwise if price changed too much we get MinBorrow error
-
         uint256 liquidityPaid;
         uint256 liquidityDiv = uint256(_liquidityDiv) + 1;
-        (liquidityPaid,) = pool.repayLiquidity(tokenId, loanData.liquidity/liquidityDiv, fees, 1, addr1);
+        (liquidityPaid,) = pool.repayLiquidity(tokenId, loanData.liquidity/liquidityDiv, 1, addr1);
         assertEq(liquidityPaid/1e9, (loanData.liquidity/liquidityDiv)/1e9);
 
         loanData = viewer.loan(address(pool), tokenId);
         if(liquidityDiv == 1) {
             assertEq(loanData.tokensHeld[0],0);
-            if(fees[1] > 0) {
-                assertGt(loanData.tokensHeld[1],0);
-            } else {
-                assertEq(loanData.tokensHeld[1],0);
-            }
+            assertEq(loanData.tokensHeld[1],0);
         } else {
             assertGt(loanData.tokensHeld[0],0);
             assertGt(loanData.tokensHeld[1],0);
@@ -1050,7 +1042,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 liquidityDiv = uint256(_liquidityDiv) + 1;
         {
             uint256 liquidityPaid;
-            (liquidityPaid, amounts) = pool.repayLiquidity(tokenId, loanData.liquidity/liquidityDiv, new uint256[](0), 2, addr1);
+            (liquidityPaid, amounts) = pool.repayLiquidity(tokenId, loanData.liquidity/liquidityDiv, 2, addr1);
             assertEq(liquidityPaid/1e9, (loanData.liquidity/liquidityDiv)/1e9);
         }
         loanData = viewer.loan(address(pool), tokenId);
@@ -1118,7 +1110,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 liquidityDiv = uint256(_liquidityDiv) + 1;
         {
             uint256 liquidityPaid;
-            (liquidityPaid, amounts) = pool.repayLiquidity(tokenId, loanData.liquidity/liquidityDiv, new uint256[](0), 1, addr1);
+            (liquidityPaid, amounts) = pool.repayLiquidity(tokenId, loanData.liquidity/liquidityDiv, 1, addr1);
             assertEq(liquidityPaid/1e9, (loanData.liquidity/liquidityDiv)/1e9);
         }
         loanData = viewer.loan(address(pool), tokenId);
@@ -1188,21 +1180,14 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         }
 
         uint256 liquidityDiv = uint256(_liquidityDiv) + 1;
-        uint256[] memory fees = new uint256[](2);
-        fees[0] = _amountIn > 100 ? 1 : 0; // adding a bit more otherwise if price changed too much we get MinBorrow error
-        fees[1] = 0;
         {
             uint256 liquidityPaid;
-            (liquidityPaid,) = pool.repayLiquidity(tokenId, loanData.liquidity/liquidityDiv, fees, 2, addr1);
+            (liquidityPaid,) = pool.repayLiquidity(tokenId, loanData.liquidity/liquidityDiv, 2, addr1);
             assertEq(liquidityPaid/1e9, (loanData.liquidity/liquidityDiv)/1e9);
         }
         loanData = viewer.loan(address(pool), tokenId);
         if(liquidityDiv == 1) {
-            if(fees[0] > 0) {
-                assertGt(loanData.tokensHeld[0],0);
-            } else {
-                assertEq(loanData.tokensHeld[0],0);
-            }
+            assertEq(loanData.tokensHeld[0],0);
             assertEq(loanData.tokensHeld[1],0);
         } else {
             assertGt(loanData.tokensHeld[0],0);
@@ -1350,7 +1335,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         assertGt(loanData.liquidity, 0);
 
         vm.expectRevert();
-        pool.repayLiquidity(tokenId, loanData.liquidity, new uint256[](0), collateralId, address(0));
+        pool.repayLiquidity(tokenId, loanData.liquidity, collateralId, address(0));
     }
 
     /// @dev Try to repay loan debt with huge fees
@@ -1385,15 +1370,11 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         IGammaPool.LoanData memory loanData = viewer.loan(address(pool), tokenId);
         assertGt(loanData.liquidity, 0);
 
-        uint256[] memory fees = new uint256[](2);
-        fees[0] = 5000;
-        fees[1] = 5000;
+        vm.expectRevert(bytes4(keccak256("NotEnoughCollateral()")));
+        pool.repayLiquidity(tokenId, loanData.liquidity, 1, addr1);
 
         vm.expectRevert(bytes4(keccak256("NotEnoughCollateral()")));
-        pool.repayLiquidity(tokenId, loanData.liquidity, fees, 1, addr1);
-
-        vm.expectRevert(bytes4(keccak256("NotEnoughCollateral()")));
-        pool.repayLiquidity(tokenId, loanData.liquidity, fees, 2, addr1);
+        pool.repayLiquidity(tokenId, loanData.liquidity, 2, addr1);
     }
 
     /// @dev Loan debt increases as time passes
@@ -1464,14 +1445,14 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 liquidityDebtGrowth = loanData.liquidity - liquidityBorrowed;
 
         vm.expectRevert(bytes4(keccak256("Margin()")));
-        pool.repayLiquidity(tokenId, loanData.liquidity/2, new uint256[](0), 1, addr1);
+        pool.repayLiquidity(tokenId, loanData.liquidity/2, 1, addr1);
 
         vm.expectRevert(bytes4(keccak256("Margin()")));
-        pool.repayLiquidity(tokenId, loanData.liquidity/2, new uint256[](0), 2, addr1);
+        pool.repayLiquidity(tokenId, loanData.liquidity/2, 2, addr1);
 
         IGammaPool.PoolData memory poolData3 = viewer.getLatestPoolData(address(pool));
 
-        pool.repayLiquidity(tokenId, loanData.liquidity, new uint256[](0), 1, addr1);
+        pool.repayLiquidity(tokenId, loanData.liquidity, 1, addr1);
 
         loanData = viewer.loan(address(pool), tokenId);
         assertEq(loanData.liquidity, 0);
@@ -1563,14 +1544,14 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 liquidityDebtGrowth = loanData.liquidity - liquidityBorrowed;
 
         vm.expectRevert(bytes4(keccak256("Margin()")));
-        pool.repayLiquidity(tokenId, loanData.liquidity/2, new uint256[](0), 1, addr1);
+        pool.repayLiquidity(tokenId, loanData.liquidity/2, 1, addr1);
 
         vm.expectRevert(bytes4(keccak256("Margin()")));
-        pool.repayLiquidity(tokenId, loanData.liquidity/2, new uint256[](0), 2, addr1);
+        pool.repayLiquidity(tokenId, loanData.liquidity/2, 2, addr1);
 
         IGammaPool.PoolData memory poolData3 = viewer.getLatestPoolData(address(pool));
 
-        pool.repayLiquidity(tokenId, loanData.liquidity, new uint256[](0), 1, addr1);
+        pool.repayLiquidity(tokenId, loanData.liquidity, 1, addr1);
 
         loanData = viewer.loan(address(pool), tokenId);
         assertEq(loanData.liquidity, 0);
@@ -2541,7 +2522,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         IGammaPool.PoolData memory poolData = pool.getPoolData();
         assertLt(poolData.LP_TOKEN_BALANCE, IERC20(cfmm).balanceOf(address(pool)));
 
-        (liquidityPaid,) = pool.repayLiquiditySetRatio(tokenId, loanData.liquidity, new uint256[](0), ratio);
+        (liquidityPaid,) = pool.repayLiquiditySetRatio(tokenId, loanData.liquidity, ratio);
         assertEq(liquidityPaid, loanData.liquidity);
         poolData = pool.getPoolData();
         assertEq(poolData.LP_TOKEN_BALANCE, IERC20(cfmm).balanceOf(address(pool)));
@@ -2613,7 +2594,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         ratio[0] = loanData.tokensHeld[0];
         ratio[1] = loanData.tokensHeld[1];
 
-        (liquidityPaid,) = pool.repayLiquiditySetRatio(tokenId, loanData.liquidity, new uint256[](0), ratio);
+        (liquidityPaid,) = pool.repayLiquiditySetRatio(tokenId, loanData.liquidity, ratio);
         assertEq(liquidityPaid, loanData.liquidity);
 
         loanData = viewer.loan(address(pool), tokenId);
@@ -2683,7 +2664,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         ratio[0] = loanData.tokensHeld[0];
         ratio[1] = loanData.tokensHeld[1];
 
-        (liquidityPaid,) = pool.repayLiquiditySetRatio(tokenId, loanData.liquidity/2, new uint256[](0), ratio);
+        (liquidityPaid,) = pool.repayLiquiditySetRatio(tokenId, loanData.liquidity/2, ratio);
         assertEq(liquidityPaid/1e6, (loanData.liquidity/2)/1e6);
 
         loanData = viewer.loan(address(pool), tokenId);
@@ -2753,7 +2734,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 liquidityPaid;
         uint256[] memory ratio = new uint256[](0);
 
-        (liquidityPaid,) = pool.repayLiquiditySetRatio(tokenId, loanData.liquidity/2, new uint256[](0), ratio);
+        (liquidityPaid,) = pool.repayLiquiditySetRatio(tokenId, loanData.liquidity/2, ratio);
         assertEq(liquidityPaid/1e6, (loanData.liquidity/2)/1e6);
 
         loanData = viewer.loan(address(pool), tokenId);
@@ -2823,7 +2804,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 liquidityPaid;
         uint256[] memory ratio = new uint256[](3);
 
-        (liquidityPaid,) = pool.repayLiquiditySetRatio(tokenId, loanData.liquidity/2, new uint256[](0), ratio);
+        (liquidityPaid,) = pool.repayLiquiditySetRatio(tokenId, loanData.liquidity/2, ratio);
         assertEq(liquidityPaid/1e6, (loanData.liquidity/2)/1e6);
 
         loanData = viewer.loan(address(pool), tokenId);
@@ -2895,7 +2876,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         ratio[0] = 0;
         ratio[1] = 0;
 
-        (liquidityPaid,) = pool.repayLiquiditySetRatio(tokenId, loanData.liquidity/2, new uint256[](0), ratio);
+        (liquidityPaid,) = pool.repayLiquiditySetRatio(tokenId, loanData.liquidity/2, ratio);
     }
 
     function testFailRepayLiquiditySetRatioHalfWrong2() public {
@@ -2950,7 +2931,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         ratio[0] = loanData.tokensHeld[0];
         ratio[1] = 0;
 
-        (liquidityPaid,) = pool.repayLiquiditySetRatio(tokenId, loanData.liquidity/2, new uint256[](0), ratio);
+        (liquidityPaid,) = pool.repayLiquiditySetRatio(tokenId, loanData.liquidity/2, ratio);
     }
 
     function testFailRepayLiquiditySetRatioHalfWrong3() public {
@@ -3005,7 +2986,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         ratio[0] = 0;
         ratio[1] = loanData.tokensHeld[1];
 
-        (liquidityPaid,) = pool.repayLiquiditySetRatio(tokenId, loanData.liquidity/2, new uint256[](0), ratio);
+        (liquidityPaid,) = pool.repayLiquiditySetRatio(tokenId, loanData.liquidity/2, ratio);
     }
 
     function testRepayLiquiditySetRatioFullChange(uint8 num1, uint8 num2) public {
@@ -3067,7 +3048,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         ratio[0] = loanData.tokensHeld[0]*num1;
         ratio[1] = loanData.tokensHeld[1]*num2;
 
-        (liquidityPaid,) = pool.repayLiquiditySetRatio(tokenId, loanData.liquidity, new uint256[](0), ratio);
+        (liquidityPaid,) = pool.repayLiquiditySetRatio(tokenId, loanData.liquidity, ratio);
         assertEq(liquidityPaid, loanData.liquidity);
 
         loanData = viewer.loan(address(pool), tokenId);
@@ -3147,7 +3128,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         ratio[0] = loanData.tokensHeld[0]*num1;
         ratio[1] = loanData.tokensHeld[1]*num2;
 
-        (liquidityPaid,) = pool.repayLiquiditySetRatio(tokenId, loanData.liquidity/2, new uint256[](0), ratio);
+        (liquidityPaid,) = pool.repayLiquiditySetRatio(tokenId, loanData.liquidity/2, ratio);
         assertEq(liquidityPaid/1e6, (loanData.liquidity/2)/1e6);
 
         loanData = viewer.loan(address(pool), tokenId);
@@ -3231,7 +3212,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         ratio[1] = loanData.tokensHeld[1]*num2;
 
         vm.expectRevert(bytes4(keccak256("Margin()")));
-        (liquidityPaid,) = pool.repayLiquiditySetRatio(tokenId, loanData.liquidity/2, new uint256[](0), ratio);
+        (liquidityPaid,) = pool.repayLiquiditySetRatio(tokenId, loanData.liquidity/2, ratio);
     }
 
     function testRepayLiquiditySetRatioHalfMargin() public {
@@ -3296,7 +3277,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         ratio[1] = loanData.tokensHeld[1];
 
         vm.expectRevert(bytes4(keccak256("Margin()")));
-        (liquidityPaid,) = pool.repayLiquiditySetRatio(tokenId, loanData.liquidity/2, new uint256[](0), ratio);
+        (liquidityPaid,) = pool.repayLiquiditySetRatio(tokenId, loanData.liquidity/2, ratio);
     }
 
     // test undercollateralized closes that pay in full also
@@ -3361,7 +3342,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         ratio[0] = loanData.tokensHeld[0];
         ratio[1] = loanData.tokensHeld[1];
 
-        (liquidityPaid,) = pool.repayLiquiditySetRatio(tokenId, loanData.liquidity, new uint256[](0), ratio);
+        (liquidityPaid,) = pool.repayLiquiditySetRatio(tokenId, loanData.liquidity, ratio);
         assertLt(liquidityPaid, loanData.liquidity);
 
         loanData = viewer.loan(address(pool), tokenId);
@@ -3622,7 +3603,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         assertGt(poolData3.emaUtilRate, 340000);
         assertLt(poolData3.emaUtilRate, 350000);
 
-        pool.repayLiquidity(tokenId, loanData.liquidity, new uint256[](0), 1, addr1);
+        pool.repayLiquidity(tokenId, loanData.liquidity, 1, addr1);
 
         loanData = viewer.loan(address(pool), tokenId);
         assertEq(loanData.liquidity, 0);
@@ -3741,7 +3722,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         assertEq(poolData1.emaUtilRate,poolData2.utilizationRate/1e12);
 
         vm.roll(152);
-        pool.repayLiquidity(tokenId, lpTokens/4, new uint256[](0), 1, address(0));
+        pool.repayLiquidity(tokenId, lpTokens/4, 1, address(0));
 
         poolData3 = pool.getPoolData();
         poolData4 = IPoolViewer(pool.viewer()).getLatestPoolData(address(pool));
