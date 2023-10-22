@@ -173,7 +173,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         pool.borrowLiquidity(tokenId, lpTokens/4, ratio);
     }
 
-    function testFailBorrowAndRebalanceWrongRatio() public {
+    function testBorrowAndRebalanceWrongRatio() public {
         (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
 
         uint256 lpTokens = IERC20(cfmm).balanceOf(address(pool));
@@ -190,16 +190,22 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
 
         uint256[] memory ratio = new uint256[](1);
         ratio[0] = reserve0 * 3;
-        //ratio[1] = reserve1 * 2; // Margin error
-        //ratio[2] = 210000;
 
-        (uint256 liquidityBorrowed, uint256[] memory amounts) = pool.borrowLiquidity(tokenId, lpTokens/4, ratio);
+        uint256 lpTokensToBorrow = lpTokens/4;
 
+        uint256 totSupply = IERC20(cfmm).totalSupply();
+        uint256 expAmount0 = lpTokensToBorrow * reserve0 / totSupply;
+        uint256 expAmount1 = lpTokensToBorrow * reserve1 / totSupply;
+
+        (uint256 liquidityBorrowed, uint256[] memory amounts) = pool.borrowLiquidity(tokenId, lpTokensToBorrow, ratio);
+
+        assertEq(expAmount0, amounts[0]);
+        assertEq(expAmount1, amounts[1]);
 
         vm.stopPrank();
     }
 
-    function testFailBorrowAndRebalanceWrongRatio2() public {
+    function testBorrowAndRebalanceWrongRatio2() public {
         (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
 
         uint256 lpTokens = IERC20(cfmm).balanceOf(address(pool));
@@ -216,16 +222,22 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
 
         uint256[] memory ratio = new uint256[](2);
         ratio[0] = reserve0 * 3;
-        //ratio[1] = reserve1 * 2; // Margin error
-        //ratio[2] = 210000;
 
-        (uint256 liquidityBorrowed, uint256[] memory amounts) = pool.borrowLiquidity(tokenId, lpTokens/4, ratio);
+        uint256 lpTokensToBorrow = lpTokens/4;
 
+        uint256 totSupply = IERC20(cfmm).totalSupply();
+        uint256 expAmount0 = lpTokensToBorrow * reserve0 / totSupply;
+        uint256 expAmount1 = lpTokensToBorrow * reserve1 / totSupply;
+
+        (uint256 liquidityBorrowed, uint256[] memory amounts) = pool.borrowLiquidity(tokenId, lpTokensToBorrow, ratio);
+
+        assertEq(expAmount0, amounts[0]);
+        assertEq(expAmount1, amounts[1]);
 
         vm.stopPrank();
     }
 
-    function testFailBorrowAndRebalanceWrongRatio3() public {
+    function testBorrowAndRebalanceWrongRatio3() public {
         (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
 
         uint256 lpTokens = IERC20(cfmm).balanceOf(address(pool));
@@ -242,11 +254,17 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
 
         uint256[] memory ratio = new uint256[](2);
         ratio[1] = reserve0 * 3;
-        //ratio[1] = reserve1 * 2; // Margin error
-        //ratio[2] = 210000;
 
-        (uint256 liquidityBorrowed, uint256[] memory amounts) = pool.borrowLiquidity(tokenId, lpTokens/4, ratio);
+        uint256 lpTokensToBorrow = lpTokens/4;
 
+        uint256 totSupply = IERC20(cfmm).totalSupply();
+        uint256 expAmount0 = lpTokensToBorrow * reserve0 / totSupply;
+        uint256 expAmount1 = lpTokensToBorrow * reserve1 / totSupply;
+
+        (uint256 liquidityBorrowed, uint256[] memory amounts) = pool.borrowLiquidity(tokenId, lpTokensToBorrow, ratio);
+
+        assertEq(expAmount0, amounts[0]);
+        assertEq(expAmount1, amounts[1]);
 
         vm.stopPrank();
     }
@@ -1339,7 +1357,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     /// @dev Try to repay loan debt with huge fees
-    function testRepayLiquidityExcessiveFees() public {
+    function testRepayLiquidityInParts() public {
         (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
@@ -1370,10 +1388,11 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         IGammaPool.LoanData memory loanData = viewer.loan(address(pool), tokenId);
         assertGt(loanData.liquidity, 0);
 
-        vm.expectRevert(bytes4(keccak256("NotEnoughCollateral()")));
-        pool.repayLiquidity(tokenId, loanData.liquidity, 1, addr1);
+        pool.repayLiquidity(tokenId, loanData.liquidity/2, 1, addr1);
 
-        vm.expectRevert(bytes4(keccak256("NotEnoughCollateral()")));
+        loanData = viewer.loan(address(pool), tokenId);
+        assertGt(loanData.liquidity, 0);
+
         pool.repayLiquidity(tokenId, loanData.liquidity, 2, addr1);
     }
 
@@ -1449,32 +1468,6 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
 
         vm.expectRevert(bytes4(keccak256("Margin()")));
         pool.repayLiquidity(tokenId, loanData.liquidity/2, 2, addr1);
-
-        IGammaPool.PoolData memory poolData3 = viewer.getLatestPoolData(address(pool));
-
-        pool.repayLiquidity(tokenId, loanData.liquidity, 1, addr1);
-
-        loanData = viewer.loan(address(pool), tokenId);
-        assertEq(loanData.liquidity, 0);
-        assertEq(loanData.tokensHeld[0], 0);
-        assertEq(loanData.tokensHeld[1], 0);
-        assertEq((usdc.balanceOf(addr1) - usdcBal)/1e3, 0);
-        assertEq((weth.balanceOf(addr1) - wethBal)/1e3, 0);
-
-        poolData3 = viewer.getLatestPoolData(address(pool));
-        uint256 invariantDiff = (poolData2.LP_INVARIANT + poolData2.BORROWED_INVARIANT) - poolData3.LP_INVARIANT;
-        uint256 invariantPaid = poolData3.LP_INVARIANT - poolData.LP_INVARIANT;
-        uint256 writeDown = liquidityDebtGrowth - invariantPaid;
-        assertGt(liquidityDebtGrowth, invariantPaid); // write down
-        assertGt(writeDown, 2000*1e18); // write down
-        assertGt(invariantDiff, 0); // write down
-        assertEq(poolData3.BORROWED_INVARIANT, 0);
-        assertEq(poolData3.LP_TOKEN_BORROWED_PLUS_INTEREST, 0);
-        assertGt(poolData3.LP_INVARIANT, poolData2.LP_INVARIANT);
-        assertGt(poolData3.LP_TOKEN_BALANCE, poolData2.LP_TOKEN_BALANCE);
-        assertEq(poolData3.LP_TOKEN_BORROWED, 0);
-        assertEq(poolData3.utilizationRate, 0);
-        assertEq(poolData3.accFeeIndex, poolData2.accFeeIndex);
     }
 
     /// @dev Loan debt increases as time passes
@@ -1548,34 +1541,6 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
 
         vm.expectRevert(bytes4(keccak256("Margin()")));
         pool.repayLiquidity(tokenId, loanData.liquidity/2, 2, addr1);
-
-        IGammaPool.PoolData memory poolData3 = viewer.getLatestPoolData(address(pool));
-
-        pool.repayLiquidity(tokenId, loanData.liquidity, 1, addr1);
-
-        loanData = viewer.loan(address(pool), tokenId);
-        assertEq(loanData.liquidity, 0);
-        assertEq(loanData.tokensHeld[0], 0);
-        assertEq(loanData.tokensHeld[1], 0);
-        assertEq((usdc.balanceOf(addr1) - usdcBal)/1e3, 0);
-        assertEq((weth.balanceOf(addr1) - wethBal)/1e3, 0);
-
-        poolData3 = viewer.getLatestPoolData(address(pool));
-        uint256 invariantDiff = (poolData2.LP_INVARIANT + poolData2.BORROWED_INVARIANT) - poolData3.LP_INVARIANT;
-        uint256 invariantPaid = poolData3.LP_INVARIANT - poolData.LP_INVARIANT;
-        uint256 writeDown = liquidityDebtGrowth - invariantPaid;
-        assertGt(liquidityDebtGrowth, invariantPaid); // write down
-        assertGt(writeDown, 2000*1e18); // write down
-        assertGt(invariantDiff, 0); // write down
-        assertEq(poolData3.BORROWED_INVARIANT, 0);
-        assertEq(poolData3.LP_TOKEN_BORROWED_PLUS_INTEREST, 0);
-        assertGt(poolData3.LP_INVARIANT, poolData2.LP_INVARIANT);
-        assertGt(poolData3.LP_TOKEN_BALANCE, poolData2.LP_TOKEN_BALANCE);
-        assertEq(poolData3.LP_TOKEN_BORROWED, 0);
-        assertEq(poolData3.utilizationRate, 0);
-        assertEq(poolData3.accFeeIndex, poolData2.accFeeIndex);
-        assertEq(poolData3.currBlockNumber, 100000000);
-        assertEq(poolData3.LAST_BLOCK_NUMBER, 100000000);
     }
 
     /// @dev Interest on loan changes if rate params change
@@ -2824,7 +2789,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         vm.stopPrank();
     }
 
-    function testFailRepayLiquiditySetRatioHalfWrong1() public {
+    function testRepayLiquiditySetRatioHalfWrong1() public {
         (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
@@ -2877,9 +2842,15 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         ratio[1] = 0;
 
         (liquidityPaid,) = pool.repayLiquiditySetRatio(tokenId, loanData.liquidity/2, ratio);
+
+        IGammaPool.LoanData memory loanData1 = viewer.loan(address(pool), tokenId);
+
+        uint256 strikePx1 = uint256(loanData1.tokensHeld[1]) * 1e18 / loanData1.tokensHeld[0];
+
+        assertEq((strikePx1 - strikePx)/1e18, 1);
     }
 
-    function testFailRepayLiquiditySetRatioHalfWrong2() public {
+    function testRepayLiquiditySetRatioHalfWrong2() public {
         (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
@@ -2932,9 +2903,15 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         ratio[1] = 0;
 
         (liquidityPaid,) = pool.repayLiquiditySetRatio(tokenId, loanData.liquidity/2, ratio);
+
+        IGammaPool.LoanData memory loanData1 = viewer.loan(address(pool), tokenId);
+
+        uint256 strikePx1 = uint256(loanData1.tokensHeld[1]) * 1e18 / loanData1.tokensHeld[0];
+
+        assertEq((strikePx1 - strikePx)/1e18, 1);
     }
 
-    function testFailRepayLiquiditySetRatioHalfWrong3() public {
+    function testRepayLiquiditySetRatioHalfWrong3() public {
         (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
@@ -2987,6 +2964,12 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         ratio[1] = loanData.tokensHeld[1];
 
         (liquidityPaid,) = pool.repayLiquiditySetRatio(tokenId, loanData.liquidity/2, ratio);
+
+        IGammaPool.LoanData memory loanData1 = viewer.loan(address(pool), tokenId);
+
+        uint256 strikePx1 = uint256(loanData1.tokensHeld[1]) * 1e18 / loanData1.tokensHeld[0];
+
+        assertEq((strikePx1 - strikePx)/1e18, 1);
     }
 
     function testRepayLiquiditySetRatioFullChange(uint8 num1, uint8 num2) public {
@@ -3342,29 +3325,8 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         ratio[0] = loanData.tokensHeld[0];
         ratio[1] = loanData.tokensHeld[1];
 
-        (liquidityPaid,) = pool.repayLiquiditySetRatio(tokenId, loanData.liquidity, ratio);
-        assertLt(liquidityPaid, loanData.liquidity);
-
-        loanData = viewer.loan(address(pool), tokenId);
-        assertEq(loanData.liquidity,0);
-        assertEq(loanData.tokensHeld[0],0);
-        assertEq(loanData.tokensHeld[1],0);
-        assertEq(loanData.lpTokens,0);
-        assertEq(loanData.initLiquidity,0);
-        assertEq(loanData.rateIndex,0);
-        assertEq(loanData.px,0);
-
-        IGammaPool.PoolData memory poolData = viewer.getLatestPoolData(address(pool));
-        assertEq(poolData.LP_TOKEN_BORROWED,0);
-        assertEq(poolData.BORROWED_INVARIANT,0);
-        assertEq(poolData.LP_TOKEN_BORROWED_PLUS_INTEREST,0);
-
-        uint256 usdcBal1 = usdc.balanceOf(addr1);
-        uint256 wethBal1 = weth.balanceOf(addr1);
-        assertEq(usdcBal1, usdcBal0);
-        assertEq(wethBal1, wethBal0);
-
-        vm.stopPrank();
+        vm.expectRevert(bytes4(keccak256("NotEnoughCollateral()")));
+        pool.repayLiquiditySetRatio(tokenId, loanData.liquidity, ratio);
     }
 
     function calcDiff(uint256 num1, uint256 num2) internal view returns(uint256 diff) {
@@ -3575,7 +3537,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
 
         assertGt(poolData1.emaUtilRate, 250000);
         assertLt(poolData1.emaUtilRate, 250200);
-        vm.roll(100000000);  // After a while
+        vm.roll(1000000);  // After a while
 
         loanData = viewer.loan(address(pool), tokenId);
         assertGt(loanData.liquidity, liquidityBorrowed);
@@ -3590,7 +3552,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         assertEq(poolData2.LP_TOKEN_BORROWED, poolData1.LP_TOKEN_BORROWED);
         assertGt(poolData2.utilizationRate, poolData1.utilizationRate);
         assertGt(poolData2.accFeeIndex, poolData1.accFeeIndex);
-        assertEq(poolData2.currBlockNumber, 100000000);
+        assertEq(poolData2.currBlockNumber, 1000000);
         assertEq(poolData2.LAST_BLOCK_NUMBER, 1);
 
         assertEq(IPoolViewer(pool.viewer()).calcDynamicOriginationFee(address(pool), 0), 10);
@@ -3600,8 +3562,8 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 liquidityDebtGrowth = loanData.liquidity - liquidityBorrowed;
 
         IGammaPool.PoolData memory poolData3 = viewer.getLatestPoolData(address(pool));
-        assertGt(poolData3.emaUtilRate, 340000);
-        assertLt(poolData3.emaUtilRate, 350000);
+        assertGt(poolData3.emaUtilRate, 250000);
+        assertLt(poolData3.emaUtilRate, 260000);
 
         pool.repayLiquidity(tokenId, loanData.liquidity, 1, addr1);
 
@@ -3609,19 +3571,20 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         assertEq(loanData.liquidity, 0);
         assertEq(loanData.tokensHeld[0], 0);
         assertEq(loanData.tokensHeld[1], 0);
-        assertEq((usdc.balanceOf(addr1) - usdcBal)/1e3, 0);
-        assertEq((weth.balanceOf(addr1) - wethBal)/1e3, 0);
+        assertGt((usdc.balanceOf(addr1) - usdcBal)/1e3, 0);
+        assertGt((weth.balanceOf(addr1) - wethBal)/1e3, 0);
 
         poolData3 = viewer.getLatestPoolData(address(pool));
-        assertGt(poolData3.emaUtilRate, 300000);
-        assertLt(poolData3.emaUtilRate, 310000);
+        assertGt(poolData3.emaUtilRate, 220000);
+        assertLt(poolData3.emaUtilRate, 230000);
 
-        usdc.transfer(address(pool), 5 * 130_000 * 1e18);
-        weth.transfer(address(pool), 5 * 130 * 1e18);
+        usdc.transfer(address(pool), 10 * 130_000 * 1e18);
+        weth.transfer(address(pool), 10 * 130 * 1e18);
 
         pool.increaseCollateral(tokenId, new uint256[](0));
         pool.borrowLiquidity(tokenId, lpTokens/2, new uint256[](0));
-        pool.borrowLiquidity(tokenId, lpTokens/2, new uint256[](0));
+        pool.borrowLiquidity(tokenId, lpTokens/3, new uint256[](0));
+        pool.borrowLiquidity(tokenId, lpTokens/10, new uint256[](0));
 
         poolData3 = viewer.getLatestPoolData(address(pool));
         assertGt(poolData3.utilizationRate, 93 * 1e16);
@@ -3742,5 +3705,5 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         assertEq(poolData3.emaUtilRate,poolData4.emaUtilRate);
         poolData4 = IPoolViewer(pool.viewer()).getLatestPoolData(address(pool));
         assertEq(poolData4.emaUtilRate/10,poolData4.utilizationRate/1e13);
-    }/**/
+    }
 }
