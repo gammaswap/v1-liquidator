@@ -5,6 +5,7 @@ import "forge-std/Test.sol";
 import "forge-std/console.sol";
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@gammaswap/v1-core/contracts/test/strategies/external/TestExternalCallee2.sol";
 
 import "./fixtures/CPMMGammaSwapSetup.sol";
 
@@ -3705,5 +3706,199 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         assertEq(poolData3.emaUtilRate,poolData4.emaUtilRate);
         poolData4 = IPoolViewer(pool.viewer()).getLatestPoolData(address(pool));
         assertEq(poolData4.emaUtilRate/10,poolData4.utilizationRate/1e13);
+    }
+
+    function testBorrowAndRebalanceExternally() public {
+        factory.setPoolParams(address(pool), 0, 10, 10, 100, 100, 1, 250, 200);// setting external fees to 10 bps
+
+        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+
+        uint256 price = uint256(reserve1) * 1e18 / reserve0;
+        assertGt(price, 0);
+
+        uint256 totalSupply = IERC20(cfmm).totalSupply();
+        assertGt(totalSupply, 0);
+
+        uint256 lpTokens = IERC20(cfmm).balanceOf(address(pool));
+        assertGt(lpTokens, 0);
+
+        address[] memory tokens = pool.tokens();
+        TestExternalCallee2 callee = new TestExternalCallee2();
+
+        vm.startPrank(addr1);
+        uint256 tokenId = pool.createLoan(0);
+        assertGt(tokenId, 0);
+
+        usdc.transfer(address(pool), 6_000 * 1e18);
+        weth.transfer(address(pool), 6 * 1e18);
+
+        pool.increaseCollateral(tokenId, new uint256[](0));
+
+        (uint256 liquidityBorrowed, uint256[] memory amounts) = pool.borrowLiquidity(tokenId, lpTokens/100, new uint256[](0));
+        assertGt(liquidityBorrowed, 0);
+        assertGt(amounts[0], 0);
+        assertGt(amounts[1], 0);
+
+        {
+            uint256 tokenId2 = pool.createLoan(0);
+            assertGt(tokenId2, 0);
+
+            usdc.transfer(address(pool), 6_000 * 1e18);
+            weth.transfer(address(pool), 6 * 1e18);
+
+            pool.increaseCollateral(tokenId2, new uint256[](0));
+            pool.borrowLiquidity(tokenId2, lpTokens/100, new uint256[](0));
+        }
+
+        IPoolViewer viewer = IPoolViewer(pool.viewer());
+
+        IGammaPool.LoanData memory loanData = viewer.loan(address(pool), tokenId);
+        assertEq(loanData.liquidity, liquidityBorrowed);
+
+        uint128[] memory _amounts = new uint128[](2);
+
+        uint256 lpAmount = lpTokens / 2;
+
+        TestExternalCallee2.SwapData memory swapData = TestExternalCallee2.SwapData({ strategy: address(pool),
+        cfmm: pool.cfmm(), token0: tokens[0], token1: tokens[1], amount0: 0, amount1: 0, lpTokens: lpAmount});
+
+        vm.expectRevert(bytes4(keccak256("Margin()")));
+        pool.rebalanceExternally(tokenId, _amounts, lpAmount, address(callee), abi.encode(swapData));
+
+        lpAmount = lpTokens / 10;
+
+        swapData = TestExternalCallee2.SwapData({ strategy: address(pool),
+        cfmm: pool.cfmm(), token0: tokens[0], token1: tokens[1], amount0: 0, amount1: 0, lpTokens: lpAmount/2});
+
+        // Send some lp tokens for partial liquidation
+        vm.expectRevert(bytes4(keccak256("WrongLPTokenBalance()")));
+        pool.rebalanceExternally(tokenId, _amounts, lpAmount, address(callee), abi.encode(swapData));
+
+        lpAmount = lpTokens / 10;
+        _amounts[0] = loanData.tokensHeld[0];
+        _amounts[1] = loanData.tokensHeld[1];
+
+        swapData = TestExternalCallee2.SwapData({ strategy: address(pool),
+        cfmm: pool.cfmm(), token0: tokens[0], token1: tokens[1], amount0: 0, amount1: 0, lpTokens: lpAmount});
+
+        // Send some lp tokens for partial liquidation
+        vm.expectRevert(bytes4(keccak256("Margin()")));
+        pool.rebalanceExternally(tokenId, _amounts, lpAmount, address(callee), abi.encode(swapData));
+
+
+        lpAmount = lpTokens / 10;
+        _amounts[0] = loanData.tokensHeld[0];
+        _amounts[1] = loanData.tokensHeld[1];
+
+        swapData = TestExternalCallee2.SwapData({ strategy: address(pool),
+        cfmm: pool.cfmm(), token0: tokens[0], token1: tokens[1], amount0: _amounts[0], amount1: 0, lpTokens: lpAmount});
+
+        // Send some lp tokens for partial liquidation
+        vm.expectRevert(bytes4(keccak256("Margin()")));
+        pool.rebalanceExternally(tokenId, _amounts, lpAmount, address(callee), abi.encode(swapData));
+
+
+        lpAmount = lpTokens / 10;
+        _amounts[0] = loanData.tokensHeld[0] + loanData.tokensHeld[0]/2;
+        _amounts[1] = loanData.tokensHeld[1];
+
+        swapData = TestExternalCallee2.SwapData({ strategy: address(pool),
+        cfmm: pool.cfmm(), token0: tokens[0], token1: tokens[1], amount0: _amounts[0] - loanData.tokensHeld[0]/2, amount1: _amounts[1], lpTokens: lpAmount});
+
+        // Send some lp tokens for partial liquidation
+        vm.expectRevert(bytes4(keccak256("Margin()")));
+        pool.rebalanceExternally(tokenId, _amounts, lpAmount, address(callee), abi.encode(swapData));
+
+        lpAmount = lpTokens / 10;
+        _amounts[0] = loanData.tokensHeld[0] * 2 + 1; // more tokens than exist in the platform
+        _amounts[1] = loanData.tokensHeld[1];
+
+        swapData = TestExternalCallee2.SwapData({ strategy: address(pool),
+        cfmm: pool.cfmm(), token0: tokens[0], token1: tokens[1], amount0: loanData.tokensHeld[0], amount1: _amounts[1], lpTokens: lpAmount});
+
+        // Send some lp tokens for partial liquidation
+        vm.expectRevert(bytes4(keccak256("NotEnoughBalance()")));
+        pool.rebalanceExternally(tokenId, _amounts, lpAmount, address(callee), abi.encode(swapData));
+
+        lpAmount = lpTokens / 10;
+        _amounts[0] = loanData.tokensHeld[0] * 2;
+        _amounts[1] = loanData.tokensHeld[1];
+
+        swapData = TestExternalCallee2.SwapData({ strategy: address(pool), cfmm: pool.cfmm(), token0: tokens[0],
+            token1: tokens[1], amount0: loanData.tokensHeld[0] - 1, amount1: _amounts[1], lpTokens: lpAmount});
+
+        // Send some lp tokens for partial liquidation
+        vm.expectRevert(bytes4(keccak256("NotEnoughCollateral()")));
+        pool.rebalanceExternally(tokenId, _amounts, lpAmount, address(callee), abi.encode(swapData));
+
+        lpAmount = lpTokens / 10;
+        _amounts[0] = loanData.tokensHeld[0];
+        _amounts[1] = loanData.tokensHeld[1] * 2;
+
+        swapData = TestExternalCallee2.SwapData({ strategy: address(pool), cfmm: pool.cfmm(), token0: tokens[0],
+        token1: tokens[1], amount0: _amounts[0], amount1: loanData.tokensHeld[1] - 1, lpTokens: lpAmount});
+
+        // Send some lp tokens for partial liquidation
+        vm.expectRevert(bytes4(keccak256("NotEnoughCollateral()")));
+        pool.rebalanceExternally(tokenId, _amounts, lpAmount, address(callee), abi.encode(swapData));
+
+        lpAmount = lpTokens / 10;
+        _amounts[0] = loanData.tokensHeld[0];
+        _amounts[1] = loanData.tokensHeld[1];
+
+        swapData = TestExternalCallee2.SwapData({ strategy: address(pool), cfmm: pool.cfmm(), token0: tokens[0],
+        token1: tokens[1], amount0: _amounts[0]/2, amount1: _amounts[1]/2, lpTokens: lpAmount});
+
+        // Send some lp tokens for partial liquidation
+        vm.expectRevert(bytes4(keccak256("Margin()")));
+        pool.rebalanceExternally(tokenId, _amounts, lpAmount, address(callee), abi.encode(swapData));
+
+
+        lpAmount = lpTokens / 10;
+        _amounts[0] = loanData.tokensHeld[0];
+        _amounts[1] = loanData.tokensHeld[1];
+
+        swapData = TestExternalCallee2.SwapData({ strategy: address(pool), cfmm: pool.cfmm(), token0: tokens[0],
+        token1: tokens[1], amount0: _amounts[0], amount1: _amounts[1], lpTokens: lpAmount/2});
+
+        // Send some lp tokens for partial liquidation
+        GammaSwapLibrary.safeTransfer(cfmm, address(pool), lpAmount/2 + 1e3);
+        (uint256 loanLiquidity, uint128[] memory tokensHeld) = pool.rebalanceExternally(tokenId, _amounts, lpAmount, address(callee), abi.encode(swapData));
+        assertGt(loanLiquidity, liquidityBorrowed);
+
+        assertEq(GSMath.sqrt(uint256(loanData.tokensHeld[0]) * loanData.tokensHeld[1]), GSMath.sqrt(uint256(tokensHeld[0])*tokensHeld[1]));
+
+        lpAmount = lpTokens / 10;
+        _amounts[0] = loanData.tokensHeld[0];
+        _amounts[1] = loanData.tokensHeld[1];
+
+        swapData = TestExternalCallee2.SwapData({ strategy: address(pool), cfmm: pool.cfmm(), token0: tokens[0],
+        token1: tokens[1], amount0: _amounts[0], amount1: _amounts[1], lpTokens: lpAmount});
+
+        // Send some lp tokens for partial liquidation
+        (loanLiquidity, tokensHeld) = pool.rebalanceExternally(tokenId, _amounts, lpAmount, address(callee), abi.encode(swapData));
+        assertGt(loanLiquidity, liquidityBorrowed);
+        assertEq(GSMath.sqrt(uint256(loanData.tokensHeld[0]) * loanData.tokensHeld[1]), GSMath.sqrt(uint256(tokensHeld[0])*tokensHeld[1]));
+
+
+        lpAmount = lpTokens / 10;
+        _amounts[0] = loanData.tokensHeld[0];
+        _amounts[1] = loanData.tokensHeld[1];
+
+        swapData = TestExternalCallee2.SwapData({ strategy: address(pool), cfmm: pool.cfmm(), token0: tokens[0],
+        token1: tokens[1], amount0: _amounts[1], amount1: _amounts[0], lpTokens: lpAmount});
+
+        vm.stopPrank();
+
+        weth.mint(address(callee), 100_000 * 1e18);
+        usdc.mint(address(callee), 100 * 1e18);
+
+        vm.startPrank(addr1);
+        // Send some lp tokens for partial liquidation
+        (loanLiquidity, tokensHeld) = pool.rebalanceExternally(tokenId, _amounts, lpAmount, address(callee), abi.encode(swapData));
+        assertGt(loanLiquidity, liquidityBorrowed);
+        assertEq(GSMath.sqrt(uint256(loanData.tokensHeld[0]) * loanData.tokensHeld[1]), GSMath.sqrt(uint256(tokensHeld[0])*tokensHeld[1]));
+
+        vm.stopPrank();
     }
 }

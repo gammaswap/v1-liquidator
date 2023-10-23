@@ -568,7 +568,7 @@ contract LiquidationStrategyTest is CPMMGammaSwapSetup {
         assertEq(refund[1]/1e3, amounts[1]/1e3);
     }
 
-    function testBatchLiquidate() public {
+    function testBatchLiquidate2() public {
         uint256 lpTokens = IERC20(cfmm).balanceOf(address(pool));
 
         vm.startPrank(addr1);
