@@ -496,7 +496,6 @@ describe("CPMMRepayStrategy", function () {
         await strategyFee._repayLiquidity(
           tokenId,
           payLiquidity,
-          [],
           0,
           ethers.constants.AddressZero
         )
@@ -514,7 +513,6 @@ describe("CPMMRepayStrategy", function () {
         await strategyFee._repayLiquidity(
           tokenId,
           payLiquidity,
-          [],
           0,
           ethers.constants.AddressZero
         )
@@ -571,7 +569,6 @@ describe("CPMMRepayStrategy", function () {
         await strategyFee._repayLiquidity(
           tokenId,
           payLiquidity,
-          [],
           0,
           ethers.constants.AddressZero
         )
@@ -589,7 +586,6 @@ describe("CPMMRepayStrategy", function () {
         await strategyFee._repayLiquidity(
           tokenId,
           payLiquidity,
-          [],
           0,
           ethers.constants.AddressZero
         )
@@ -607,16 +603,18 @@ describe("CPMMRepayStrategy", function () {
         await strategyFee._repayLiquidity(
           tokenId,
           payLiquidity,
-          [1000, 1000],
           0,
           ethers.constants.AddressZero
         )
       ).wait();
 
       const loan4 = await strategyFee.getLoan(tokenId);
-      expect(loan4.initLiquidity).to.equal(0);
-      expect(loan4.liquidity).to.equal(0);
-      expect(loan4.lpTokens).to.equal(0);
+      expect(loan4.initLiquidity).lt(loan3.initLiquidity.div(100));
+      expect(loan4.initLiquidity).gt(0);
+      expect(loan4.liquidity).lt(loan3.liquidity.div(99));
+      expect(loan4.liquidity).gt(0);
+      expect(loan4.lpTokens).lt(loan3.lpTokens.div(100));
+      expect(loan4.lpTokens).gt(0);
       expect(loan4.tokensHeld.length).to.equal(2);
       expect(loan4.tokensHeld[0]).lt(tokensHeld0);
       expect(loan4.tokensHeld[1]).lt(tokensHeld1);
@@ -664,7 +662,6 @@ describe("CPMMRepayStrategy", function () {
         await strategyFee._repayLiquidity(
           tokenId,
           payLiquidity,
-          [],
           0,
           ethers.constants.AddressZero
         )
@@ -682,7 +679,6 @@ describe("CPMMRepayStrategy", function () {
         await strategyFee._repayLiquidity(
           tokenId,
           payLiquidity,
-          [],
           0,
           ethers.constants.AddressZero
         )
@@ -700,16 +696,18 @@ describe("CPMMRepayStrategy", function () {
         await strategyFee._repayLiquidity(
           tokenId,
           payLiquidity,
-          [1000, 0],
           0,
           ethers.constants.AddressZero
         )
       ).wait();
 
       const loan4 = await strategyFee.getLoan(tokenId);
-      expect(loan4.initLiquidity).to.equal(0);
-      expect(loan4.liquidity).to.equal(0);
-      expect(loan4.lpTokens).to.equal(0);
+      expect(loan4.initLiquidity).lt(loan3.initLiquidity.mul(10).div(1000));
+      expect(loan4.initLiquidity).gt(0);
+      expect(loan4.liquidity).lt(loan3.liquidity.mul(10).div(999));
+      expect(loan4.liquidity).gt(0);
+      expect(loan4.lpTokens).lt(loan3.lpTokens.mul(10).div(1000));
+      expect(loan4.lpTokens).gt(0);
       expect(loan4.tokensHeld.length).to.equal(2);
       expect(loan4.tokensHeld[0]).lt(tokensHeld0);
       expect(loan4.tokensHeld[1]).lt(tokensHeld1);
@@ -757,7 +755,6 @@ describe("CPMMRepayStrategy", function () {
         await strategyFee._repayLiquidity(
           tokenId,
           payLiquidity,
-          [],
           0,
           ethers.constants.AddressZero
         )
@@ -775,7 +772,6 @@ describe("CPMMRepayStrategy", function () {
         await strategyFee._repayLiquidity(
           tokenId,
           payLiquidity,
-          [],
           0,
           ethers.constants.AddressZero
         )
@@ -793,16 +789,18 @@ describe("CPMMRepayStrategy", function () {
         await strategyFee._repayLiquidity(
           tokenId,
           payLiquidity,
-          [0, 1000],
           0,
           ethers.constants.AddressZero
         )
       ).wait();
 
       const loan4 = await strategyFee.getLoan(tokenId);
-      expect(loan4.initLiquidity).to.equal(0);
-      expect(loan4.liquidity).to.equal(0);
-      expect(loan4.lpTokens).to.equal(0);
+      expect(loan4.initLiquidity).lt(loan3.initLiquidity.mul(10).div(1000));
+      expect(loan4.initLiquidity).gt(0);
+      expect(loan4.liquidity).lt(loan3.liquidity.mul(10).div(999));
+      expect(loan4.liquidity).gt(0);
+      expect(loan4.lpTokens).lt(loan3.lpTokens.mul(10).div(1000));
+      expect(loan4.lpTokens).gt(0);
       expect(loan4.tokensHeld.length).to.equal(2);
       expect(loan4.tokensHeld[0]).lt(tokensHeld0);
       expect(loan4.tokensHeld[1]).lt(tokensHeld1);

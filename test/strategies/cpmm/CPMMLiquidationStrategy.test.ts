@@ -8,12 +8,14 @@ const TestCPMMMathJSON = require("@gammaswap/v1-implementations/artifacts/contra
 const TestERC20WithFeeJSON = require("@gammaswap/v1-implementations/artifacts/contracts/test/TestERC20WithFee.sol/TestERC20WithFee.json");
 const TestGammaPoolFactoryJSON = require("@gammaswap/v1-implementations/artifacts/contracts/test/TestGammaPoolFactory.sol/TestGammaPoolFactory.json");
 const TestCPMMLiquidationStrategyJSON = require("@gammaswap/v1-implementations/artifacts/contracts/test/strategies/cpmm/TestCPMMLiquidationStrategy.sol/TestCPMMLiquidationStrategy.json");
+const TestCPMMLiquidationStrategyWithLPJSON = require("@gammaswap/v1-implementations/artifacts/contracts/test/strategies/cpmm/TestCPMMLiquidationWithLPStrategy.sol/TestCPMMLiquidationWithLPStrategy.json");
 
 describe("CPMMLiquidationStrategy", function () {
   let TestERC20: any;
   let TestCPMMMath: any;
   let TestERC20WithFee: any;
   let TestStrategy: any;
+  let TestStrategyWithLP: any;
   let TestGammaPoolFactory: any;
   let UniswapV2Factory: any;
   let UniswapV2Pair: any;
@@ -26,6 +28,7 @@ describe("CPMMLiquidationStrategy", function () {
   let uniFactory: any;
   let gsFactory: any;
   let strategy: any;
+  let strategyWithLP: any;
   let strategyFee: any;
   let cpmmMath: any;
   let owner: any;
@@ -67,6 +70,11 @@ describe("CPMMLiquidationStrategy", function () {
         TestCPMMLiquidationStrategyJSON.bytecode,
         owner
     );
+    TestStrategyWithLP = new ethers.ContractFactory(
+        TestCPMMLiquidationStrategyWithLPJSON.abi,
+        TestCPMMLiquidationStrategyWithLPJSON.bytecode,
+        owner
+    );
     tokenA = await TestERC20.deploy("Test Token A", "TOKA");
     tokenB = await TestERC20.deploy("Test Token B", "TOKB");
 
@@ -103,6 +111,16 @@ describe("CPMMLiquidationStrategy", function () {
       maxApy
     );
 
+    strategyWithLP = await TestStrategyWithLP.deploy(
+        cpmmMath.address,
+        maxTotalApy,
+        2252571,
+        997,
+        1000,
+        baseRate,
+        factor,
+        maxApy
+    );
     // address _feeToSetter, uint16 _fee
     gsFactory = await TestGammaPoolFactory.deploy(owner.address, 10000);
 
@@ -116,6 +134,17 @@ describe("CPMMLiquidationStrategy", function () {
     ).wait();
 
     await (await strategy.setPoolParams(250, 50)).wait();
+
+    await (
+        await strategyWithLP.initialize(
+            gsFactory.address,
+            cfmm.address,
+            [tokenA.address, tokenB.address],
+            [18, 18]
+        )
+    ).wait();
+
+    await (await strategyWithLP.setPoolParams(250, 50)).wait();
   });
 
   async function createStrategy(tok0Fee: any, tok1Fee: any, feePerc: any) {
@@ -178,6 +207,72 @@ describe("CPMMLiquidationStrategy", function () {
         [tokenAFee.address, tokenBFee.address],
         [18, 18]
       )
+    ).wait();
+
+    await (await strategyFee.setPoolParams(250, 50)).wait();
+  }
+
+
+  async function createStrategyWithLP(tok0Fee: any, tok1Fee: any, feePerc: any) {
+    const _tokenAFee = await TestERC20WithFee.deploy(
+        "Test Token A Fee",
+        "TOKAF",
+        0
+    );
+    const _tokenBFee = await TestERC20WithFee.deploy(
+        "Test Token B Fee",
+        "TOKBF",
+        0
+    );
+
+    cfmmFee = await createPair(_tokenAFee, _tokenBFee);
+
+    // because Uniswap's CFMM reorders tokenA and tokenB in increasing order
+    const token0addr = await cfmmFee.token0();
+    const token1addr = await cfmmFee.token1();
+
+    tokenAFee = await TestERC20WithFee.attach(
+        token0addr // The deployed contract address
+    );
+
+    tokenBFee = await TestERC20WithFee.attach(
+        token1addr // The deployed contract address
+    );
+
+    const fee = feePerc || BigNumber.from(10).pow(15); // 16
+    const ONE = BigNumber.from(10).pow(18);
+
+    if (tok0Fee) {
+      await (await tokenAFee.setFee(fee)).wait();
+    }
+
+    if (tok1Fee) {
+      await (await tokenBFee.setFee(fee)).wait();
+    }
+
+    const maxTotalApy = ONE.mul(10);
+    const baseRate = ONE.div(100);
+    const factor = ONE.mul(4).div(100);
+    const maxApy = ONE.mul(75).div(100);
+
+    strategyFee = await TestStrategyWithLP.deploy(
+        cpmmMath.address,
+        maxTotalApy,
+        2252571,
+        997,
+        1000,
+        baseRate,
+        factor,
+        maxApy
+    );
+
+    await (
+        await strategyFee.initialize(
+            gsFactory.address,
+            cfmmFee.address,
+            [tokenAFee.address, tokenBFee.address],
+            [18, 18]
+        )
     ).wait();
 
     await (await strategyFee.setPoolParams(250, 50)).wait();
@@ -870,7 +965,7 @@ describe("CPMMLiquidationStrategy", function () {
     });
 
     it("Liquidate with LP Token, no write down", async function () {
-      await createStrategy(false, false, null);
+      await createStrategyWithLP(false, false, null);
 
       const tokenId = (await (await strategyFee.createLoan()).wait()).events[0]
         .args.tokenId;
@@ -1079,7 +1174,7 @@ describe("CPMMLiquidationStrategy", function () {
     });
 
     it("Liquidate with LP Token, write down", async function () {
-      await createStrategy(false, false, null);
+      await createStrategyWithLP(false, false, null);
 
       const tokenId = (await (await strategyFee.createLoan()).wait()).events[0]
         .args.tokenId;
