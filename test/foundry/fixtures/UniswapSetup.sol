@@ -17,14 +17,14 @@ contract UniswapSetup is Test {
         // Let's do the same thing with `getCode`
         //bytes memory args = abi.encode(arg1, arg2);
         bytes memory factoryArgs = abi.encode(owner);
-        bytes memory factoryBytecode = abi.encodePacked(vm.getCode("./node_modules/@uniswap/v2-core/build/UniswapV2Factory.json"), factoryArgs);
+        bytes memory factoryBytecode = abi.encodePacked(vm.getCode("./test/foundry/bytecodes/UniswapV2Factory.json"), factoryArgs);
         address factoryAddress;
         assembly {
             factoryAddress := create(0, add(factoryBytecode, 0x20), mload(factoryBytecode))
         }
 
         bytes memory routerArgs = abi.encode(factoryAddress, weth);
-        bytes memory routerBytecode = abi.encodePacked(vm.getCode("./node_modules/@uniswap/v2-periphery/build/UniswapV2Router02.json"), routerArgs);
+        bytes memory routerBytecode = abi.encodePacked(vm.getCode("./test/foundry/bytecodes/UniswapV2Router02.json"), routerArgs);
         address routerAddress;
         assembly {
             routerAddress := create(0, add(routerBytecode, 0x20), mload(routerBytecode))
