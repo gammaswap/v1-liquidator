@@ -62,7 +62,7 @@
     "typescript": ">=4.5.0"
   },
   "dependencies": {
-    "@gammaswap/v1-core": "^1.1.5",
-    "@gammaswap/v1-implementations": "^1.1.5"
+    "@gammaswap/v1-core": "^1.1.6",
+    "@gammaswap/v1-implementations": "1.1.7"
   }
 }

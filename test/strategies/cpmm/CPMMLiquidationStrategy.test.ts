@@ -612,9 +612,9 @@ describe("CPMMLiquidationStrategy", function () {
 
       // Pool balances changes after rate upate
       const bal3 = await strategyFee.getPoolData();
-      expect(bal3.borrowedInvariant).to.equal(1); // 1 because loss of precision
+      expect(bal3.borrowedInvariant).to.equal(0);
       expect(bal3.borrowedInvariant).lt(bal2.borrowedInvariant);
-      expect(bal3.lpTokenBorrowedPlusInterest).to.equal(1); // 1 because loss of precision
+      expect(bal3.lpTokenBorrowedPlusInterest).to.equal(1);
       expect(bal3.lpTokenBorrowedPlusInterest).lt(
         bal2.lpTokenBorrowedPlusInterest
       );
@@ -819,7 +819,7 @@ describe("CPMMLiquidationStrategy", function () {
 
       // Pool balances changes after rate upate
       const bal3 = await strategyFee.getPoolData();
-      expect(bal3.borrowedInvariant).to.equal(1); // 1 because loss of precision
+      expect(bal3.borrowedInvariant).to.equal(0); // 1 because loss of precision
       expect(bal3.borrowedInvariant).lt(bal2.borrowedInvariant);
       expect(
         bal2.borrowedInvariant.sub(writeDownAmt).div(ONE.div(10000))
@@ -1120,9 +1120,9 @@ describe("CPMMLiquidationStrategy", function () {
 
       // Pool balances changes after rate upate
       const bal3 = await strategyFee.getPoolData();
-      expect(bal3.borrowedInvariant).to.equal(1); // 1 because loss of precision
+      expect(bal3.borrowedInvariant).to.equal(0);
       expect(bal3.borrowedInvariant).lt(bal2.borrowedInvariant);
-      expect(bal3.lpTokenBorrowedPlusInterest).to.equal(1); // 1 because loss of precision
+      expect(bal3.lpTokenBorrowedPlusInterest).to.equal(1);
       expect(bal3.lpTokenBorrowedPlusInterest).lt(
         bal2.lpTokenBorrowedPlusInterest
       );
@@ -1330,12 +1330,12 @@ describe("CPMMLiquidationStrategy", function () {
 
       // Pool balances changes after rate upate
       const bal3 = await strategyFee.getPoolData();
-      expect(bal3.borrowedInvariant).to.equal(1); // 1 because loss of precision
+      expect(bal3.borrowedInvariant).to.equal(0);
       expect(bal3.borrowedInvariant).lt(bal2.borrowedInvariant);
       expect(
         bal2.borrowedInvariant.sub(writeDownAmt).div(ONE.div(10000))
       ).to.equal(liquidationEvent.args.liquidity.div(ONE.div(10000)));
-      expect(bal3.lpTokenBorrowedPlusInterest).to.equal(1); // 1 because loss of precision
+      expect(bal3.lpTokenBorrowedPlusInterest).to.equal(1);
       expect(bal3.lpTokenBorrowedPlusInterest).lt(
         bal2.lpTokenBorrowedPlusInterest
       );
