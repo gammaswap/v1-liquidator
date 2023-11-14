@@ -63,6 +63,6 @@
   },
   "dependencies": {
     "@gammaswap/v1-core": "^1.1.8",
-    "@gammaswap/v1-implementations": "1.1.8"
+    "@gammaswap/v1-implementations": "1.1.9"
   }
 }
