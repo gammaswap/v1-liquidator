@@ -21,3 +21,4 @@ out
 .npmrc
 
 yarn-error.log
+.gas-snapshot
