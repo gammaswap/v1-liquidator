@@ -407,6 +407,14 @@
     "@gammaswap/v1-core" "^1.1.8"
     "@openzeppelin/contracts" "^4.7.0"
 
+"@gammaswap/v1-periphery@^1.1.1":
+  version "1.1.1"
+  resolved "https://npm.pkg.github.com/download/@gammaswap/v1-periphery/1.1.1/66a231aaa644781f27657a6f8b4393921290032d#66a231aaa644781f27657a6f8b4393921290032d"
+  integrity sha512-HBj2UvG/EB5Fy5Z1Lk29TKjav7sxruywSqKEg+uP+xHGx268fcX2A9JstOzblJ/HllB5O67GSBMJUnTCshNWkw==
+  dependencies:
+    "@gammaswap/v1-core" "^1.1.8"
+    "@openzeppelin/contracts" "^4.7.0"
+
 "@jridgewell/resolve-uri@^3.0.3":
   version "3.1.1"
   resolved "https://registry.npmjs.org/@jridgewell/resolve-uri/-/resolve-uri-3.1.1.tgz"
