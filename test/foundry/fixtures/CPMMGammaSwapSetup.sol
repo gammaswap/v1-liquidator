@@ -54,7 +54,7 @@ contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
 
     function initCPMMGammaSwap(bool use6Decimals) public {
         owner = address(this);
-        super.initTokens(4 * 1e24, use6Decimals);
+        super.initTokens(4 * 1e6 * 1e18, use6Decimals);
         super.initUniswap(owner, address(weth));
 
         approveRouter();
@@ -84,6 +84,8 @@ contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
             address(externalLiquidationStrategy), address(uniFactory), cfmmHash);
 
         factory.addProtocol(address(protocol));
+
+        posMgr = new PositionManager(address(factory), address(weth), address(0), address(0));
 
         address[] memory tokens = new address[](2);
         tokens[0] = address(weth);
@@ -119,43 +121,74 @@ contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
         factory.setPoolParams(address(pool), 0, 0, 10, 100, 100, 1, 250, 200);// setting origination fees to zero
 
         approvePool();
+        approvePosMgr();
+    }
 
-        posMgr = new PositionManager(address(factory), address(weth), address(0), address(0));
+    function approvePosMgr() public {
+        vm.startPrank(addr1);
+        usdc.approve(address(posMgr), type(uint256).max);
+        weth.approve(address(posMgr), type(uint256).max);
+        weth6.approve(address(posMgr), type(uint256).max);
+        usdc6.approve(address(posMgr), type(uint256).max);
+        usdt.approve(address(posMgr), type(uint256).max);
+        vm.stopPrank();
+
+        vm.startPrank(addr2);
+        usdc.approve(address(posMgr), type(uint256).max);
+        weth.approve(address(posMgr), type(uint256).max);
+        weth6.approve(address(posMgr), type(uint256).max);
+        usdc6.approve(address(posMgr), type(uint256).max);
+        usdt.approve(address(posMgr), type(uint256).max);
+        vm.stopPrank();
     }
 
     function approveRouter() public {
         vm.startPrank(addr1);
         usdc.approve(address(uniRouter), type(uint256).max);
         weth.approve(address(uniRouter), type(uint256).max);
+        usdc6.approve(address(uniRouter), type(uint256).max);
+        weth6.approve(address(uniRouter), type(uint256).max);
+        usdt.approve(address(uniRouter), type(uint256).max);
         vm.stopPrank();
 
         vm.startPrank(addr2);
         usdc.approve(address(uniRouter), type(uint256).max);
         weth.approve(address(uniRouter), type(uint256).max);
+        usdc6.approve(address(uniRouter), type(uint256).max);
+        weth6.approve(address(uniRouter), type(uint256).max);
+        usdt.approve(address(uniRouter), type(uint256).max);
         vm.stopPrank();
     }
 
     function approvePool() public {
         vm.startPrank(addr1);
         pool.approve(address(pool), type(uint256).max);
+        pool.approve(address(posMgr), type(uint256).max);
         IERC20(cfmm).approve(address(pool), type(uint256).max);
+        IERC20(cfmm).approve(address(posMgr), type(uint256).max);
         vm.stopPrank();
 
         vm.startPrank(addr2);
         pool.approve(address(pool), type(uint256).max);
+        pool.approve(address(posMgr), type(uint256).max);
         IERC20(cfmm).approve(address(pool), type(uint256).max);
+        IERC20(cfmm).approve(address(posMgr), type(uint256).max);
         vm.stopPrank();
     }
 
     function approvePoolAndCFMM(CPMMGammaPool _pool, address _cfmm) public {
         vm.startPrank(addr1);
         _pool.approve(address(_pool), type(uint256).max);
+        _pool.approve(address(posMgr), type(uint256).max);
         IERC20(_cfmm).approve(address(_pool), type(uint256).max);
+        IERC20(_cfmm).approve(address(posMgr), type(uint256).max);
         vm.stopPrank();
 
         vm.startPrank(addr2);
         _pool.approve(address(_pool), type(uint256).max);
+        _pool.approve(address(posMgr), type(uint256).max);
         IERC20(_cfmm).approve(address(_pool), type(uint256).max);
+        IERC20(_cfmm).approve(address(posMgr), type(uint256).max);
         vm.stopPrank();
     }
 

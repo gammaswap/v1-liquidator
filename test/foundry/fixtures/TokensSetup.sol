@@ -18,53 +18,77 @@ contract TokensSetup is Test {
     address public addr2;
 
     function initTokens(uint256 amount, bool use6decimals) public {
-        usdc = new TestERC20("USDC", "USDC",18);
-        weth = new TestERC20("Wrapped Ethereum", "WETH", 18);
-        usdt = new TestERC20("Tether", "USDT", 18);
+        usdc = new TestERC20("USDC", "USDC");
+        weth = new TestERC20("Wrapped Ethereum", "WETH");
+        usdt = new TestERC20("Tether", "USDT");
+        weth6 = new TestERC20("Wrapped Ethereum6", "WETH6");
+        usdc6 = new TestERC20("USDC6", "USDC6");
 
         if(use6decimals) {
-            weth6 = TestERC20(createToken2("Wrapped Ethereum6", "WETH6",6, address(usdc), true)); // 18x6 = usdc/weth6
-            usdc6 = TestERC20(createToken2("USDC6", "USDC6",6, address(weth), false)); // 6x18 = usdc6/weth, 6x6 = weth6/usdc6
-        } else {
-            weth6 = new TestERC20("Wrapped Ethereum6", "WETH6",6);
-            usdc6 = new TestERC20("USDC6", "USDC6",6);
+            address[] memory tokens = new address[](5);
+            tokens[0] = address(usdc);
+            tokens[1] = address(weth);
+            tokens[2] = address(usdt);
+            tokens[3] = address(weth6);
+            tokens[4] = address(usdc6);
+            tokens = quickSort(tokens);
+
+            // 18x18 = weth/usdc
+            // 18x6 = weth/usdc6
+            // 6x18 = weth6/usdc
+            // 6x6 = weth6/usdc6
+
+            // weth < weth6 < usdc6 < usdc
+            weth = TestERC20(tokens[0]);
+            weth6 = TestERC20(tokens[1]);
+            usdc6 = TestERC20(tokens[2]);
+            usdt = TestERC20(tokens[3]);
+            usdc = TestERC20(tokens[4]);
+            weth.setMetaData("Wrapped Ethereum", "WETH", 18);
+            weth6.setMetaData("Wrapped Ethereum6", "WETH6", 6);
+            usdc6.setMetaData("USDC6", "USDC6", 6);
+            usdt.setMetaData("USDT", "USDT", 18);
+            usdc.setMetaData("USDC", "USDC", 18);
         }
 
         addr1 = vm.addr(5);
         usdc.mint(addr1, amount);
         weth.mint(addr1, amount);
         usdt.mint(addr1, amount);
-        usdc6.mint(addr1, amount);
         weth6.mint(addr1, amount);
+        usdc6.mint(addr1, amount);
 
         addr2 = vm.addr(6);
         usdc.mint(addr2, amount);
         weth.mint(addr2, amount);
         usdt.mint(addr2, amount);
-        usdc6.mint(addr2, amount);
         weth6.mint(addr2, amount);
+        usdc6.mint(addr2, amount);
     }
 
-    function createToken2(string memory name, string memory symbol, uint8 decimals, address prevToken, bool high) private returns(address) {
-        address lo = vm.addr(1000);
-        uint256 num1 = uint256(type(uint160).max) - 1000;
-        address hi = vm.addr(uint160(num1));
-        while(true) {
-            address tok = address(new TestERC20(name, symbol, decimals));
-            if(tok >= lo || tok <= hi) {
-                continue;
-            }
-            if(high) {
-                if(tok > prevToken) {
-                    return tok;
-                }
-            } else {
-                if(tok < prevToken) {
-                    return tok;
-                }
+    function sort(address[] memory arr, int left, int right) internal pure {
+        int i = left;
+        int j = right;
+        if(i == j) return;
+        address pivot = arr[uint(left + (right - left) / 2)];
+        while (i <= j) {
+            while (arr[uint(i)] < pivot) i++;
+            while (pivot < arr[uint(j)]) j--;
+            if (i <= j) {
+                (arr[uint(i)], arr[uint(j)]) = (arr[uint(j)], arr[uint(i)]);
+                i++;
+                j--;
             }
         }
-        return address(0);
+        if (left < j)
+            sort(arr, left, j);
+        if (i < right)
+            sort(arr, i, right);
     }
 
+    // Helper function to start the sorting
+    function quickSort(address[] memory arr) public pure returns (address[] memory) {
+        sort(arr, 0, int(arr.length - 1));
+        return arr;
+    }
 }
