@@ -187,4 +187,110 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
 
         vm.stopPrank();
     }
+
+    function testBorrowLiquidity(uint8 amount0, uint8 amount1, uint8 lpTokens, uint72 ratio0, uint72 ratio1, uint8 _addr) public {
+        if(amount0 < 10) amount0 = 10;
+        if(amount1 < 10) amount1 = 10;
+        if(lpTokens < 1) lpTokens = 1;
+        if(ratio0 < 1) ratio0 = 1;
+        if(ratio1 < 1) ratio1 = 1;
+
+        if(ratio1 > ratio0) {
+            if(ratio1 / ratio0 > 5) {
+                ratio1 = 5 * ratio0;
+            }
+        } else if(ratio0 > ratio1) {
+            if(ratio0 / ratio1 > 5) {
+                ratio0 = 5 * ratio1;
+            }
+        }
+
+        uint256[] memory _amounts = new uint256[](2);
+        _amounts[0] = uint256(amount0)*1e18;
+        _amounts[1] = uint256(amount1)*1e18;
+
+        vm.startPrank(addr1);
+
+        IPositionManager.CreateLoanBorrowAndRebalanceParams memory params = IPositionManager.CreateLoanBorrowAndRebalanceParams({
+            protocolId: 1,
+            cfmm: cfmm,
+            to: _addr == 0 ? addr1 : vm.addr(_addr),
+            refId: 0,
+            amounts: _amounts,
+            lpTokens: uint256(lpTokens)*1e18,
+            ratio: new uint256[](0),
+            minBorrowed: new uint256[](2),
+            minCollateral: new uint128[](2),
+            deadline: type(uint256).max,
+            maxBorrowed: type(uint256).max
+        });
+
+        IGammaPool.PoolData memory poolData = pool.getPoolData();
+        uint256 liquidity = params.lpTokens * poolData.lastCFMMInvariant / poolData.lastCFMMTotalSupply;
+
+        uint256[] memory ratio = new uint256[](2);
+        ratio[0] = liquidity * IERC20(address(weth)).balanceOf(cfmm) / poolData.lastCFMMInvariant;
+        ratio[1] = liquidity * IERC20(address(usdc)).balanceOf(cfmm) / poolData.lastCFMMInvariant;
+
+        (uint256 tokenId, uint128[] memory tokensHeld, uint256 liquidityBorrowed, uint256[] memory amounts) =
+            posMgr.createLoanBorrowAndRebalance(params);
+
+        assertEq(params.to, posMgr.ownerOf(tokenId));
+        assertGt(liquidityBorrowed,0);
+        assertEq(liquidityBorrowed,liquidity);
+        assertEq(tokensHeld[0],_amounts[0]);
+        assertEq(tokensHeld[1],_amounts[1]);
+        assertApproxEqAbs(ratio[0],amounts[0],1e2);
+        assertApproxEqAbs(ratio[1],amounts[1],1e2);
+
+        vm.stopPrank();
+
+        vm.startPrank(addr2);
+
+        poolData = pool.getPoolData();
+        liquidity = params.lpTokens * poolData.lastCFMMInvariant / poolData.lastCFMMTotalSupply;
+
+        if(ratio0 == ratio1) {
+            ratio = new uint256[](0);
+        } else {
+            ratio[0] = IERC20(address(weth)).balanceOf(cfmm) * ratio0;
+            ratio[1] = IERC20(address(usdc)).balanceOf(cfmm) * ratio1;
+        }
+
+        params = IPositionManager.CreateLoanBorrowAndRebalanceParams({
+            protocolId: 1,
+            cfmm: cfmm,
+            to: addr2,
+            refId: 0,
+            amounts: _amounts,
+            lpTokens: uint256(lpTokens)*1e18,
+            ratio: ratio,
+            minBorrowed: new uint256[](2),
+            minCollateral: new uint128[](2),
+            deadline: type(uint256).max,
+            maxBorrowed: type(uint256).max
+        });
+
+        poolData.lastCFMMInvariant = uint128(GSMath.sqrt(IERC20(address(weth)).balanceOf(cfmm)*IERC20(address(usdc)).balanceOf(cfmm)));
+
+        _amounts[0] = liquidity * IERC20(address(weth)).balanceOf(cfmm) / poolData.lastCFMMInvariant;
+        _amounts[1] = liquidity * IERC20(address(usdc)).balanceOf(cfmm) / poolData.lastCFMMInvariant;
+
+        (tokenId, tokensHeld, liquidityBorrowed, amounts) = posMgr.createLoanBorrowAndRebalance(params);
+
+        assertEq(addr2, posMgr.ownerOf(tokenId));
+        assertGt(liquidityBorrowed,0);
+        assertEq(liquidityBorrowed,liquidity);
+        assertEq(tokensHeld[0],params.amounts[0]);
+        assertEq(tokensHeld[1],params.amounts[1]);
+        assertApproxEqAbs(_amounts[0],amounts[0],1e2);
+        assertApproxEqAbs(_amounts[1],amounts[1],1e2);
+
+        if(ratio.length == 2) {
+            IGammaPool.LoanData memory loanData = pool.loan(tokenId);
+            assertApproxEqAbs(uint256(loanData.tokensHeld[1]) * 1e18 / loanData.tokensHeld[0], uint256(ratio[1]) * 1e18 / ratio[0], 1e6);
+        }
+
+        vm.stopPrank();
+    }
 }
