@@ -45,13 +45,14 @@ contract CPMMGammaPool4626 is CPMMGammaSwapSetup {
         vm.roll(10000);
 
         poolData = viewer.getLatestPoolData(address(pool));
+        IGammaPool.PoolData memory poolData0 = viewer.getPoolData(address(pool));
+        (, uint256 utilizationRate) = AbstractRateModel(shortStrategy).calcBorrowRate(poolData.LP_INVARIANT, poolData0.BORROWED_INVARIANT, address(factory), address(pool));
         uint256 totalSupply = IShortStrategy(shortStrategy).totalSupply(
-            address(factory), address(pool), poolData.lastCFMMFeeIndex, poolData.lastFeeIndex, poolData.utilizationRate, poolData.totalSupply
+            address(factory), address(pool), poolData.lastCFMMFeeIndex, poolData.lastFeeIndex, utilizationRate, poolData.totalSupply
         );
 
         assertGt(totalSupply, totalSupply0);
-        // TODO
-        // assertEq(totalSupply, pool.totalSupply());
+        assertEq(totalSupply, pool.totalSupply());
     }
 
     function testTotalAssets() public {
@@ -61,16 +62,16 @@ contract CPMMGammaPool4626 is CPMMGammaSwapSetup {
 
         IGammaPool.PoolData memory poolData = viewer.getLatestPoolData(address(pool));
         (, uint256 lastCFMMInvariant, uint256 lastCFMMTotalSupply) = pool.getLatestCFMMBalances();
+        IGammaPool.PoolData memory poolData0 = viewer.getPoolData(address(pool));
         uint256 totalAssets = IShortStrategy(shortStrategy).totalAssets(
-            poolData.BORROWED_INVARIANT, poolData.LP_TOKEN_BALANCE, lastCFMMInvariant, lastCFMMTotalSupply, poolData.lastFeeIndex
+            poolData0.BORROWED_INVARIANT, poolData.LP_TOKEN_BALANCE, lastCFMMInvariant, lastCFMMTotalSupply, poolData.lastFeeIndex
         );
 
         assertGt(totalAssets, totalAssets0);
-        // TODO
-        // assertEq(totalAssets, pool.totalAssets());
+        assertEq(totalAssets, pool.totalAssets());
     }
 
-    function testPreview() public {
+    function testRedeem() public {
         assertEq(pool.balanceOf(addr2), 0);
 
         vm.startPrank(addr2);
@@ -79,20 +80,50 @@ contract CPMMGammaPool4626 is CPMMGammaSwapSetup {
         vm.stopPrank();
 
         assertGt(pool.balanceOf(addr2), 0);
-        uint256 redeemable = pool.previewRedeem(pool.balanceOf(addr2));
-        assertApproxEqAbs(redeemable, lpToDeposit, 1e2);
+        uint256 redeemableAssets = pool.previewRedeem(pool.balanceOf(addr2));
+        assertApproxEqAbs(redeemableAssets, lpToDeposit, 10);
+        assertApproxEqAbs(pool.balanceOf(addr2), pool.previewWithdraw(redeemableAssets), 10);
+
 
         vm.roll(10000);
 
-        assertGt(pool.previewRedeem(pool.balanceOf(addr2)), redeemable);    // addr2 earned rewards
-        redeemable = pool.previewRedeem(pool.balanceOf(addr2));
+        assertGt(pool.previewRedeem(pool.balanceOf(addr2)), redeemableAssets);    // addr2 earned rewards
+        redeemableAssets = pool.previewRedeem(pool.balanceOf(addr2));
+        assertApproxEqAbs(pool.balanceOf(addr2), pool.previewWithdraw(redeemableAssets), 10);
         uint256 lpBalanceBeforeRedeem = IERC20(cfmm).balanceOf(addr2);
 
         vm.startPrank(addr2);
         pool.redeem(pool.balanceOf(addr2), addr2, addr2);
+        vm.stopPrank();
         uint256 lpBalanceAfterRedeem = IERC20(cfmm).balanceOf(addr2);
+
+        assertEq(lpBalanceAfterRedeem - lpBalanceBeforeRedeem, redeemableAssets);
+    }
+
+    function testDeposit() public {
+        assertEq(pool.balanceOf(addr2), 0);
+
+        vm.startPrank(addr2);
+        uint256 lpToDeposit = IERC20(cfmm).balanceOf(addr2) / 5;
+        IERC20(cfmm).approve(address(pool), lpToDeposit);
         vm.stopPrank();
 
-        assertEq(lpBalanceAfterRedeem - lpBalanceBeforeRedeem, redeemable);
+        uint256 redeemableShares = pool.previewDeposit(lpToDeposit);
+        assertGt(redeemableShares, 0);
+        assertApproxEqAbs(lpToDeposit, pool.previewMint(redeemableShares), 10);
+
+        vm.roll(10000);
+
+        assertLt(pool.previewDeposit(lpToDeposit), redeemableShares);
+        redeemableShares = pool.previewDeposit(lpToDeposit);
+        assertApproxEqAbs(lpToDeposit, pool.previewMint(redeemableShares), 10);
+        uint256 assetsBeforeDeposit = pool.totalAssets();
+
+        vm.startPrank(addr2);
+        pool.deposit(lpToDeposit, addr2);
+        vm.stopPrank();
+        uint256 assetsAfterDeposit = pool.totalAssets();
+
+        assertEq(assetsAfterDeposit - assetsBeforeDeposit, lpToDeposit);
     }
 }
