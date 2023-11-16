@@ -190,7 +190,7 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
 
     function testBorrowLiquidity(uint8 amount0, uint8 amount1, uint8 lpTokens, uint72 ratio0, uint72 ratio1, uint8 _addr) public {
         if(amount0 < 10) amount0 = 10;
-        if(amount1 < 10) amount1 = 10;
+        if(amount1 < 10) amount1 = 10;//TODO: make only one side 10 other zero sometimes
         if(lpTokens < 1) lpTokens = 1;
         if(ratio0 < 1) ratio0 = 1;
         if(ratio1 < 1) ratio1 = 1;
@@ -292,5 +292,117 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
         }
 
         vm.stopPrank();
+    }
+
+    function testRebalanceCollateral(uint72 ratio0, uint72 ratio1, bool useRatio, bool side, bool buy) public {
+        if(ratio0 < 1e4) ratio0 = 1e4;
+        if(ratio1 < 1e4) ratio1 = 1e4;
+
+        if(ratio1 > ratio0) {
+            if(ratio1 / ratio0 > 10) {
+                ratio1 = 10 * ratio0;
+            }
+        } else if(ratio0 > ratio1) {
+            if(ratio0 / ratio1 > 10) {
+                ratio0 = 10 * ratio1;
+            }
+        }
+
+        uint256[] memory _amounts = new uint256[](2);
+        _amounts[0] = 10*1*1e18;
+        _amounts[1] = 10*2000*1e18;
+
+        vm.startPrank(addr1);
+
+        IPositionManager.CreateLoanBorrowAndRebalanceParams memory params = IPositionManager.CreateLoanBorrowAndRebalanceParams({
+            protocolId: 1,
+            cfmm: cfmm,
+            to: addr1,
+            refId: 0,
+            amounts: _amounts,
+            lpTokens: 100*1e18,
+            ratio: new uint256[](0),
+            minBorrowed: new uint256[](2),
+            minCollateral: new uint128[](2),
+            deadline: type(uint256).max,
+            maxBorrowed: type(uint256).max
+        });
+
+        IGammaPool.PoolData memory poolData = pool.getPoolData();
+
+        (uint256 tokenId, uint128[] memory tokensHeld,,) = posMgr.createLoanBorrowAndRebalance(params);
+
+        IGammaPool.LoanData memory loanData = pool.loan(tokenId);
+
+        tokensHeld = loanData.tokensHeld;
+
+        uint256[] memory ratio = new uint256[](2);
+        ratio[0] = IERC20(address(weth)).balanceOf(cfmm);
+        ratio[1] = IERC20(address(usdc)).balanceOf(cfmm);
+        int256[] memory deltas = new int256[](2);
+        if(useRatio && ratio0 != ratio1) {
+            deltas = new int256[](0);
+            ratio[0] = ratio[0] * ratio0;
+            ratio[1] = ratio[1] * ratio1;
+        } else {
+            deltas = new int256[](2);
+            if(side) {
+                if(!buy) {
+                    deltas[0] = -int256(GSMath.min(tokensHeld[0],ratio0)/4);
+                } else {
+                    if(uint256(ratio0) * ratio[1] / ratio[0] > tokensHeld[1] / 4) {
+                        deltas[0] = int256(uint256(tokensHeld[0]) / 4);
+                    } else {
+                        deltas[0] = int256(uint256(ratio0) / 4);
+                    }
+                }
+            } else {
+                if(!buy) {
+                    deltas[1] = -int256(GSMath.min(tokensHeld[1],ratio1)/4);
+                } else {
+                    if(uint256(ratio1) * ratio[0] / ratio[1] > tokensHeld[0] / 4) {
+                        deltas[1] = int256(uint256(tokensHeld[1]) / 4);
+                    } else {
+                        deltas[1] = int256(uint256(ratio1) / 4);
+                    }
+                }
+            }
+            ratio = new uint256[](0);
+            if(deltas[0] == 0 && deltas[1] == 0) {
+                deltas = new int256[](0);
+            }
+        }
+
+        if(ratio.length > 0 || deltas.length > 0) {
+            IPositionManager.RebalanceCollateralParams memory params = IPositionManager.RebalanceCollateralParams({
+                protocolId: 1,
+                cfmm: cfmm,
+                tokenId: tokenId,
+                deltas: deltas,
+                ratio: ratio,
+                minCollateral: new uint128[](2),
+                deadline: type(uint256).max
+            });
+
+            tokensHeld = posMgr.rebalanceCollateral(params);
+
+            if(ratio.length > 0) {
+                assertApproxEqAbs(uint256(tokensHeld[1]) * 1e18 / tokensHeld[0], uint256(ratio[1]) * 1e18 / ratio[0], 1e6);
+            } else {
+                if(deltas[0] > 0) {
+                    assertEq(tokensHeld[0],loanData.tokensHeld[0] + uint256(deltas[0]));
+                    assertLt(tokensHeld[1],loanData.tokensHeld[1]);
+                } else if(deltas[1] > 0) {
+                    assertLt(tokensHeld[0],loanData.tokensHeld[0]);
+                    assertEq(tokensHeld[1],loanData.tokensHeld[1] + uint256(deltas[1]));
+                } else if(deltas[0] < 0) {
+                    assertEq(tokensHeld[0],loanData.tokensHeld[0] - uint256(-deltas[0]));
+                    assertGt(tokensHeld[1],loanData.tokensHeld[1]);
+                } else if(deltas[1] < 0) {
+                    assertGt(tokensHeld[0],loanData.tokensHeld[0]);
+                    assertEq(tokensHeld[1],loanData.tokensHeld[1] - uint256(-deltas[1]));
+                }
+            }
+        }
     }
 }
