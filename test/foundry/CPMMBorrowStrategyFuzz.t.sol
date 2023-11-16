@@ -189,8 +189,12 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
     }
 
     function testBorrowLiquidity(uint8 amount0, uint8 amount1, uint8 lpTokens, uint72 ratio0, uint72 ratio1, uint8 _addr) public {
-        if(amount0 < 10) amount0 = 10;
-        if(amount1 < 10) amount1 = 10;//TODO: make only one side 10 other zero sometimes
+        if(amount0 == 0 || amount1 == 0) {
+            if(amount0 < 10) amount0 = 10;
+        } else {
+            if(amount0 < 10) amount0 = 10;
+            if(amount1 < 10) amount1 = 10;
+        }
         if(lpTokens < 1) lpTokens = 1;
         if(ratio0 < 1) ratio0 = 1;
         if(ratio1 < 1) ratio1 = 1;
