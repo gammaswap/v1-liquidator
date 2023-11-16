@@ -156,4 +156,51 @@ contract CPMMShortStrategyFuzz is CPMMGammaSwapSetup {
 
         vm.stopPrank();
     }
+
+    function testWithdrawReserves18x18(uint80 amount) public {
+        uint256 usdcAmount = 2_500_000 / 2;
+        uint256 wethAmount = 1_250 / 2;
+
+        depositLiquidityInCFMMByToken(address(usdc), address(weth), usdcAmount*1e18, wethAmount*1e18, addr1);
+        depositLiquidityInCFMMByToken(address(usdc), address(weth), usdcAmount*1e18, wethAmount*1e18, addr2);
+        depositLiquidityInPoolFromCFMM(pool, cfmm, addr2);
+
+        vm.startPrank(addr1);
+
+        if(amount <= 1e3) {
+            amount = 1e3;
+        }
+
+        uint256 beforeGSLPBalance = IERC20(address(pool)).balanceOf(addr1);
+        uint256 gsLpAmount = beforeGSLPBalance < amount ? beforeGSLPBalance : amount;
+
+        IPositionManager.WithdrawReservesParams memory params = IPositionManager.WithdrawReservesParams({
+            protocolId: 1,
+            cfmm: cfmm,
+            to: addr1,
+            deadline: type(uint256).max,
+            amount: gsLpAmount,
+            amountsMin: new uint256[](2)
+        });
+
+        vm.roll(100);
+
+        uint256 expectedAssets = gsLpAmount * IERC20(cfmm).balanceOf(address(pool)) / IERC20(address(pool)).totalSupply();
+
+        (uint256[] memory reserves, uint256 assets) = posMgr.withdrawReserves(params);
+
+        assertEq(assets, expectedAssets);
+
+        uint256 afterGSLPBalance = IERC20(address(pool)).balanceOf(addr1);
+
+        assertEq(gsLpAmount, beforeGSLPBalance - afterGSLPBalance);
+
+        uint256 wethReceived = IERC20(weth).balanceOf(cfmm) * assets / IERC20(cfmm).totalSupply();
+        uint256 usdcReceived = IERC20(usdc).balanceOf(cfmm) * assets / IERC20(cfmm).totalSupply();
+
+        assertApproxEqAbs(reserves[0], wethReceived, 1e1);
+        assertApproxEqAbs(reserves[1], usdcReceived, 1e1);
+
+        vm.stopPrank();
+    }
 }
