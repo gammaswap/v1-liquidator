@@ -68,7 +68,7 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
 
         vm.startPrank(addr1);
 
-        address to = vm.addr(toNum); //TODO:, check this zero
+        address to = vm.addr(toNum);
         IGammaPool.LoanData memory loanData = pool.loan(_tokenId);
         uint256 payLiquidity = GSMath.min(loanData.liquidity * payLiquidityPerc / 250, loanData.liquidity);
 
@@ -79,7 +79,7 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
             liquidity: payLiquidity,
             isRatio: false,
             ratio: new uint256[](0),
-            collateralId: collateralId ? 2 : 1, // TODO, check this zero
+            collateralId: collateralId ? 2 : 1,
             to: to,
             deadline: type(uint256).max,
             minRepaid: new uint256[](2)
@@ -186,6 +186,85 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
                 assertEq(IERC20(address(weth)).balanceOf(addr1), wethBalancePrev);
                 assertEq(IERC20(address(usdc)).balanceOf(addr1), usdcBalancePrev);
             }
+        }
+
+        vm.stopPrank();
+    }
+
+    function testRepayLiquidityWithLP18x18(uint8 tradeAmtPerc, bool side, uint8 lpTokenPerc, uint8 collateralId, uint8 toNum) public {
+        collateralId = uint8(bound(collateralId, 0, 2));
+
+        factory.setPoolParams(address(pool), 0, 0, 10, 100, 100, 1, 25, 10);// setting origination fees to zero
+
+        bool chng = changePrice(tradeAmtPerc, side);
+
+        IGammaPool.PoolData memory poolData = pool.getPoolData();
+
+        IGammaPool.LoanData memory loanData = pool.loan(_tokenId);
+
+        poolData.lastCFMMInvariant = uint128(GSMath.sqrt(IERC20(address(weth)).balanceOf(cfmm)*IERC20(address(usdc)).balanceOf(cfmm)));
+        poolData.lastCFMMTotalSupply = IERC20(cfmm).totalSupply();
+
+        uint256 lpTokenDebt = loanData.liquidity * poolData.lastCFMMTotalSupply / poolData.lastCFMMInvariant;
+
+        uint256 lpTokenPay = GSMath.min(uint256(lpTokenPerc) * lpTokenDebt / 250, lpTokenDebt);
+
+        lpTokenPay = lpTokenPay == 0 ? 0 : lpTokenPay + 1000;
+
+        uint256 expLiquidityPay = GSMath.min(lpTokenPay * poolData.lastCFMMInvariant / poolData.lastCFMMTotalSupply, loanData.liquidity);
+
+        IPositionManager.RepayLiquidityWithLPParams memory params = IPositionManager.RepayLiquidityWithLPParams({
+            protocolId: 1,
+            cfmm: cfmm,
+            tokenId: _tokenId,
+            lpTokens: lpTokenPay,
+            collateralId: collateralId,
+            to: toNum == 0 ? address(0) : vm.addr(toNum),
+            deadline: type(uint256).max,
+            minCollateral: new uint128[](2)
+        });
+
+        vm.startPrank(addr1);
+
+        if(lpTokenPay == 0) {
+            vm.expectRevert(bytes4(keccak256("NotEnoughLPDeposit()")));
+            posMgr.repayLiquidityWithLP(params);
+        } else {
+
+            lpTokenDebt = loanData.liquidity;
+
+            poolData.TOKEN_BALANCE[0] = uint128(IERC20(address(weth)).balanceOf(params.to)); // prev weth balance at user
+            poolData.TOKEN_BALANCE[1] = uint128(IERC20(address(usdc)).balanceOf(params.to)); // prev usdc balance at user
+
+            (uint256 liquidityPaid, uint128[] memory tokensHeld) = posMgr.repayLiquidityWithLP(params);
+            assertApproxEqAbs(liquidityPaid, expLiquidityPay, 1e3);
+
+            if(params.to != address(0)) {
+                uint128[] memory tokensHeldPart = new uint128[](2);
+                tokensHeldPart[0] = uint128(GSMath.min(loanData.tokensHeld[0] * expLiquidityPay / lpTokenDebt, uint256(loanData.tokensHeld[0])));
+                tokensHeldPart[1] = uint128(GSMath.min(loanData.tokensHeld[1] * expLiquidityPay / lpTokenDebt, uint256(loanData.tokensHeld[1])));
+                assertApproxEqAbs(tokensHeld[0], loanData.tokensHeld[0] - tokensHeldPart[0], 1e1);
+                assertApproxEqAbs(tokensHeld[1], loanData.tokensHeld[1] - tokensHeldPart[1], 1e1);
+
+                if(collateralId > 0) {
+                    if(collateralId == 1) {
+                        assertGe(IERC20(address(weth)).balanceOf(params.to), poolData.TOKEN_BALANCE[0]);
+                        assertGt(IERC20(address(usdc)).balanceOf(params.to), poolData.TOKEN_BALANCE[1]);
+                    } else {
+                        assertGt(IERC20(address(weth)).balanceOf(params.to), poolData.TOKEN_BALANCE[0]);
+                        assertGe(IERC20(address(usdc)).balanceOf(params.to), poolData.TOKEN_BALANCE[1]);
+                    }
+                } else {
+                    assertGt(IERC20(address(weth)).balanceOf(params.to), poolData.TOKEN_BALANCE[0]);
+                    assertGt(IERC20(address(usdc)).balanceOf(params.to), poolData.TOKEN_BALANCE[1]);
+                    assertApproxEqAbs(tokensHeldPart[0], IERC20(address(weth)).balanceOf(params.to) - poolData.TOKEN_BALANCE[0],1e6);
+                    assertApproxEqAbs(tokensHeldPart[1], IERC20(address(usdc)).balanceOf(params.to) - poolData.TOKEN_BALANCE[1],1e6);
+                }
+            }
+
+            loanData = pool.loan(_tokenId);
+
+            assertEq(loanData.liquidity, lpTokenDebt - liquidityPaid);
         }
 
         vm.stopPrank();
