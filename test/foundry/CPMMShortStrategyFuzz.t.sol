@@ -431,52 +431,53 @@ contract CPMMShortStrategyFuzz is CPMMGammaSwapSetup {
 
         vm.stopPrank();
     }
-    // function testWithdrawReserves18x6(uint80 amount) public {
-    //     uint256 usdcAmount = 2_500_000 / 2;
-    //     uint256 weth6Amount = 1_250 / 2;
 
-    //     depositLiquidityInCFMMByToken(address(usdc), address(weth6), usdcAmount*1e18, weth6Amount*1e6, addr1);
-    //     depositLiquidityInCFMMByToken(address(usdc), address(weth6), usdcAmount*1e18, weth6Amount*1e6, addr2);
-    //     depositLiquidityInPoolFromCFMM(pool18x6, cfmm18x6, addr2);
+    function testWithdrawReserves18x6(uint80 amount) public {
+        uint256 usdcAmount = 2_500_000 / 2;
+        uint256 weth6Amount = 1_250 / 2;
 
-    //     vm.startPrank(addr1);
+        depositLiquidityInCFMMByToken(address(usdc), address(weth6), usdcAmount*1e18, weth6Amount*1e6, addr1);
+        depositLiquidityInCFMMByToken(address(usdc), address(weth6), usdcAmount*1e18, weth6Amount*1e6, addr2);
+        depositLiquidityInPoolFromCFMM(pool18x6, cfmm18x6, addr2);
 
-    //     if(amount <= 1e3) {
-    //         amount = 1e3;
-    //     }
+        vm.startPrank(addr1);
 
-    //     uint256 beforeGSLPBalance = IERC20(address(pool18x6)).balanceOf(addr1);
-    //     uint256 gsLpAmount = beforeGSLPBalance < amount ? beforeGSLPBalance : amount;
+        if(amount <= 1e8) {
+            amount = 1e8;
+        }
 
-    //     IPositionManager.WithdrawReservesParams memory params = IPositionManager.WithdrawReservesParams({
-    //         protocolId: 1,
-    //         cfmm: cfmm18x6,
-    //         to: addr1,
-    //         deadline: type(uint256).max,
-    //         amount: gsLpAmount,
-    //         amountsMin: new uint256[](2)
-    //     });
+        uint256 beforeGSLPBalance = IERC20(address(pool18x6)).balanceOf(addr1);
+        uint256 gsLpAmount = beforeGSLPBalance < amount ? beforeGSLPBalance : amount;
 
-    //     vm.roll(100);
+        IPositionManager.WithdrawReservesParams memory params = IPositionManager.WithdrawReservesParams({
+            protocolId: 1,
+            cfmm: cfmm18x6,
+            to: addr1,
+            deadline: type(uint256).max,
+            amount: gsLpAmount,
+            amountsMin: new uint256[](2)
+        });
 
-    //     uint256 expectedAssets = gsLpAmount * IERC20(cfmm18x6).balanceOf(address(pool18x6)) / IERC20(address(pool18x6)).totalSupply();
+        vm.roll(100);
 
-    //     (uint256[] memory reserves, uint256 assets) = posMgr.withdrawReserves(params);
+        uint256 expectedAssets = gsLpAmount * IERC20(cfmm18x6).balanceOf(address(pool18x6)) / IERC20(address(pool18x6)).totalSupply();
 
-    //     assertEq(assets, expectedAssets);
+        (uint256[] memory reserves, uint256 assets) = posMgr.withdrawReserves(params);
 
-    //     uint256 afterGSLPBalance = IERC20(address(pool18x6)).balanceOf(addr1);
+        assertEq(assets, expectedAssets);
 
-    //     assertEq(gsLpAmount, beforeGSLPBalance - afterGSLPBalance);
+        uint256 afterGSLPBalance = IERC20(address(pool18x6)).balanceOf(addr1);
 
-    //     uint256 weth6Received = IERC20(weth6).balanceOf(cfmm18x6) * assets / IERC20(cfmm18x6).totalSupply();
-    //     uint256 usdcReceived = IERC20(usdc).balanceOf(cfmm18x6) * assets / IERC20(cfmm18x6).totalSupply();
+        assertEq(gsLpAmount, beforeGSLPBalance - afterGSLPBalance);
 
-    //     assertApproxEqAbs(reserves[0], weth6Received, 1e1);
-    //     assertApproxEqAbs(reserves[1], usdcReceived, 1e1);
+        uint256 weth6Received = IERC20(weth6).balanceOf(cfmm18x6) * assets / IERC20(cfmm18x6).totalSupply();
+        uint256 usdcReceived = IERC20(usdc).balanceOf(cfmm18x6) * assets / IERC20(cfmm18x6).totalSupply();
 
-    //     vm.stopPrank();
-    // }
+        assertApproxEqAbs(reserves[0], weth6Received, 1e1);
+        assertApproxEqAbs(reserves[1], usdcReceived, 1e1);
+
+        vm.stopPrank();
+    }
 
     function testWithdrawNoPull18x18(uint80 amount) public {
         uint256 usdcAmount = 2_500_000 / 2;
