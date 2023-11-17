@@ -188,7 +188,7 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
         vm.stopPrank();
     }
 
-    function testBorrowLiquidity(uint8 amount0, uint8 amount1, uint8 lpTokens, uint72 ratio0, uint72 ratio1, uint8 _addr) public {
+    function testBorrowLiquidity18x18(uint8 amount0, uint8 amount1, uint8 lpTokens, uint72 ratio0, uint72 ratio1, uint8 _addr) public {
         if(amount0 == 0 || amount1 == 0) {
             if(amount0 < 10) amount0 = 10;
         } else {
@@ -298,7 +298,7 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
         vm.stopPrank();
     }
 
-    function testRebalanceCollateral(uint72 ratio0, uint72 ratio1, bool useRatio, bool side, bool buy) public {
+    function testRebalanceCollateral18x18(uint72 ratio0, uint72 ratio1, bool useRatio, bool side, bool buy) public {
         if(ratio0 < 1e4) ratio0 = 1e4;
         if(ratio1 < 1e4) ratio1 = 1e4;
 
