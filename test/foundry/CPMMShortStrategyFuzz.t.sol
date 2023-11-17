@@ -562,4 +562,46 @@ contract CPMMShortStrategyFuzz is CPMMGammaSwapSetup {
 
         vm.stopPrank();
     }
+    function testWithdrawNoPull6x6(uint80 amount) public {
+        uint256 usdc6Amount = 2_500_000 / 2;
+        uint256 weth6Amount = 1_250 / 2;
+
+        depositLiquidityInCFMMByToken(address(usdc6), address(weth6), usdc6Amount*1e6, weth6Amount*1e6, addr1);
+        depositLiquidityInCFMMByToken(address(usdc6), address(weth6), usdc6Amount*1e6, weth6Amount*1e6, addr2);
+        depositLiquidityInPoolFromCFMM(pool6x6, cfmm6x6, addr2);
+
+        vm.startPrank(addr1);
+
+        if(amount <= 1e3) {
+            amount = 1e3;
+        }
+
+        uint256 beforeGSLPBalance = IERC20(address(pool6x6)).balanceOf(addr1);
+        uint256 beforeCfmmBalance = IERC20(address(cfmm6x6)).balanceOf(addr1);
+        uint256 gsLpAmount = beforeGSLPBalance < amount ? beforeGSLPBalance : amount;
+
+        IPositionManager.DepositWithdrawParams memory params = IPositionManager.DepositWithdrawParams({
+            protocolId: 1,
+            cfmm: cfmm6x6,
+            to: addr1,
+            deadline: type(uint256).max,
+            lpTokens: gsLpAmount
+        });
+
+        vm.roll(100);
+
+        uint256 expectedAssets = gsLpAmount * IERC20(cfmm6x6).balanceOf(address(pool6x6)) / IERC20(address(pool6x6)).totalSupply();
+
+        uint256 assets = posMgr.withdrawNoPull(params);
+
+        assertEq(assets, expectedAssets);
+
+        uint256 afterGSLPBalance = IERC20(address(pool6x6)).balanceOf(addr1);
+        uint256 afterCfmmBalance = IERC20(address(cfmm6x6)).balanceOf(addr1);
+
+        assertEq(gsLpAmount, beforeGSLPBalance - afterGSLPBalance);
+        assertEq(assets, afterCfmmBalance - beforeCfmmBalance);
+
+        vm.stopPrank();
+    }
 }
