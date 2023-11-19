@@ -129,11 +129,7 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
         vm.stopPrank();
     }
 
-    //function testLiquidateWithLP18x18(uint8 tradeAmtPerc, bool side, uint8 blocks) public {
-    function testLiquidateWithLP18x18() public {
-        uint8 tradeAmtPerc = 44;// 244;
-        bool side = true;//false;
-        uint8 blocks = 251;//130;/**/
+    function testLiquidateWithLP18x18(uint8 tradeAmtPerc, bool side, uint8 blocks) public {
         blocks = blocks == 0 ? 1 : blocks;
         changePrice(tradeAmtPerc, side);
 
@@ -167,39 +163,35 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
             (internalCollateral, _tokensHeld[0], _tokensHeld[1]) = calcCollateralPostTrade(deltas, loanData.tokensHeld, reserves);
 
             expLiqReward = internalCollateral;
-            //expLiqReward = GSMath.min(internalCollateral,loanData.liquidity) * 25 / 10000;
         }
-        //uint256 expLpReward = expLiqReward * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
         uint256 lpTokenPay = GSMath.min(expLiqReward,loanData.liquidity) * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
         uint256 lpTokenReduction = loanData.liquidity * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
-        //expLpReward = expLpReward > 1000 ? expLpReward - 1000 : 0;
 
         uint256 beforeWethBalance = IERC20(address(weth)).balanceOf(addr1);
         uint256 beforeUsdcBalance = IERC20(address(usdc)).balanceOf(addr1);
 
         if(loanData.liquidity > collateral * 990 / 1000) {
-            console.log("here1");
             uint256 beforeCfmmBalance = IERC20(cfmm).balanceOf(addr1);
             lpTokenPay = lpTokenPay + lpTokenPay / 100000;
-            console.log(lpTokenPay);
             IERC20(cfmm).transfer(address(pool), lpTokenPay);
             (uint256 loanLiquidity, uint256[] memory refund) = pool.liquidateWithLP(_tokenId);
             assertEq(loanLiquidity, loanData.liquidity);
-            //uint256 lpReward = IERC20(cfmm).balanceOf(addr1) - beforeCFMMBalance;
-            //assertGt(IERC20(cfmm).balanceOf(addr1),beforeCFMMBalance);
-            //assertApproxEqAbs(lpReward,expLpReward,1e14);
 
             assertEq(refund[0], IERC20(address(weth)).balanceOf(addr1) - beforeWethBalance);
             assertEq(refund[1], IERC20(address(usdc)).balanceOf(addr1) - beforeUsdcBalance);
             assertGt(IERC20(address(weth)).balanceOf(addr1),beforeWethBalance);
             assertGt(IERC20(address(usdc)).balanceOf(addr1),beforeUsdcBalance);
 
-
             IGammaPool.PoolData memory poolData1 = pool.getPoolData();
 
-            loanLiquidity = GSMath.sqrt(refund[0]*refund[1]) * poolData1.lastCFMMTotalSupply / poolData1.lastCFMMInvariant;
-            //assertGt(IERC20(cfmm).balanceOf(addr1) + loanLiquidity,beforeCfmmBalance); // TODO: does not match because
-            // we don't actually do the swap to make it match but it's value as a CFMM LP is higher. Must check this is true
+            tokensHeld[0] = uint128(refund[0]);
+            tokensHeld[1] = uint128(refund[1]);
+
+            int256[] memory deltas;
+            deltas = calcDeltasForMaxLP(tokensHeld, poolData1.CFMM_RESERVES, 18, 18);
+            (lpTokenPay,,) = calcCollateralPostTrade(deltas, tokensHeld, poolData1.CFMM_RESERVES);
+            loanLiquidity = lpTokenPay * poolData1.lastCFMMTotalSupply / poolData1.lastCFMMInvariant;
+            assertGt(IERC20(cfmm).balanceOf(addr1) + loanLiquidity,beforeCfmmBalance);
 
             assertEq(poolData1.BORROWED_INVARIANT, poolData.BORROWED_INVARIANT - loanData.liquidity);
             assertGt(poolData1.LP_TOKEN_BALANCE, poolData.LP_TOKEN_BALANCE);
@@ -208,7 +200,6 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
             IGammaPool.LoanData memory loanData1 = pool.getLoanData(_tokenId);
             assertEq(loanData1.liquidity, 0);
         } else {
-            console.log("here2");
             vm.expectRevert(bytes4(keccak256("HasMargin()")));
             pool.liquidateWithLP(_tokenId);
         }
