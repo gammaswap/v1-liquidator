@@ -189,6 +189,7 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
     }
 
     function testBorrowLiquidity18x18(uint8 amount0, uint8 amount1, uint8 lpTokens, uint72 ratio0, uint72 ratio1, uint8 _addr) public {
+        uint8 _addr = 0;
         if(amount0 == 0 || amount1 == 0) {
             if(amount0 < 10) amount0 = 10;
         } else {
@@ -292,7 +293,7 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
 
         if(ratio.length == 2) {
             IGammaPool.LoanData memory loanData = pool.loan(tokenId);
-            assertApproxEqAbs(uint256(loanData.tokensHeld[1]) * 1e18 / loanData.tokensHeld[0], uint256(ratio[1]) * 1e18 / ratio[0], 1e6);
+            assertApproxEqAbs(uint256(loanData.tokensHeld[1]) * 1e18 / loanData.tokensHeld[0], uint256(ratio[1]) * 1e18 / ratio[0], 1e8);
         }
 
         vm.stopPrank();

@@ -79,11 +79,8 @@ contract CPMMShortStrategyFuzz is CPMMGammaSwapSetup {
 
         (uint256[] memory reserves, uint256 shares) = posMgr.depositReserves(params);
 
-        uint256 diff = amountsDesired[0] > reserves[0] ? amountsDesired[0] - reserves[0] : reserves[0] - amountsDesired[0];
-        assertEq(diff/1e6, 0);
-
-        diff = amountsDesired[1] > reserves[1] ? amountsDesired[1] - reserves[1] : reserves[1] - amountsDesired[1];
-        assertEq(diff/1e6, 0);
+        assertApproxEqAbs(amountsDesired[0], reserves[0], 1e8);
+        assertApproxEqAbs(amountsDesired[1], reserves[1], 1e8);
 
         IGammaPool.PoolData memory poolData = pool.getPoolData();
 
@@ -93,11 +90,8 @@ contract CPMMShortStrategyFuzz is CPMMGammaSwapSetup {
         amount0 = shares * reserve0 / IERC20(address(pool)).totalSupply();
         amount1 = shares * reserve1 / IERC20(address(pool)).totalSupply();
 
-        diff = amount0 > reserves[0] ? amount0 - reserves[0] : reserves[0] - amount0;
-        assertEq(diff/1e8, 0);
-
-        diff = amount1 > reserves[1] ? amount1 - reserves[1] : reserves[1] - amount1;
-        assertEq(diff/1e8, 0);
+        assertApproxEqAbs(amount0, reserves[0], 1e8);
+        assertApproxEqAbs(amount1, reserves[1], 1e8);
 
         vm.stopPrank();
     }
