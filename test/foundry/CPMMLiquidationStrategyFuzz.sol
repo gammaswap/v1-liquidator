@@ -5,6 +5,7 @@ import "forge-std/Test.sol";
 import "forge-std/console.sol";
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@gammaswap/v1-core/contracts/test/strategies/external/TestExternalCallee2.sol";
 
 import "./fixtures/CPMMGammaSwapSetup.sol";
 
@@ -16,6 +17,8 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
 
     uint256 _tokenId;
     address addr3;
+
+    TestExternalCallee2 callee;
 
     function setUp() public {
         super.initCPMMGammaSwap(true);
@@ -32,6 +35,8 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
         factory.setPoolParams(address(pool), 0, 0, 10, 100, 100, 1, 25, 10);// setting ltv threshold to 1%, liqFee to 25bps
 
         _tokenId = openLoan(cfmm);
+
+        callee = new TestExternalCallee2();
     }
 
     function openLoan(address _cfmm) internal returns(uint256 tokenId) {
@@ -202,6 +207,92 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
         } else {
             vm.expectRevert(bytes4(keccak256("HasMargin()")));
             pool.liquidateWithLP(_tokenId);
+        }
+
+        vm.stopPrank();
+    }
+
+    function testExternalLiquidation18x18(uint8 tradeAmtPerc, bool side, uint8 blocks) public {
+        blocks = blocks == 0 ? 1 : blocks;
+        changePrice(tradeAmtPerc, side);
+
+        vm.startPrank(addr1);
+
+        IGammaPool.LoanData memory loanData = pool.loan(_tokenId);
+
+        vm.roll(uint256(blocks)*1_000_000);
+
+        pool.updatePool(_tokenId); // update loan and pool information to latest values
+
+        loanData = pool.getLoanData(_tokenId);
+
+        IGammaPool.PoolData memory poolData = pool.getPoolData();
+
+        uint256 collateral = GSMath.sqrt(uint256(loanData.tokensHeld[0]) * loanData.tokensHeld[1]);
+
+        uint256 expLiqReward;
+        {
+            uint128[] memory reserves = new uint128[](2);
+            reserves[0] = uint128(IERC20(address(weth)).balanceOf(cfmm));
+            reserves[1] = uint128(IERC20(address(usdc)).balanceOf(cfmm));
+
+            int256[] memory deltas;
+            deltas = calcDeltasForMaxLP(loanData.tokensHeld, reserves, 18, 18);
+
+            uint256[] memory _tokensHeld = new uint256[](2);
+            uint256 internalCollateral;
+            (internalCollateral, _tokensHeld[0], _tokensHeld[1]) = calcCollateralPostTrade(deltas, loanData.tokensHeld, reserves);
+
+            expLiqReward = internalCollateral;
+        }
+        uint256 lpTokenPay = GSMath.min(expLiqReward,loanData.liquidity) * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
+        uint256 lpTokenReduction = loanData.liquidity * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
+
+        IERC20(address(weth)).transfer(address(callee), 10);
+
+        uint256 beforeWethBalance = IERC20(address(weth)).balanceOf(addr1);
+        uint256 beforeUsdcBalance = IERC20(address(usdc)).balanceOf(addr1);
+
+        lpTokenPay = lpTokenPay + lpTokenPay / 100000;
+
+        TestExternalCallee2.SwapData memory swapData = TestExternalCallee2.SwapData({ strategy: address(pool),
+            cfmm: address(cfmm), token0: address(weth), token1: address(usdc), amount0: 110, amount1: 100, lpTokens: lpTokenPay});
+
+        if(loanData.liquidity > collateral * 990 / 1000) {
+            uint256 beforeCfmmBalance = IERC20(cfmm).balanceOf(addr1);
+            IERC20(cfmm).transfer(address(pool), lpTokenPay);
+
+            loanData.tokensHeld[0] = 100;
+            loanData.tokensHeld[1] = 100;
+
+            (uint256 loanLiquidity, uint256[] memory refund) = pool.liquidateExternally(_tokenId, loanData.tokensHeld, lpTokenPay, address(callee), abi.encode(swapData));
+            assertEq(loanLiquidity, loanData.liquidity);
+
+            assertEq(refund[0], IERC20(address(weth)).balanceOf(addr1) - beforeWethBalance);
+            assertEq(refund[1], IERC20(address(usdc)).balanceOf(addr1) - beforeUsdcBalance);
+            assertGt(IERC20(address(weth)).balanceOf(addr1),beforeWethBalance);
+            assertGt(IERC20(address(usdc)).balanceOf(addr1),beforeUsdcBalance);
+
+            IGammaPool.PoolData memory poolData1 = pool.getPoolData();
+
+            loanData.tokensHeld[0] = uint128(refund[0]);
+            loanData.tokensHeld[1] = uint128(refund[1]);
+
+            int256[] memory deltas;
+            deltas = calcDeltasForMaxLP(loanData.tokensHeld, poolData1.CFMM_RESERVES, 18, 18);
+            (lpTokenPay,,) = calcCollateralPostTrade(deltas, loanData.tokensHeld, poolData1.CFMM_RESERVES);
+            loanLiquidity = lpTokenPay * poolData1.lastCFMMTotalSupply / poolData1.lastCFMMInvariant;
+            assertGt(IERC20(cfmm).balanceOf(addr1) + loanLiquidity,beforeCfmmBalance);
+
+            assertEq(poolData1.BORROWED_INVARIANT, poolData.BORROWED_INVARIANT - loanData.liquidity);
+            assertGt(poolData1.LP_TOKEN_BALANCE, poolData.LP_TOKEN_BALANCE);
+            assertEq(poolData1.LP_TOKEN_BORROWED_PLUS_INTEREST, poolData.LP_TOKEN_BORROWED_PLUS_INTEREST - lpTokenReduction);
+
+            IGammaPool.LoanData memory loanData1 = pool.getLoanData(_tokenId);
+            assertEq(loanData1.liquidity, 0);
+        } else {
+            vm.expectRevert(bytes4(keccak256("HasMargin()")));
+            pool.liquidateExternally(_tokenId, new uint128[](2), 0, address(callee), abi.encode(swapData));
         }
 
         vm.stopPrank();
