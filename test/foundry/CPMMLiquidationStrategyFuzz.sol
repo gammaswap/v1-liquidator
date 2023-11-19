@@ -250,6 +250,9 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
 
         IERC20(address(weth)).transfer(address(callee), 10);
 
+        IERC20(address(weth)).transfer(address(pool), 10);
+        IERC20(address(usdc)).transfer(address(pool), 100);
+
         uint256 beforeWethBalance = IERC20(address(weth)).balanceOf(addr1);
         uint256 beforeUsdcBalance = IERC20(address(usdc)).balanceOf(addr1);
 
@@ -288,6 +291,9 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
             assertGt(poolData1.LP_TOKEN_BALANCE, poolData.LP_TOKEN_BALANCE);
             assertEq(poolData1.LP_TOKEN_BORROWED_PLUS_INTEREST, poolData.LP_TOKEN_BORROWED_PLUS_INTEREST - lpTokenReduction);
 
+            assertEq(poolData1.TOKEN_BALANCE[0], IERC20(address(weth)).balanceOf(address(pool)));
+            assertEq(poolData1.TOKEN_BALANCE[1], IERC20(address(usdc)).balanceOf(address(pool)));
+            assertEq(poolData1.LP_TOKEN_BALANCE, IERC20(cfmm).balanceOf(address(pool)));
             IGammaPool.LoanData memory loanData1 = pool.getLoanData(_tokenId);
             assertEq(loanData1.liquidity, 0);
         } else {
