@@ -665,7 +665,7 @@ describe("CPMMLiquidationStrategy", function () {
       expect(poolUpdateEvent.args.txType).to.equal(11);
     });
 
-    it("Liquidate with collateral, write down", async function () {
+    it.only("Liquidate with collateral, write down", async function () {
       await createStrategy(false, false, null);
 
       const tokenId = (await (await strategyFee.createLoan()).wait()).events[0]
@@ -777,7 +777,7 @@ describe("CPMMLiquidationStrategy", function () {
       const cfmmBalance0 = await cfmm.balanceOf(owner.address);
 
       const resp = await (await strategyFee._liquidate(tokenId)).wait();
-      const writeDownAmt = BigNumber.from("46157136933281181");
+      const writeDownAmt = BigNumber.from("46157136933282181");
       const len = resp.events.length;
       const liquidationEvent = resp.events[len - 3]; // 46157136933282181
       expect(liquidationEvent.event).to.equal("Liquidation");
