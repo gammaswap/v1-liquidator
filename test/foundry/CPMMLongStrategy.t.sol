@@ -12,7 +12,7 @@ import "./fixtures/CPMMGammaSwapSetup.sol";
 contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
 
     function setUp() public {
-        super.initCPMMGammaSwap();
+        super.initCPMMGammaSwap(false);
         depositLiquidityInCFMM(addr1, 2*1e24, 2*1e21);
         depositLiquidityInCFMM(addr2, 2*1e24, 2*1e21);
         depositLiquidityInPool(addr2);
