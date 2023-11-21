@@ -300,7 +300,7 @@ contract LiquidationStrategyTest is CPMMGammaSwapSetup {
         uint256 writeDown = loanData.liquidity - loanCollateralExLiqFee;
         assertGt(writeDown, 0);
 
-        uint256 collateralAsLP = convertInvariantToLP(loanCollateralForLiq) - 1000;
+        uint256 collateralAsLP = convertInvariantToLP(loanCollateralForLiq);
 
         (uint256 loanLiquidity, uint256 refund) = pool.liquidate(tokenId);
         IGammaPool.LoanData memory loanData1 = viewer.loan(address(pool), tokenId);
@@ -344,7 +344,7 @@ contract LiquidationStrategyTest is CPMMGammaSwapSetup {
         uint256 writeDown = loanData.liquidity - loanCollateralExLiqFee;
         assertGt(writeDown, 0);
 
-        uint256 collateralAsLP = convertInvariantToLP(loanCollateralForLiq) - 1000;
+        uint256 collateralAsLP = convertInvariantToLP(loanCollateralForLiq);
 
         IERC20(cfmm).transfer(address(pool), 100);
         IGammaPool.PoolData memory poolData = pool.getPoolData();
@@ -390,7 +390,7 @@ contract LiquidationStrategyTest is CPMMGammaSwapSetup {
 
         assertGt(loanCollateralExLiqFee, loanData.liquidity);   // No writedown
 
-        uint256 expectedRefund = convertInvariantToLP(loanData.liquidity * 250 / 10000) - 1000;
+        uint256 expectedRefund = convertInvariantToLP(loanData.liquidity * 250 / 10000);
 
         uint256 cfmmBal0 = IERC20(cfmm).balanceOf(addr1);
         (uint256 loanLiquidity, uint256 refund) = pool.liquidate(tokenId);
@@ -429,7 +429,7 @@ contract LiquidationStrategyTest is CPMMGammaSwapSetup {
 
         assertGt(loanCollateralExLiqFee, loanData.liquidity);   // No writedown
 
-        uint256 expectedRefund = convertInvariantToLP(loanData.liquidity * 250 / 10000) - 1000;
+        uint256 expectedRefund = convertInvariantToLP(loanData.liquidity * 250 / 10000);
 
         uint256 cfmmBal0 = IERC20(cfmm).balanceOf(addr1);
 
@@ -447,7 +447,7 @@ contract LiquidationStrategyTest is CPMMGammaSwapSetup {
         assertGt(loanCollateralExLiqFee, loanLiquidity);
         assertEq(refund, expectedRefund);
         assertGt(cfmmBal1, cfmmBal0);
-        assertGt(cfmmBal1 - cfmmBal0, refund);
+        assertEq(cfmmBal1 - cfmmBal0 + 100, refund);
     }
 
     function testLiquidateHasMarginError() public {
