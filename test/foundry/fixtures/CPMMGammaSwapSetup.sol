@@ -110,7 +110,7 @@ contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
             pool6x18 = CPMMGammaPool(factory.createPool(PROTOCOL_ID, cfmm6x18, tokens, new bytes(0)));
             approvePoolAndCFMM(pool6x18, cfmm6x18);
 
-            // 6x6 = weth6/usdc6
+            // 6x6 = usdc6/weth6
             tokens[0] = address(usdc6);
             tokens[1] = address(weth6);
             cfmm6x6 = createPair(tokens[0], tokens[1]);

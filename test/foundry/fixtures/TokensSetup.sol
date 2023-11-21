@@ -38,12 +38,12 @@ contract TokensSetup is Test {
             // 6x18 = weth6/usdc
             // 6x6 = weth6/usdc6
 
-            // weth < weth6 < usdc6 < usdc
-            weth = TestERC20(tokens[0]);
-            weth6 = TestERC20(tokens[1]);
-            usdc6 = TestERC20(tokens[2]);
-            usdt = TestERC20(tokens[3]);
-            usdc = TestERC20(tokens[4]);
+            // usdc6 < weth < usdc < weth6
+            usdc6 = TestERC20(tokens[0]);
+            weth = TestERC20(tokens[1]);
+            usdc = TestERC20(tokens[2]);
+            weth6 = TestERC20(tokens[3]);
+            usdt = TestERC20(tokens[4]);
             weth.setMetaData("Wrapped Ethereum", "WETH", 18);
             weth6.setMetaData("Wrapped Ethereum6", "WETH6", 6);
             usdc6.setMetaData("USDC6", "USDC6", 6);
