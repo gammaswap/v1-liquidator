@@ -665,7 +665,7 @@ describe("CPMMLiquidationStrategy", function () {
       expect(poolUpdateEvent.args.txType).to.equal(11);
     });
 
-    it.only("Liquidate with collateral, write down", async function () {
+    it("Liquidate with collateral, write down", async function () {
       await createStrategy(false, false, null);
 
       const tokenId = (await (await strategyFee.createLoan()).wait()).events[0]
