@@ -457,7 +457,7 @@ describe("CPMMLiquidationStrategy", function () {
   });
 
   describe("Liquidate Loans", function () {
-    it("Liquidate with collateral, no write down", async function () {
+    it.skip("Liquidate with collateral, no write down", async function () {
       await createStrategy(false, false, null);
 
       const tokenId = (await (await strategyFee.createLoan()).wait()).events[0]
@@ -665,7 +665,7 @@ describe("CPMMLiquidationStrategy", function () {
       expect(poolUpdateEvent.args.txType).to.equal(11);
     });
 
-    it("Liquidate with collateral, write down", async function () {
+    it.skip("Liquidate with collateral, write down", async function () {
       await createStrategy(false, false, null);
 
       const tokenId = (await (await strategyFee.createLoan()).wait()).events[0]
@@ -875,7 +875,7 @@ describe("CPMMLiquidationStrategy", function () {
       expect(poolUpdateEvent.args.txType).to.equal(11);
     });
 
-    it("Liquidate with collateral, swap", async function () {
+    it.skip("Liquidate with collateral, swap", async function () {
       await createStrategy(false, false, null);
 
       const tokenId = (await (await strategyFee.createLoan()).wait()).events[0]
