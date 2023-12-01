@@ -23,27 +23,41 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
     function setUp() public {
         super.initCPMMGammaSwap(true);
 
-        uint256 usdcAmount = 2_500_000 / 2;
-        uint256 wethAmount = 1_250 / 2;
-
         addr3 = vm.addr(123);
 
-        depositLiquidityInCFMMByToken(address(usdc), address(weth), usdcAmount*1e18, wethAmount*1e18, addr1);
-        depositLiquidityInCFMMByToken(address(usdc), address(weth), usdcAmount*1e18, wethAmount*1e18, addr2);
-        depositLiquidityInPoolFromCFMM(pool, cfmm, addr2);
-
         factory.setPoolParams(address(pool), 0, 0, 10, 100, 100, 1, 25, 10);// setting ltv threshold to 1%, liqFee to 25bps
-
-        _tokenId = openLoan(cfmm);
 
         callee = new TestExternalCallee2();
     }
 
     function openLoan(address _cfmm) internal returns(uint256 tokenId) {
+        uint256 usdcAmount = 2_500_000 / 2;
+        uint256 wethAmount = 1_250 / 2;
+
+        if (_cfmm == cfmm) {
+            depositLiquidityInCFMMByToken(address(usdc), address(weth), usdcAmount*1e18, wethAmount*1e18, addr1);
+            depositLiquidityInCFMMByToken(address(usdc), address(weth), usdcAmount*1e18, wethAmount*1e18, addr2);
+            depositLiquidityInPoolFromCFMM(pool, _cfmm, addr2);
+        } else if (_cfmm == cfmm18x6) {
+            depositLiquidityInCFMMByToken(address(usdc), address(weth6), usdcAmount*1e18, wethAmount*1e6, addr1);
+            depositLiquidityInCFMMByToken(address(usdc), address(weth6), usdcAmount*1e18, wethAmount*1e6, addr2);
+            depositLiquidityInPoolFromCFMM(pool18x6, _cfmm, addr2);
+        } else if (_cfmm == cfmm6x18) {
+            depositLiquidityInCFMMByToken(address(usdc6), address(weth), usdcAmount*1e6, wethAmount*1e18, addr1);
+            depositLiquidityInCFMMByToken(address(usdc6), address(weth), usdcAmount*1e6, wethAmount*1e18, addr2);
+            depositLiquidityInPoolFromCFMM(pool6x18, _cfmm, addr2);
+        } else if (_cfmm == cfmm6x6) {
+            depositLiquidityInCFMMByToken(address(usdc6), address(weth6), usdcAmount*1e6, wethAmount*1e6, addr1);
+            depositLiquidityInCFMMByToken(address(usdc6), address(weth6), usdcAmount*1e6, wethAmount*1e6, addr2);
+            depositLiquidityInPoolFromCFMM(pool6x6, _cfmm, addr2);
+        }
+
         uint256[] memory _amounts = new uint256[](2);
         _amounts[1] = 15*1e18;
 
         vm.startPrank(addr2);
+
+        uint256 lpTokens = _cfmm == cfmm ? 35*1e17 : _cfmm == cfmm6x6 ? 35*1e5 : 35*1e11;
 
         IPositionManager.CreateLoanBorrowAndRebalanceParams memory params = IPositionManager.CreateLoanBorrowAndRebalanceParams({
             protocolId: 1,
@@ -51,7 +65,7 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
             to: addr2,
             refId: 0,
             amounts: _amounts,
-            lpTokens: 35*1e17,
+            lpTokens: lpTokens,
             ratio: new uint256[](0),
             minBorrowed: new uint256[](2),
             minCollateral: new uint128[](2),
@@ -76,6 +90,8 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
     }
 
     function testLiquidate18x18(uint8 tradeAmtPerc, bool side, uint8 blocks) public {
+        _tokenId = openLoan(cfmm);
+
         blocks = blocks == 0 ? 1 : blocks;
         changePrice(tradeAmtPerc, side);
 
@@ -135,6 +151,8 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
     }
 
     function testLiquidateWithLP18x18(uint8 tradeAmtPerc, bool side, uint8 blocks) public {
+        _tokenId = openLoan(cfmm);
+
         blocks = blocks == 0 ? 1 : blocks;
         changePrice(tradeAmtPerc, side);
 
@@ -213,6 +231,8 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
     }
 
     function testExternalLiquidation18x18(uint8 tradeAmtPerc, bool side, uint8 blocks) public {
+        _tokenId = openLoan(cfmm);
+
         blocks = blocks == 0 ? 1 : blocks;
         changePrice(tradeAmtPerc, side);
 
