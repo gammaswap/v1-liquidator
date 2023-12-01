@@ -2497,8 +2497,9 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         assertEq(loanData.liquidity,0);
         assertGt(loanData.tokensHeld[0],0);
         assertGt(loanData.tokensHeld[1],0);
+        assertApproxEqRel(uint256(loanData.tokensHeld[1])*1e18/uint256(loanData.tokensHeld[0]),ratio[1]*1e18/ratio[0],6*1e16);
         assertEq(loanData.tokensHeld[0]/1e18,663);
-        assertEq(loanData.tokensHeld[1]/1e18,666194);
+        assertEq(loanData.tokensHeld[1]/1e18,627492);
 
         uint256 usdcBal1 = usdc.balanceOf(addr1);
         uint256 wethBal1 = weth.balanceOf(addr1);
@@ -2568,7 +2569,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         assertGt(loanData.tokensHeld[0],0);
         assertGt(loanData.tokensHeld[1],0);
         assertEq(loanData.tokensHeld[0]/1e18,663);
-        assertEq(loanData.tokensHeld[1]/1e18,666194);
+        assertEq(loanData.tokensHeld[1]/1e18,627492);
 
         uint256 usdcBal1 = usdc.balanceOf(addr1);
         uint256 wethBal1 = weth.balanceOf(addr1);
@@ -2640,7 +2641,8 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
 
         uint256 strikePx1 = uint256(loanData.tokensHeld[1]) * 1e18 / loanData.tokensHeld[0];
         assertEq(loanData.tokensHeld[0]/1e18,682);
-        assertEq(loanData.tokensHeld[1]/1e18,683174);
+        assertEq(loanData.tokensHeld[1]/1e18,662542);
+        assertApproxEqRel(uint256(loanData.tokensHeld[1])*1e18/loanData.tokensHeld[0],ratio[1]*1e18/ratio[0],3*1e16);
 
         uint256 usdcBal1 = usdc.balanceOf(addr1);
         uint256 wethBal1 = weth.balanceOf(addr1);
@@ -2710,7 +2712,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
 
         uint256 strikePx1 = uint256(loanData.tokensHeld[1]) * 1e18 / loanData.tokensHeld[0];
         assertEq(loanData.tokensHeld[0]/1e18,682);
-        assertEq(loanData.tokensHeld[1]/1e18,683174);
+        assertEq(loanData.tokensHeld[1]/1e18,662542);
 
         uint256 usdcBal1 = usdc.balanceOf(addr1);
         uint256 wethBal1 = weth.balanceOf(addr1);
@@ -2770,6 +2772,8 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 liquidityPaid;
         uint256[] memory ratio = new uint256[](3);
 
+        uint256 strikePx1 = uint256(loanData.tokensHeld[1]) * 1e18 / loanData.tokensHeld[0];
+
         (liquidityPaid,) = pool.repayLiquiditySetRatio(tokenId, loanData.liquidity/2, ratio);
         assertEq(liquidityPaid/1e6, (loanData.liquidity/2)/1e6);
 
@@ -2778,10 +2782,9 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         assertGt(loanData.tokensHeld[0],0);
         assertGt(loanData.tokensHeld[1],0);
 
-        uint256 strikePx1 = uint256(loanData.tokensHeld[1]) * 1e18 / loanData.tokensHeld[0];
         assertEq(loanData.tokensHeld[0]/1e18,682);
-        assertEq(loanData.tokensHeld[1]/1e18,683174);
-
+        assertEq(loanData.tokensHeld[1]/1e18,662542);
+        assertApproxEqRel(uint256(loanData.tokensHeld[1]) * 1e18 / loanData.tokensHeld[0], strikePx1, 3*1e16);
         uint256 usdcBal1 = usdc.balanceOf(addr1);
         uint256 wethBal1 = weth.balanceOf(addr1);
         assertEq(usdcBal1, usdcBal0);
@@ -2848,7 +2851,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
 
         uint256 strikePx1 = uint256(loanData1.tokensHeld[1]) * 1e18 / loanData1.tokensHeld[0];
 
-        assertEq((strikePx1 - strikePx)/1e18, 1);
+        assertApproxEqRel(strikePx1, strikePx, 3*1e16);
     }
 
     function testRepayLiquiditySetRatioHalfWrong2() public {
@@ -2909,7 +2912,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
 
         uint256 strikePx1 = uint256(loanData1.tokensHeld[1]) * 1e18 / loanData1.tokensHeld[0];
 
-        assertEq((strikePx1 - strikePx)/1e18, 1);
+        assertApproxEqRel(strikePx1, strikePx, 3*1e16);
     }
 
     function testRepayLiquiditySetRatioHalfWrong3() public {
@@ -2970,7 +2973,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
 
         uint256 strikePx1 = uint256(loanData1.tokensHeld[1]) * 1e18 / loanData1.tokensHeld[0];
 
-        assertEq((strikePx1 - strikePx)/1e18, 1);
+        assertApproxEqRel(strikePx1, strikePx, 3*1e16);
     }
 
     function testRepayLiquiditySetRatioFullChange(uint8 num1, uint8 num2) public {
