@@ -69,13 +69,13 @@ contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
 
         mathLib = new CPMMMath();
         viewer = new PoolViewer();
-        longStrategy = new CPMMBorrowStrategy(address(mathLib), maxTotalApy, 2252571, 997, 1000, baseRate, factor, maxApy);
-        repayStrategy = new CPMMRepayStrategy(address(mathLib), maxTotalApy, 2252571, 997, 1000, baseRate, factor, maxApy);
+        longStrategy = new CPMMBorrowStrategy(address(mathLib), maxTotalApy, 2252571, 997, address(0), baseRate, factor, maxApy);
+        repayStrategy = new CPMMRepayStrategy(address(mathLib), maxTotalApy, 2252571, 997, address(0), baseRate, factor, maxApy);
         shortStrategy = new CPMMShortStrategy(maxTotalApy, 2252571, baseRate, factor, maxApy);
-        liquidationStrategy = new CPMMLiquidationStrategy(address(mathLib), maxTotalApy, 2252571, 997, 1000, baseRate, factor, maxApy);
-        batchLiquidationStrategy = new CPMMBatchLiquidationStrategy(address(mathLib), maxTotalApy, 2252571, 997, 1000, baseRate, factor, maxApy);
-        externalRebalanceStrategy = new CPMMExternalRebalanceStrategy(maxTotalApy, 2252571, 997, 1000, baseRate, factor, maxApy);
-        externalLiquidationStrategy = new CPMMExternalLiquidationStrategy(address(mathLib), maxTotalApy, 2252571, 997, 1000, baseRate, factor, maxApy);
+        liquidationStrategy = new CPMMLiquidationStrategy(address(mathLib), maxTotalApy, 2252571, 997, address(0), baseRate, factor, maxApy);
+        batchLiquidationStrategy = new CPMMBatchLiquidationStrategy(address(mathLib), maxTotalApy, 2252571, 997, address(0), baseRate, factor, maxApy);
+        externalRebalanceStrategy = new CPMMExternalRebalanceStrategy(maxTotalApy, 2252571, 997, address(0), baseRate, factor, maxApy);
+        externalLiquidationStrategy = new CPMMExternalLiquidationStrategy(address(mathLib), maxTotalApy, 2252571, 997, address(0), baseRate, factor, maxApy);
 
         bytes32 cfmmHash = hex'96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f'; // UniV2Pair init_code_hash
 
