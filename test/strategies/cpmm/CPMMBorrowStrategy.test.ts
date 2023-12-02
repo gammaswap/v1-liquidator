@@ -87,7 +87,7 @@ describe("CPMMBorrowStrategy", function () {
     strategy = await TestStrategy.deploy(
       addr3.address,
       997,
-      1000,
+      ethers.constants.AddressZero,
       baseRate,
       factor,
       maxApy
@@ -150,7 +150,7 @@ describe("CPMMBorrowStrategy", function () {
     strategyFee = await TestStrategy.deploy(
       addr3.address,
       997,
-      1000,
+      ethers.constants.AddressZero,
       baseRate,
       factor,
       maxApy

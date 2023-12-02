@@ -86,7 +86,7 @@ describe("CPMMRepayStrategy", function () {
     strategy = await TestStrategy.deploy(
       addr2.address,
       997,
-      1000,
+      ethers.constants.AddressZero,
       baseRate,
       factor,
       maxApy
@@ -149,7 +149,7 @@ describe("CPMMRepayStrategy", function () {
     strategyFee = await TestStrategy.deploy(
       addr2.address,
       997,
-      1000,
+      ethers.constants.AddressZero,
       baseRate,
       factor,
       maxApy
@@ -213,7 +213,7 @@ describe("CPMMRepayStrategy", function () {
     const reserves0 = rez._reserve0;
     const reserves1 = rez._reserve1;
 
-    await (await strategy.setCFMMReserves(reserves0, reserves1, 0)).wait();
+    await (await strategy.setCFMMReserves(reserves0, reserves1, 0, 0)).wait();
 
     return { res0: reserves0, res1: reserves1 };
   }
@@ -312,12 +312,13 @@ describe("CPMMRepayStrategy", function () {
         reserves0,
         reserves1,
       ]);
+      const lastCFMMTotalSupply = lastCFMMInvariant;
       const liquidity = ONE.mul(100);
       await (
-        await strategy.setCFMMReserves(reserves0, reserves1, lastCFMMInvariant)
+        await strategy.setCFMMReserves(reserves0, reserves1, lastCFMMInvariant, lastCFMMTotalSupply)
       ).wait();
-      const expToken0 = liquidity.mul(reserves0).div(lastCFMMInvariant);
-      const expToken1 = liquidity.mul(reserves1).div(lastCFMMInvariant);
+      const expToken0 = liquidity.mul(reserves0).div(lastCFMMInvariant).add(1);
+      const expToken1 = liquidity.mul(reserves1).div(lastCFMMInvariant).add(1);
       const res0 = await strategy.testCalcTokensToRepay(liquidity);
       expect(res0[0]).to.equal(expToken0);
       expect(res0[1]).to.equal(expToken1);
@@ -328,15 +329,17 @@ describe("CPMMRepayStrategy", function () {
         reserves0a,
         reserves1a,
       ]);
+      const lastCFMMTotalSupply1 = lastCFMMInvariant1;
       await (
         await strategy.setCFMMReserves(
           reserves0a,
           reserves1a,
-          lastCFMMInvariant1
+          lastCFMMInvariant1,
+          lastCFMMTotalSupply1
         )
       ).wait();
-      const expToken0a = liquidity.mul(reserves0a).div(lastCFMMInvariant1);
-      const expToken1a = liquidity.mul(reserves1a).div(lastCFMMInvariant1);
+      const expToken0a = liquidity.mul(reserves0a).div(lastCFMMInvariant1).add(1);
+      const expToken1a = liquidity.mul(reserves1a).div(lastCFMMInvariant1).add(1);
       const res1 = await strategy.testCalcTokensToRepay(liquidity);
       expect(res1[0]).to.equal(expToken0a);
       expect(res1[1]).to.equal(expToken1a);
@@ -347,15 +350,17 @@ describe("CPMMRepayStrategy", function () {
         reserves0b,
         reserves1b,
       ]);
-      await (
+      const lastCFMMTotalSupply2 =lastCFMMInvariant2
+          await (
         await strategy.setCFMMReserves(
           reserves0b,
           reserves1b,
-          lastCFMMInvariant2
+          lastCFMMInvariant2,
+          lastCFMMTotalSupply2
         )
       ).wait();
-      const expToken0b = liquidity.mul(reserves0b).div(lastCFMMInvariant2);
-      const expToken1b = liquidity.mul(reserves1b).div(lastCFMMInvariant2);
+      const expToken0b = liquidity.mul(reserves0b).div(lastCFMMInvariant2).add(1);
+      const expToken1b = liquidity.mul(reserves1b).div(lastCFMMInvariant2).add(1);
       const res2 = await strategy.testCalcTokensToRepay(liquidity);
       expect(res2[0]).to.equal(expToken0b);
       expect(res2[1]).to.equal(expToken1b);
@@ -673,7 +678,7 @@ describe("CPMMRepayStrategy", function () {
       expect(loan2.lpTokens).gt(0);
       expect(loan2.tokensHeld.length).to.equal(2);
       expect(loan2.tokensHeld[0]).lt(tokensHeld0);
-      expect(loan2.tokensHeld[1]).to.equal(tokensHeld1);
+      expect(loan2.tokensHeld[1]).to.equal(tokensHeld1.add(1));
 
       await (
         await strategyFee._repayLiquidity(
