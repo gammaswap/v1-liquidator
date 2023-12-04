@@ -9,6 +9,13 @@ import "@gammaswap/v1-core/contracts/test/strategies/external/TestExternalCallee
 
 import "./fixtures/CPMMGammaSwapSetup.sol";
 
+enum PAIR {
+    PAIR18x18,
+    PAIR18x6,
+    PAIR6x18,
+    PAIR6x6
+}
+
 contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
 
     error ZeroTokensHeld();
@@ -53,7 +60,13 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
         }
 
         uint256[] memory _amounts = new uint256[](2);
-        _amounts[1] = 15*1e18;
+        if (_cfmm == cfmm) {
+            _amounts[1] = 15*1e18;
+        } else if (_cfmm == cfmm18x6) {
+            _amounts[0] = 15*1e18;
+        } else if (_cfmm == cfmm6x18 || _cfmm == cfmm6x6) {
+            _amounts[0] = 15*1e6;
+        }
 
         vm.startPrank(addr2);
 
@@ -77,10 +90,23 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
         vm.stopPrank();
     }
 
-    function changePrice(uint8 tradeAmtPerc, bool side) internal returns(bool chng){
+    function changePrice(uint8 tradeAmtPerc, bool side, PAIR tokenPair) internal returns(bool chng){
         vm.startPrank(addr1);
-        address tokenIn = side ? address(weth) : address(usdc);
-        address tokenOut = side ? address(usdc) : address(weth);
+        address tokenIn;
+        address tokenOut;
+        if (tokenPair == PAIR.PAIR18x18) {
+            tokenIn = side ? address(weth) : address(usdc);
+            tokenOut = side ? address(usdc) : address(weth);
+        } else if (tokenPair == PAIR.PAIR18x6) {
+            tokenIn = side ? address(weth6) : address(usdc);
+            tokenOut = side ? address(usdc) : address(weth6);
+        } else if (tokenPair == PAIR.PAIR6x18) {
+            tokenIn = side ? address(weth) : address(usdc6);
+            tokenOut = side ? address(usdc6) : address(weth);
+        } else if (tokenPair == PAIR.PAIR6x6) {
+            tokenIn = side ? address(weth6) : address(usdc6);
+            tokenOut = side ? address(usdc6) : address(weth6);
+        }
         uint256 tokenAmt = IERC20(tokenIn).balanceOf(addr1) * tradeAmtPerc / 300;
 
         chng = tokenAmt > 0;
@@ -93,7 +119,7 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
         _tokenId = openLoan(cfmm);
 
         blocks = blocks == 0 ? 1 : blocks;
-        changePrice(tradeAmtPerc, side);
+        changePrice(tradeAmtPerc, side, PAIR.PAIR18x18);
 
         vm.startPrank(addr3);
 
@@ -150,11 +176,71 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
         vm.stopPrank();
     }
 
+    function testLiquidate18x6(uint8 tradeAmtPerc, bool side, uint8 blocks) public {
+        _tokenId = openLoan(cfmm18x6);
+
+        blocks = blocks == 0 ? 1 : blocks;
+        changePrice(tradeAmtPerc, side, PAIR.PAIR18x6);
+        vm.startPrank(addr3);
+
+        IGammaPool.LoanData memory loanData = pool18x6.loan(_tokenId);
+        uint128[] memory tokensHeld = loanData.tokensHeld;
+
+        vm.roll(uint256(blocks)*1_000_000);
+
+        pool18x6.updatePool(_tokenId); // update loan and pool information to latest values
+
+        loanData = pool18x6.getLoanData(_tokenId);
+
+        IGammaPool.PoolData memory poolData = pool18x6.getPoolData();
+
+        tokensHeld = loanData.tokensHeld;
+        uint256 collateral = GSMath.sqrt(uint256(tokensHeld[0]) * tokensHeld[1]);
+
+        uint128[] memory reserves = new uint128[](2);
+        reserves[0] = uint128(IERC20(address(usdc)).balanceOf(cfmm18x6));
+        reserves[1] = uint128(IERC20(address(weth6)).balanceOf(cfmm18x6));
+
+        int256[] memory deltas;
+        deltas = calcDeltasForMaxLP(loanData.tokensHeld, reserves, 18, 6);
+
+        (uint256 internalCollateral,,) = calcCollateralPostTrade(deltas, loanData.tokensHeld, reserves);
+
+        uint256 expLiqReward = GSMath.min(internalCollateral,loanData.liquidity) * 25 / 10000;
+        uint256 expLpReward = expLiqReward * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
+        uint256 lpTokenReduction = loanData.liquidity * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
+        expLpReward = expLpReward > 1000 ? expLpReward - 1000 : 0;
+        uint256 beforeCFMMBalance = IERC20(cfmm18x6).balanceOf(addr3);
+
+        if(loanData.liquidity > collateral * 990 / 1000) {
+            console.log("@@@", loanData.liquidity, collateral);
+            (uint256 loanLiquidity, uint256 refund) = pool18x6.liquidate(_tokenId);
+            assertEq(loanLiquidity, loanData.liquidity);
+            refund = IERC20(cfmm18x6).balanceOf(addr3) - beforeCFMMBalance;
+            assertGt(IERC20(cfmm18x6).balanceOf(addr3), beforeCFMMBalance);
+            assertApproxEqAbs(refund, expLpReward, 1e14);
+
+            IGammaPool.PoolData memory poolData1 = pool18x6.getPoolData();
+
+            assertEq(poolData1.BORROWED_INVARIANT, poolData.BORROWED_INVARIANT - loanData.liquidity);
+            assertGt(poolData1.LP_TOKEN_BALANCE, poolData.LP_TOKEN_BALANCE);
+            assertEq(poolData1.LP_TOKEN_BORROWED_PLUS_INTEREST, poolData.LP_TOKEN_BORROWED_PLUS_INTEREST - lpTokenReduction);
+
+            IGammaPool.LoanData memory loanData1 = pool18x6.getLoanData(_tokenId);
+            assertEq(loanData1.liquidity, 0);
+        } else {
+            vm.expectRevert(bytes4(keccak256("HasMargin()")));
+            pool18x6.liquidate(_tokenId);
+        }
+
+        vm.stopPrank();
+    }
+
     function testLiquidateWithLP18x18(uint8 tradeAmtPerc, bool side, uint8 blocks) public {
         _tokenId = openLoan(cfmm);
 
         blocks = blocks == 0 ? 1 : blocks;
-        changePrice(tradeAmtPerc, side);
+        changePrice(tradeAmtPerc, side, PAIR.PAIR18x18);
 
         vm.startPrank(addr1);
 
@@ -234,7 +320,7 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
         _tokenId = openLoan(cfmm);
 
         blocks = blocks == 0 ? 1 : blocks;
-        changePrice(tradeAmtPerc, side);
+        changePrice(tradeAmtPerc, side, PAIR.PAIR18x18);
 
         vm.startPrank(addr1);
 
