@@ -105,7 +105,7 @@ describe("CPMMLiquidationStrategy", function () {
       maxTotalApy,
       2252571,
       997,
-      1000,
+      ethers.constants.AddressZero,
       baseRate,
       factor,
       maxApy
@@ -116,7 +116,7 @@ describe("CPMMLiquidationStrategy", function () {
         maxTotalApy,
         2252571,
         997,
-        1000,
+        ethers.constants.AddressZero,
         baseRate,
         factor,
         maxApy
@@ -129,11 +129,11 @@ describe("CPMMLiquidationStrategy", function () {
         gsFactory.address,
         cfmm.address,
         [tokenA.address, tokenB.address],
-        [18, 18]
+        [18, 18],
+        250,
+        50
       )
     ).wait();
-
-    await (await strategy.setPoolParams(250, 50)).wait();
 
     await (
         await strategyWithLP.initialize(
@@ -144,7 +144,7 @@ describe("CPMMLiquidationStrategy", function () {
         )
     ).wait();
 
-    await (await strategyWithLP.setPoolParams(250, 50)).wait();
+    (await strategyWithLP.setPoolParams(250, 50)).wait();
   });
 
   async function createStrategy(tok0Fee: any, tok1Fee: any, feePerc: any) {
@@ -194,7 +194,7 @@ describe("CPMMLiquidationStrategy", function () {
       maxTotalApy,
       2252571,
       997,
-      1000,
+      ethers.constants.AddressZero,
       baseRate,
       factor,
       maxApy
@@ -205,11 +205,11 @@ describe("CPMMLiquidationStrategy", function () {
         gsFactory.address,
         cfmmFee.address,
         [tokenAFee.address, tokenBFee.address],
-        [18, 18]
+        [18, 18],
+        250,
+        50
       )
     ).wait();
-
-    await (await strategyFee.setPoolParams(250, 50)).wait();
   }
 
 
@@ -260,7 +260,7 @@ describe("CPMMLiquidationStrategy", function () {
         maxTotalApy,
         2252571,
         997,
-        1000,
+        ethers.constants.AddressZero,
         baseRate,
         factor,
         maxApy
@@ -275,7 +275,7 @@ describe("CPMMLiquidationStrategy", function () {
         )
     ).wait();
 
-    await (await strategyFee.setPoolParams(250, 50)).wait();
+    (await strategyFee.setPoolParams(250, 50)).wait()
   }
 
   async function createPair(token1: any, token2: any) {
