@@ -33,6 +33,9 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
         addr3 = vm.addr(123);
 
         factory.setPoolParams(address(pool), 0, 0, 10, 100, 100, 1, 25, 10);// setting ltv threshold to 1%, liqFee to 25bps
+        factory.setPoolParams(address(pool6x6), 0, 0, 10, 100, 100, 1, 25, 10);// setting ltv threshold to 1%, liqFee to 25bps
+        factory.setPoolParams(address(pool18x6), 0, 0, 10, 100, 100, 1, 25, 10);// setting ltv threshold to 1%, liqFee to 25bps
+        factory.setPoolParams(address(pool6x18), 0, 0, 10, 100, 100, 1, 25, 10);// setting ltv threshold to 1%, liqFee to 25bps
 
         callee = new TestExternalCallee2();
     }
@@ -155,7 +158,7 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
         if(loanData.liquidity > collateral * 990 / 1000) {
             (uint256 loanLiquidity, uint256 refund) = pool.liquidate(_tokenId);
             assertEq(loanLiquidity, loanData.liquidity);
-            //assertEq(refund, IERC20(cfmm).balanceOf(addr3) - beforeCFMMBalance); // TODO: remove subtraction of 1000 from refund in strategy. It's already covered in excessInvariant part.
+            assertEq(refund, IERC20(cfmm).balanceOf(addr3) - beforeCFMMBalance);
             refund = IERC20(cfmm).balanceOf(addr3) - beforeCFMMBalance;
             assertGt(IERC20(cfmm).balanceOf(addr3),beforeCFMMBalance);
             assertApproxEqAbs(refund,expLpReward,1e14);
@@ -215,6 +218,7 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
         if(loanData.liquidity > collateral * 990 / 1000) {
             console.log("@@@", loanData.liquidity, collateral);
             (uint256 loanLiquidity, uint256 refund) = pool18x6.liquidate(_tokenId);
+            assertLe(refund, IERC20(cfmm18x6).balanceOf(addr3) - beforeCFMMBalance);
             assertEq(loanLiquidity, loanData.liquidity);
             refund = IERC20(cfmm18x6).balanceOf(addr3) - beforeCFMMBalance;
             assertGt(IERC20(cfmm18x6).balanceOf(addr3), beforeCFMMBalance);
