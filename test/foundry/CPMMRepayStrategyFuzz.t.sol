@@ -104,7 +104,10 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
         vm.startPrank(addr1);
 
         address to = vm.addr(toNum);
-        IGammaPool.LoanData memory loanData = pool.loan(_tokenId);
+
+        vm.roll(100);
+
+        IGammaPool.LoanData memory loanData = IPoolViewer(pool.viewer()).loan(address(pool), _tokenId);
         uint256 payLiquidity = GSMath.min(loanData.liquidity * payLiquidityPerc / 250, loanData.liquidity);
 
         IPositionManager.RepayLiquidityParams memory params = IPositionManager.RepayLiquidityParams({
@@ -123,11 +126,14 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
         if(payLiquidity == 0) {
             vm.expectRevert(bytes4(keccak256("ZeroRepayLiquidity()")));
             posMgr.repayLiquidity(params);
+        } else if(loanData.liquidity > payLiquidity && loanData.liquidity - payLiquidity <= 1000) {
+            vm.expectRevert(bytes4(keccak256("MinBorrow()")));
+            posMgr.repayLiquidity(params);
         } else {
             uint256 wethBalancePrev = IERC20(address(weth)).balanceOf(to);
             uint256 usdcBalancePrev = IERC20(address(usdc)).balanceOf(to);
 
-            IGammaPool.PoolData memory prevPoolData = pool.getPoolData();
+            IGammaPool.PoolData memory prevPoolData = IPoolViewer(pool.viewer()).getLatestPoolData(address(pool));
 
             (uint256 liquidityPaid, uint256[] memory amounts) = posMgr.repayLiquidity(params);
 
@@ -155,7 +161,10 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
         vm.startPrank(addr1);
 
         address to = vm.addr(toNum);
-        IGammaPool.LoanData memory loanData = pool18x6.loan(_tokenId18x6);
+
+        vm.roll(100);
+
+        IGammaPool.LoanData memory loanData = IPoolViewer(pool18x6.viewer()).loan(address(pool18x6), _tokenId18x6);
         uint256 payLiquidity = GSMath.min(loanData.liquidity * payLiquidityPerc / 250, loanData.liquidity);
 
         IPositionManager.RepayLiquidityParams memory params = IPositionManager.RepayLiquidityParams({
@@ -174,13 +183,15 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
         if(payLiquidity == 0) {
             vm.expectRevert(bytes4(keccak256("ZeroRepayLiquidity()")));
             posMgr.repayLiquidity(params);
+        } else if(loanData.liquidity > payLiquidity && loanData.liquidity - payLiquidity <= 1000) {
+            vm.expectRevert(bytes4(keccak256("MinBorrow()")));
+            posMgr.repayLiquidity(params);
         } else {
             uint256 wethBalancePrev = IERC20(address(weth6)).balanceOf(to);
             uint256 usdcBalancePrev = IERC20(address(usdc)).balanceOf(to);
 
-            IGammaPool.PoolData memory prevPoolData = pool18x6.getPoolData();
+            IGammaPool.PoolData memory prevPoolData = IPoolViewer(pool18x6.viewer()).getLatestPoolData(address(pool18x6));
 
-            IGammaPool.LoanData memory loanData = pool18x6.loan(_tokenId18x6);
             (uint256 liquidityPaid, uint256[] memory amounts) = posMgr.repayLiquidity(params);
 
             IGammaPool.PoolData memory poolData = pool18x6.getPoolData();
@@ -211,7 +222,10 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
         vm.startPrank(addr1);
 
         address to = vm.addr(toNum);
-        IGammaPool.LoanData memory loanData = pool6x18.loan(_tokenId6x18);
+
+        vm.roll(100);
+
+        IGammaPool.LoanData memory loanData = IPoolViewer(pool6x18.viewer()).loan(address(pool6x18), _tokenId6x18);
         uint256 payLiquidity = GSMath.min(loanData.liquidity * payLiquidityPerc / 250, loanData.liquidity);
 
         IPositionManager.RepayLiquidityParams memory params = IPositionManager.RepayLiquidityParams({
@@ -230,13 +244,15 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
         if(payLiquidity == 0) {
             vm.expectRevert(bytes4(keccak256("ZeroRepayLiquidity()")));
             posMgr.repayLiquidity(params);
+        } else if(loanData.liquidity > payLiquidity && loanData.liquidity - payLiquidity <= 1000) {
+            vm.expectRevert(bytes4(keccak256("MinBorrow()")));
+            posMgr.repayLiquidity(params);
         } else {
             uint256 wethBalancePrev = IERC20(address(weth)).balanceOf(to);
             uint256 usdcBalancePrev = IERC20(address(usdc6)).balanceOf(to);
 
-            IGammaPool.PoolData memory prevPoolData = pool6x18.getPoolData();
+            IGammaPool.PoolData memory prevPoolData = IPoolViewer(pool6x18.viewer()).getLatestPoolData(address(pool6x18));
 
-            IGammaPool.LoanData memory loanData = pool6x18.loan(_tokenId6x18);
             (uint256 liquidityPaid, uint256[] memory amounts) = posMgr.repayLiquidity(params);
 
             IGammaPool.PoolData memory poolData = pool6x18.getPoolData();
@@ -267,7 +283,10 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
         vm.startPrank(addr1);
 
         address to = vm.addr(toNum);
-        IGammaPool.LoanData memory loanData = pool6x6.loan(_tokenId6x6);
+
+        vm.roll(100);
+
+        IGammaPool.LoanData memory loanData = IPoolViewer(pool6x6.viewer()).loan(address(pool6x6), _tokenId6x6);
         uint256 payLiquidity = GSMath.min(loanData.liquidity * payLiquidityPerc / 250, loanData.liquidity);
 
         IPositionManager.RepayLiquidityParams memory params = IPositionManager.RepayLiquidityParams({
@@ -286,13 +305,15 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
         if(payLiquidity == 0) {
             vm.expectRevert(bytes4(keccak256("ZeroRepayLiquidity()")));
             posMgr.repayLiquidity(params);
+        } else if(loanData.liquidity > payLiquidity && loanData.liquidity - payLiquidity <= 1000) {
+            vm.expectRevert(bytes4(keccak256("MinBorrow()")));
+            posMgr.repayLiquidity(params);
         } else {
             uint256 wethBalancePrev = IERC20(address(weth6)).balanceOf(to);
             uint256 usdcBalancePrev = IERC20(address(usdc6)).balanceOf(to);
 
-            IGammaPool.PoolData memory prevPoolData = pool6x6.getPoolData();
+            IGammaPool.PoolData memory prevPoolData = IPoolViewer(pool6x6.viewer()).getLatestPoolData(address(pool6x6));
 
-            IGammaPool.LoanData memory loanData = pool6x6.loan(_tokenId6x6);
             (uint256 liquidityPaid, uint256[] memory amounts) = posMgr.repayLiquidity(params);
 
             IGammaPool.PoolData memory poolData = pool6x6.getPoolData();
@@ -333,7 +354,9 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
             }
         }
 
-        IGammaPool.LoanData memory loanData = pool.loan(_tokenId);
+        vm.roll(100);
+
+        IGammaPool.LoanData memory loanData = IPoolViewer(pool.viewer()).loan(address(pool), _tokenId);
 
         uint256 strikePx;
         uint256[] memory ratio;
@@ -367,11 +390,14 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
         if(payLiquidity == 0) {
             vm.expectRevert(bytes4(keccak256("ZeroRepayLiquidity()")));
             posMgr.repayLiquidity(params);
+        } else if(loanData.liquidity > payLiquidity && loanData.liquidity - payLiquidity <= 1000) {
+            vm.expectRevert(bytes4(keccak256("MinBorrow()")));
+            posMgr.repayLiquidity(params);
         } else {
             uint256 wethBalancePrev = IERC20(address(weth)).balanceOf(addr1);
             uint256 usdcBalancePrev = IERC20(address(usdc)).balanceOf(addr1);
 
-            IGammaPool.PoolData memory prevPoolData = pool.getPoolData();
+            IGammaPool.PoolData memory prevPoolData = IPoolViewer(pool.viewer()).getLatestPoolData(address(pool));
             (uint256 liquidityPaid, uint256[] memory amounts) = posMgr.repayLiquidity(params);
 
             loanData = pool.loan(_tokenId);
@@ -411,7 +437,9 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
             }
         }
 
-        IGammaPool.LoanData memory loanData = pool18x6.loan(_tokenId18x6);
+        vm.roll(100);
+
+        IGammaPool.LoanData memory loanData = IPoolViewer(pool18x6.viewer()).loan(address(pool18x6), _tokenId18x6);
 
         uint256 strikePx;
         uint256[] memory ratio;
@@ -445,11 +473,14 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
         if(payLiquidity == 0) {
             vm.expectRevert(bytes4(keccak256("ZeroRepayLiquidity()")));
             posMgr.repayLiquidity(params);
+        } else if(loanData.liquidity > payLiquidity && loanData.liquidity - payLiquidity <= 1000) {
+            vm.expectRevert(bytes4(keccak256("MinBorrow()")));
+            posMgr.repayLiquidity(params);
         } else {
             uint256 wethBalancePrev = IERC20(address(weth6)).balanceOf(addr1);
             uint256 usdcBalancePrev = IERC20(address(usdc)).balanceOf(addr1);
 
-            IGammaPool.PoolData memory prevPoolData = pool18x6.getPoolData();
+            IGammaPool.PoolData memory prevPoolData = IPoolViewer(pool18x6.viewer()).getLatestPoolData(address(pool18x6));
             (uint256 liquidityPaid, uint256[] memory amounts) = posMgr.repayLiquidity(params);
 
             loanData = pool18x6.loan(_tokenId18x6);
@@ -461,7 +492,7 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
             assertApproxEqRel(liquidityPaid, payLiquidity, 1e16);
             assertApproxEqRel(liquidityPaid, GSMath.sqrt(amounts[0] * amounts[1]), 1e16);
 
-            assertApproxEqRel(strikePx, uint256(loanData.tokensHeld[1]) * 1e18 / loanData.tokensHeld[0], 1e16);
+            assertApproxEqRel(strikePx, uint256(loanData.tokensHeld[1]) * 1e18 / loanData.tokensHeld[0], 125*1e14);
             if(chng) {
                 assertEq(IERC20(address(weth6)).balanceOf(addr1), wethBalancePrev);
                 assertEq(IERC20(address(usdc)).balanceOf(addr1), usdcBalancePrev);
@@ -489,7 +520,9 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
             }
         }
 
-        IGammaPool.LoanData memory loanData = pool6x18.loan(_tokenId6x18);
+        vm.roll(100);
+
+        IGammaPool.LoanData memory loanData = IPoolViewer(pool6x18.viewer()).loan(address(pool6x18), _tokenId6x18);
 
         uint256 strikePx;
         uint256[] memory ratio;
@@ -523,11 +556,14 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
         if(payLiquidity == 0) {
             vm.expectRevert(bytes4(keccak256("ZeroRepayLiquidity()")));
             posMgr.repayLiquidity(params);
+        } else if(loanData.liquidity > payLiquidity && loanData.liquidity - payLiquidity <= 1000) {
+            vm.expectRevert(bytes4(keccak256("MinBorrow()")));
+            posMgr.repayLiquidity(params);
         } else {
             uint256 wethBalancePrev = IERC20(address(weth)).balanceOf(addr1);
             uint256 usdcBalancePrev = IERC20(address(usdc6)).balanceOf(addr1);
 
-            IGammaPool.PoolData memory prevPoolData = pool6x18.getPoolData();
+            IGammaPool.PoolData memory prevPoolData = IPoolViewer(pool6x18.viewer()).getLatestPoolData(address(pool6x18));
             (uint256 liquidityPaid, uint256[] memory amounts) = posMgr.repayLiquidity(params);
 
             loanData = pool6x18.loan(_tokenId6x18);
@@ -567,7 +603,9 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
             }
         }
 
-        IGammaPool.LoanData memory loanData = pool6x6.loan(_tokenId6x6);
+        vm.roll(100);
+
+        IGammaPool.LoanData memory loanData = IPoolViewer(pool6x6.viewer()).loan(address(pool6x6), _tokenId6x6);
 
         uint256 strikePx;
         uint256[] memory ratio;
@@ -601,11 +639,14 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
         if(payLiquidity == 0) {
             vm.expectRevert(bytes4(keccak256("ZeroRepayLiquidity()")));
             posMgr.repayLiquidity(params);
+        } else if(loanData.liquidity > payLiquidity && loanData.liquidity - payLiquidity <= 1000) {
+            vm.expectRevert(bytes4(keccak256("MinBorrow()")));
+            posMgr.repayLiquidity(params);
         } else {
             uint256 wethBalancePrev = IERC20(address(weth6)).balanceOf(addr1);
             uint256 usdcBalancePrev = IERC20(address(usdc6)).balanceOf(addr1);
 
-            IGammaPool.PoolData memory prevPoolData = pool6x6.getPoolData();
+            IGammaPool.PoolData memory prevPoolData = IPoolViewer(pool6x6.viewer()).getLatestPoolData(address(pool6x6));
             (uint256 liquidityPaid, uint256[] memory amounts) = posMgr.repayLiquidity(params);
 
             loanData = pool6x6.loan(_tokenId6x6);
@@ -634,9 +675,11 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
 
         bool chng = changePrice(tradeAmtPerc, side, address(pool));
 
-        IGammaPool.PoolData memory poolData = pool.getPoolData();
+        vm.roll(100);
 
-        IGammaPool.LoanData memory loanData = pool.loan(_tokenId);
+        IGammaPool.PoolData memory poolData = IPoolViewer(pool.viewer()).getLatestPoolData(address(pool));
+
+        IGammaPool.LoanData memory loanData = IPoolViewer(pool.viewer()).loan(address(pool), _tokenId);
 
         poolData.lastCFMMInvariant = uint128(GSMath.sqrt(IERC20(address(weth)).balanceOf(cfmm)*IERC20(address(usdc)).balanceOf(cfmm)));
         poolData.lastCFMMTotalSupply = IERC20(cfmm).totalSupply();
@@ -664,6 +707,9 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
 
         if(lpTokenPay == 0) {
             vm.expectRevert(bytes4(keccak256("NotEnoughLPDeposit()")));
+            posMgr.repayLiquidityWithLP(params);
+        } else if(loanData.liquidity > expLiquidityPay && loanData.liquidity - expLiquidityPay <= 1000) {
+            vm.expectRevert(bytes4(keccak256("MinBorrow()")));
             posMgr.repayLiquidityWithLP(params);
         } else {
 
@@ -713,9 +759,11 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
 
         bool chng = changePrice(tradeAmtPerc, side, address(pool18x6));
 
-        IGammaPool.PoolData memory poolData = pool18x6.getPoolData();
+        vm.roll(100);
 
-        IGammaPool.LoanData memory loanData = pool18x6.loan(_tokenId18x6);
+        IGammaPool.PoolData memory poolData = IPoolViewer(pool18x6.viewer()).getLatestPoolData(address(pool18x6));
+
+        IGammaPool.LoanData memory loanData = IPoolViewer(pool18x6.viewer()).loan(address(pool18x6), _tokenId18x6);
 
         poolData.lastCFMMInvariant = uint128(GSMath.sqrt(IERC20(address(weth6)).balanceOf(cfmm18x6)*IERC20(address(usdc)).balanceOf(cfmm18x6)));
         poolData.lastCFMMTotalSupply = IERC20(cfmm18x6).totalSupply();
@@ -743,6 +791,9 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
 
         if(lpTokenPay == 0) {
             vm.expectRevert(bytes4(keccak256("NotEnoughLPDeposit()")));
+            posMgr.repayLiquidityWithLP(params);
+        } else if(loanData.liquidity > expLiquidityPay && loanData.liquidity - expLiquidityPay <= 1000) {
+            vm.expectRevert(bytes4(keccak256("MinBorrow()")));
             posMgr.repayLiquidityWithLP(params);
         } else {
 
@@ -792,9 +843,11 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
 
         bool chng = changePrice(tradeAmtPerc, side, address(pool6x18));
 
-        IGammaPool.PoolData memory poolData = pool6x18.getPoolData();
+        vm.roll(100);
 
-        IGammaPool.LoanData memory loanData = pool6x18.loan(_tokenId6x18);
+        IGammaPool.PoolData memory poolData = IPoolViewer(pool6x18.viewer()).getLatestPoolData(address(pool6x18));
+
+        IGammaPool.LoanData memory loanData = IPoolViewer(pool6x18.viewer()).loan(address(pool6x18), _tokenId6x18);
 
         poolData.lastCFMMInvariant = uint128(GSMath.sqrt(IERC20(address(weth)).balanceOf(cfmm6x18)*IERC20(address(usdc6)).balanceOf(cfmm6x18)));
         poolData.lastCFMMTotalSupply = IERC20(cfmm6x18).totalSupply();
@@ -822,6 +875,9 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
 
         if(lpTokenPay == 0) {
             vm.expectRevert(bytes4(keccak256("NotEnoughLPDeposit()")));
+            posMgr.repayLiquidityWithLP(params);
+        } else if(loanData.liquidity > expLiquidityPay && loanData.liquidity - expLiquidityPay <= 1000) {
+            vm.expectRevert(bytes4(keccak256("MinBorrow()")));
             posMgr.repayLiquidityWithLP(params);
         } else {
 
@@ -871,9 +927,11 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
 
         bool chng = changePrice(tradeAmtPerc, side, address(pool6x6));
 
-        IGammaPool.PoolData memory poolData = pool6x6.getPoolData();
+        vm.roll(100);
 
-        IGammaPool.LoanData memory loanData = pool6x6.loan(_tokenId6x6);
+        IGammaPool.PoolData memory poolData = IPoolViewer(pool6x6.viewer()).getLatestPoolData(address(pool6x6));
+
+        IGammaPool.LoanData memory loanData = IPoolViewer(pool6x6.viewer()).loan(address(pool6x6), _tokenId6x6);
 
         poolData.lastCFMMInvariant = uint128(GSMath.sqrt(IERC20(address(weth6)).balanceOf(cfmm6x6)*IERC20(address(usdc6)).balanceOf(cfmm6x6)));
         poolData.lastCFMMTotalSupply = IERC20(cfmm6x6).totalSupply();
@@ -901,6 +959,9 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
 
         if(lpTokenPay == 0) {
             vm.expectRevert(bytes4(keccak256("NotEnoughLPDeposit()")));
+            posMgr.repayLiquidityWithLP(params);
+        } else if(loanData.liquidity > expLiquidityPay && loanData.liquidity - expLiquidityPay <= 1000) {
+            vm.expectRevert(bytes4(keccak256("MinBorrow()")));
             posMgr.repayLiquidityWithLP(params);
         } else {
 
