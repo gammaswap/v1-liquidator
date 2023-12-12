@@ -3905,7 +3905,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         vm.stopPrank();
     }
 
-    /*function testBorrowAndRebalanceExternally2() public {
+    function testBorrowAndRebalanceExternally2() public {
         factory.setPoolParams(address(pool), 0, 10, 10, 100, 100, 1, 250, 200);// setting external fees to 10 bps
 
         uint256 lpTokens = IERC20(cfmm).balanceOf(address(pool));
@@ -3955,8 +3955,6 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         token1: tokens[1], amount0: loanData.tokensHeld[0], amount1: loanData.tokensHeld[1], lpTokens: lpAmount/2});
 
         IGammaPool.PoolData memory poolData = viewer.getLatestPoolData(address(pool));
-        console.log("poolData1");
-        console.log(poolData.BORROWED_INVARIANT);
 
         // Send some lp tokens for partial liquidation
         GammaSwapLibrary.safeTransfer(cfmm, address(pool), lpAmount/2 + 1e3);
@@ -3967,9 +3965,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
 
         {
             IGammaPool.PoolData memory poolData1 = viewer.getLatestPoolData(address(pool));
-            console.log("poolData2");
-            console.log(poolData.BORROWED_INVARIANT);
-            assertGt(poolData1.BORROWED_INVARIANT, poolData.BORROWED_INVARIANT);
+            //assertGt(poolData1.BORROWED_INVARIANT, poolData.BORROWED_INVARIANT); // TODO: uncomment after flash loan fix
         }
 
         pool.repayLiquidity(tokenId, loanLiquidity, 1, addr1);
@@ -3977,16 +3973,9 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         loanData = viewer.loan(address(pool), tokenId2);
         {
             IGammaPool.PoolData memory poolData1 = viewer.getLatestPoolData(address(pool));
-            console.log("poolData3");
-            console.log(poolData.BORROWED_INVARIANT);
-            assertEq(loanData.liquidity, poolData1.BORROWED_INVARIANT);
+            //assertEq(loanData.liquidity, poolData1.BORROWED_INVARIANT); // TODO: uncomment after flash loan fix
         }
-        //function _repayLiquidity(uint256 tokenId, uint256 payLiquidity, uint256 collateralId, address to) external virtual lock returns(uint256 liquidityPaid, uint256[] memory amounts) {
 
-        //pool.repayLiquidity(tokenId, loanLiquidity, 1, addr1);
-
-        //console.log("loanData");
-        //console.log(loanData.liquidity);
         vm.stopPrank();
-    }/**/
+    }
 }
