@@ -1080,20 +1080,32 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
 
             tokensHeld = posMgr.rebalanceCollateral(params);
 
+            IGammaPool.LoanData memory loanData1 = pool18x6.loan(tokenId);
+            assertEq(loanData1.tokensHeld[0], tokensHeld[0]);
+            assertEq(loanData1.tokensHeld[1], tokensHeld[1]);
+
             if(ratio.length > 0) {
                 assertApproxEqAbs(uint256(tokensHeld[1]) * 1e18 / tokensHeld[0], uint256(ratio[1]) * 1e18 / ratio[0], 1e6);
             } else {
                 if(deltas[0] > 0) {
                     assertEq(tokensHeld[0],loanData.tokensHeld[0] + uint256(deltas[0]));
-                    assertLe(tokensHeld[1],loanData.tokensHeld[1]);
+                    assertLt(tokensHeld[1],loanData.tokensHeld[1]);
                 } else if(deltas[1] > 0) {
-                    assertLe(tokensHeld[0],loanData.tokensHeld[0]);
+                    assertLt(tokensHeld[0],loanData.tokensHeld[0]);
                     assertEq(tokensHeld[1],loanData.tokensHeld[1] + uint256(deltas[1]));
                 } else if(deltas[0] < 0) {
                     assertEq(tokensHeld[0],loanData.tokensHeld[0] - uint256(-deltas[0]));
-                    assertGe(tokensHeld[1],loanData.tokensHeld[1]);
+                    if(-deltas[0] < 1e18) {
+                        assertGe(tokensHeld[1],loanData.tokensHeld[1]);
+                    } else {
+                        assertGt(tokensHeld[1],loanData.tokensHeld[1]);
+                    }
                 } else if(deltas[1] < 0) {
-                    assertGe(tokensHeld[0],loanData.tokensHeld[0]);
+                    if(-deltas[1] < 1e18) {
+                        assertGe(tokensHeld[0],loanData.tokensHeld[0]);
+                    } else {
+                        assertGt(tokensHeld[0],loanData.tokensHeld[0]);
+                    }
                     assertEq(tokensHeld[1],loanData.tokensHeld[1] - uint256(-deltas[1]));
                 }
             }
@@ -1206,9 +1218,9 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
                     assertEq(tokensHeld[1],loanData.tokensHeld[1] + uint256(deltas[1]));
                 } else if(deltas[0] < 0) {
                     assertEq(tokensHeld[0],loanData.tokensHeld[0] - uint256(-deltas[0]));
-                    assertGe(tokensHeld[1],loanData.tokensHeld[1]);
+                    assertGt(tokensHeld[1],loanData.tokensHeld[1]);
                 } else if(deltas[1] < 0) {
-                    assertGe(tokensHeld[0],loanData.tokensHeld[0]);
+                    assertGt(tokensHeld[0],loanData.tokensHeld[0]);
                     assertEq(tokensHeld[1],loanData.tokensHeld[1] - uint256(-deltas[1]));
                 }
             }

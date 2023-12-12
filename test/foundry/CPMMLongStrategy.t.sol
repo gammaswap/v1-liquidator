@@ -3904,4 +3904,89 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
 
         vm.stopPrank();
     }
+
+    /*function testBorrowAndRebalanceExternally2() public {
+        factory.setPoolParams(address(pool), 0, 10, 10, 100, 100, 1, 250, 200);// setting external fees to 10 bps
+
+        uint256 lpTokens = IERC20(cfmm).balanceOf(address(pool));
+        assertGt(lpTokens, 0);
+
+        address[] memory tokens = pool.tokens();
+        TestExternalCallee2 callee = new TestExternalCallee2();
+
+        vm.startPrank(addr1);
+        uint256 tokenId = pool.createLoan(0);
+        assertGt(tokenId, 0);
+
+        usdc.transfer(address(pool), 6_000 * 1e18);
+        weth.transfer(address(pool), 6 * 1e18);
+
+        pool.increaseCollateral(tokenId, new uint256[](0));
+        uint256 liquidityBorrowed;
+        {
+            uint256[] memory amounts;
+            (liquidityBorrowed, amounts) = pool.borrowLiquidity(tokenId, lpTokens/100, new uint256[](0));
+            assertGt(liquidityBorrowed, 0);
+            assertGt(amounts[0], 0);
+            assertGt(amounts[1], 0);
+        }
+
+        uint256 tokenId2;
+        {
+            tokenId2 = pool.createLoan(0);
+            assertGt(tokenId2, 0);
+
+            usdc.transfer(address(pool), 6_000 * 1e18);
+            weth.transfer(address(pool), 6 * 1e18);
+
+            pool.increaseCollateral(tokenId2, new uint256[](0));
+            pool.borrowLiquidity(tokenId2, lpTokens/100, new uint256[](0));
+        }
+
+        IPoolViewer viewer = IPoolViewer(pool.viewer());
+
+        IGammaPool.LoanData memory loanData = viewer.loan(address(pool), tokenId);
+        assertEq(loanData.liquidity, liquidityBorrowed);
+
+        uint256 lpAmount = lpTokens / 2;
+        lpAmount = lpTokens / 10;
+
+        TestExternalCallee2.SwapData memory swapData = TestExternalCallee2.SwapData({ strategy: address(pool), cfmm: pool.cfmm(), token0: tokens[0],
+        token1: tokens[1], amount0: loanData.tokensHeld[0], amount1: loanData.tokensHeld[1], lpTokens: lpAmount/2});
+
+        IGammaPool.PoolData memory poolData = viewer.getLatestPoolData(address(pool));
+        console.log("poolData1");
+        console.log(poolData.BORROWED_INVARIANT);
+
+        // Send some lp tokens for partial liquidation
+        GammaSwapLibrary.safeTransfer(cfmm, address(pool), lpAmount/2 + 1e3);
+        (uint256 loanLiquidity, uint128[] memory tokensHeld) = pool.rebalanceExternally(tokenId, loanData.tokensHeld, lpAmount, address(callee), abi.encode(swapData));
+        assertGt(loanLiquidity, liquidityBorrowed);
+
+        assertEq(GSMath.sqrt(uint256(loanData.tokensHeld[0]) * loanData.tokensHeld[1]), GSMath.sqrt(uint256(tokensHeld[0])*tokensHeld[1]));
+
+        {
+            IGammaPool.PoolData memory poolData1 = viewer.getLatestPoolData(address(pool));
+            console.log("poolData2");
+            console.log(poolData.BORROWED_INVARIANT);
+            assertGt(poolData1.BORROWED_INVARIANT, poolData.BORROWED_INVARIANT);
+        }
+
+        pool.repayLiquidity(tokenId, loanLiquidity, 1, addr1);
+
+        loanData = viewer.loan(address(pool), tokenId2);
+        {
+            IGammaPool.PoolData memory poolData1 = viewer.getLatestPoolData(address(pool));
+            console.log("poolData3");
+            console.log(poolData.BORROWED_INVARIANT);
+            assertEq(loanData.liquidity, poolData1.BORROWED_INVARIANT);
+        }
+        //function _repayLiquidity(uint256 tokenId, uint256 payLiquidity, uint256 collateralId, address to) external virtual lock returns(uint256 liquidityPaid, uint256[] memory amounts) {
+
+        //pool.repayLiquidity(tokenId, loanLiquidity, 1, addr1);
+
+        //console.log("loanData");
+        //console.log(loanData.liquidity);
+        vm.stopPrank();
+    }/**/
 }
