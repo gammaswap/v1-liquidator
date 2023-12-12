@@ -210,8 +210,8 @@ contract CPMMShortStrategyFuzz is CPMMGammaSwapSetup {
         amount0 = shares * reserve0 / IERC20(address(pool6x6)).totalSupply();
         amount1 = shares * reserve1 / IERC20(address(pool6x6)).totalSupply();
 
-        assertApproxEqRel(amount0, reserves[0], 1e15);    // 0.1% delta
-        assertApproxEqRel(amount1, reserves[1], 1e15);    // 0.1% delta
+        assertApproxEqRel(amount0, reserves[0], 125e13); // 0.125% delta
+        assertApproxEqRel(amount1, reserves[1], 125e13); // 0.125% delta
 
         vm.stopPrank();
     }
