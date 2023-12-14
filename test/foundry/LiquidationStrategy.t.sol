@@ -327,7 +327,7 @@ contract LiquidationStrategyTest is CPMMGammaSwapSetup {
         refund[1] = loanData.tokensHeld[1];
 
         IGammaPool.LoanData memory loanData1 = viewer.loan(address(pool), tokenId2);
-        //assertEq(loanData1.liquidity, poolData.BORROWED_INVARIANT); TODO: uncomment after fix to flash loan strategies
+        assertEq(loanData1.liquidity, poolData.BORROWED_INVARIANT);
 
         loanData = viewer.loan(address(pool), tokenId);
         assertEq(loanData.liquidity, 0);

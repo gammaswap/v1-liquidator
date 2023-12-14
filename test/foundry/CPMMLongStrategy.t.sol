@@ -3965,7 +3965,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
 
         {
             IGammaPool.PoolData memory poolData1 = viewer.getLatestPoolData(address(pool));
-            //assertGt(poolData1.BORROWED_INVARIANT, poolData.BORROWED_INVARIANT); // TODO: uncomment after flash loan fix
+            assertGt(poolData1.BORROWED_INVARIANT, poolData.BORROWED_INVARIANT);
         }
 
         pool.repayLiquidity(tokenId, loanLiquidity, 1, addr1);
@@ -3973,7 +3973,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         loanData = viewer.loan(address(pool), tokenId2);
         {
             IGammaPool.PoolData memory poolData1 = viewer.getLatestPoolData(address(pool));
-            //assertEq(loanData.liquidity, poolData1.BORROWED_INVARIANT); // TODO: uncomment after flash loan fix
+            assertEq(loanData.liquidity, poolData1.BORROWED_INVARIANT);
         }
 
         vm.stopPrank();
