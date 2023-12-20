@@ -267,7 +267,7 @@ contract LiquidationStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testExternalLiquidation2() public {
-        factory.setPoolParams(address(pool), 0, 10, 10, 100, 100, 1, 250, 200);// setting external fees to 10 bps
+        factory.setPoolParams(address(pool), 0, 10, 10, 100, 100, 1, 250, 200, 1e3);// setting external fees to 10 bps
         uint256 tokenId;
         uint256 tokenId2;
         vm.startPrank(addr1);
@@ -840,7 +840,7 @@ contract LiquidationStrategyTest is CPMMGammaSwapSetup {
 
         assertEq(poolData.BORROWED_INVARIANT, totLiquidity);
         vm.stopPrank();
-        factory.setPoolParams(address(pool), 0, 0, 10, 100, 100, 1, 250, 255);// setting origination fees to zero
+        factory.setPoolParams(address(pool), 0, 0, 10, 100, 100, 1, 250, 255, 1e3);// setting origination fees to zero
 
         vm.startPrank(addr1);
         uint256 blockNum = 0;

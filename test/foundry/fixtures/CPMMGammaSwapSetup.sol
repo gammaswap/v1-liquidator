@@ -118,7 +118,7 @@ contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
             approvePoolAndCFMM(pool6x6, cfmm6x6);
         }
 
-        factory.setPoolParams(address(pool), 0, 0, 10, 100, 100, 1, 250, 200);// setting origination fees to zero
+        factory.setPoolParams(address(pool), 0, 0, 10, 100, 100, 1, 250, 200, 1e3);// setting origination fees to zero
 
         approvePool();
         approvePosMgr();

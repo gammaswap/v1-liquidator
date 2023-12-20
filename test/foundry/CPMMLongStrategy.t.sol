@@ -3377,7 +3377,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
 
         poolData = viewer.getLatestPoolData(address(pool));
 
-        factory.setPoolParams(address(pool), 10, 0, 10, 100, 100, 1, 250, 200);// setting base origination fee to 10, disable dynamic part
+        factory.setPoolParams(address(pool), 10, 0, 10, 100, 100, 1, 250, 200, 1e18);// setting base origination fee to 10, disable dynamic part
 
         vm.startPrank(addr1);
 
@@ -3392,7 +3392,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
 
         poolData = viewer.getLatestPoolData(address(pool));
         // 32768 => 2^15 = 2^(maxUtilRate - 24) => maxUtilRate = 39
-        factory.setPoolParams(address(pool), 10, 0, 10, 24, 100, 32768, 250, 200);// setting base origination fee to 10, enable dynamic part from 24% to 39% utilRate
+        factory.setPoolParams(address(pool), 10, 0, 10, 24, 100, 32768, 250, 200, 1e18);// setting base origination fee to 10, enable dynamic part from 24% to 39% utilRate
 
         vm.startPrank(addr1);
 
@@ -3454,7 +3454,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
 
         poolData = viewer.getLatestPoolData(address(pool));
 
-        factory.setPoolParams(address(pool), 10, 0, 10, 100, 100, 1, 250, 200);// setting base origination fee to 10, disable dynamic part
+        factory.setPoolParams(address(pool), 10, 0, 10, 100, 100, 1, 250, 200, 1e18);// setting base origination fee to 10, disable dynamic part
 
         vm.startPrank(addr1);
 
@@ -3469,7 +3469,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
 
         poolData = viewer.getLatestPoolData(address(pool));
         // 65535 => 2^16 - 1 = 2^(maxUtilRate - 35) - 1 => maxUtilRate = 51
-        factory.setPoolParams(address(pool), 0, 0, 10, 35, 20, 65535, 250, 200);// setting base origination fee to 10, enable dynamic part from 24% to 39% utilRate
+        factory.setPoolParams(address(pool), 0, 0, 10, 35, 20, 65535, 250, 200, 1e18);// setting base origination fee to 10, enable dynamic part from 24% to 39% utilRate
 
         vm.startPrank(addr1);
 
@@ -3493,7 +3493,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     /// @dev Loan debt increases as time passes
     function testEmaUtilRateUpdate() public {
 
-        factory.setPoolParams(address(pool), 10, 0, 10, 85, 100, 16384, 250, 200);// setting base origination fee to 10, enable dynamic part from 24% to 39% utilRate
+        factory.setPoolParams(address(pool), 10, 0, 10, 85, 100, 16384, 250, 200, 1e18);// setting base origination fee to 10, enable dynamic part from 24% to 39% utilRate
 
         uint256 lpTokens = IERC20(cfmm).balanceOf(address(pool));
         assertGt(lpTokens, 0);
@@ -3599,7 +3599,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
 
     /// @dev Loan debt increases as time passes
     function testEmaUtilRateBlocksUpdate() public {
-        factory.setPoolParams(address(pool), 10, 0, 10, 85, 100, 16384, 250, 200);// setting base origination fee to 10, enable dynamic part from 24% to 39% utilRate
+        factory.setPoolParams(address(pool), 10, 0, 10, 85, 100, 16384, 250, 200, 1e18);// setting base origination fee to 10, enable dynamic part from 24% to 39% utilRate
 
         uint256 lpTokens = IERC20(cfmm).balanceOf(address(pool));
         assertGt(lpTokens, 0);
@@ -3712,7 +3712,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testBorrowAndRebalanceExternally() public {
-        factory.setPoolParams(address(pool), 0, 10, 10, 100, 100, 1, 250, 200);// setting external fees to 10 bps
+        factory.setPoolParams(address(pool), 0, 10, 10, 100, 100, 1, 250, 200, 1e18);// setting external fees to 10 bps
 
         (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
 
@@ -3906,7 +3906,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testBorrowAndRebalanceExternally2() public {
-        factory.setPoolParams(address(pool), 0, 10, 10, 100, 100, 1, 250, 200);// setting external fees to 10 bps
+        factory.setPoolParams(address(pool), 0, 10, 10, 100, 100, 1, 250, 200, 1e18);// setting external fees to 10 bps
 
         uint256 lpTokens = IERC20(cfmm).balanceOf(address(pool));
         assertGt(lpTokens, 0);
