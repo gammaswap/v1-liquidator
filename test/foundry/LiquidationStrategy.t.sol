@@ -352,12 +352,14 @@ contract LiquidationStrategyTest is CPMMGammaSwapSetup {
         weth.transfer(address(pool), 150 * 1e18);
 
         pool.increaseCollateral(tokenId, new uint256[](0));
-        (uint256 liquidityBorrowed,) = pool.borrowLiquidity(tokenId, lpTokens/4, new uint256[](0));
+        (uint256 liquidityBorrowed,,uint128[] memory tokensHeld) = pool.borrowLiquidity(tokenId, lpTokens/4, new uint256[](0));
 
         IPoolViewer viewer = IPoolViewer(pool.viewer());
 
         IGammaPool.LoanData memory loanData = viewer.loan(address(pool), tokenId);
         assertEq(loanData.liquidity, liquidityBorrowed);
+        assertEq(loanData.tokensHeld[0], tokensHeld[0]);
+        assertEq(loanData.tokensHeld[1], tokensHeld[1]);
 
         vm.roll(100000000); // After a while
 
@@ -396,7 +398,7 @@ contract LiquidationStrategyTest is CPMMGammaSwapSetup {
         weth.transfer(address(pool), 150 * 1e18);
 
         pool.increaseCollateral(tokenId, new uint256[](0));
-        (uint256 liquidityBorrowed,) = pool.borrowLiquidity(tokenId, lpTokens/4, new uint256[](0));
+        (uint256 liquidityBorrowed,,) = pool.borrowLiquidity(tokenId, lpTokens/4, new uint256[](0));
 
         IPoolViewer viewer = IPoolViewer(pool.viewer());
 
@@ -445,10 +447,12 @@ contract LiquidationStrategyTest is CPMMGammaSwapSetup {
         weth.transfer(address(pool), 150 * 1e18);
 
         pool.increaseCollateral(tokenId, new uint256[](0));
-        (uint256 liquidityBorrowed,) = pool.borrowLiquidity(tokenId, lpTokens/4, new uint256[](0));
+        (uint256 liquidityBorrowed,,uint128[] memory tokensHeld) = pool.borrowLiquidity(tokenId, lpTokens/4, new uint256[](0));
 
         IGammaPool.LoanData memory loanData = viewer.loan(address(pool), tokenId);
         assertEq(loanData.liquidity, liquidityBorrowed);
+        assertEq(loanData.tokensHeld[0], tokensHeld[0]);
+        assertEq(loanData.tokensHeld[1], tokensHeld[1]);
 
         vm.roll(45000000);
 
@@ -484,10 +488,12 @@ contract LiquidationStrategyTest is CPMMGammaSwapSetup {
         weth.transfer(address(pool), 150 * 1e18);
 
         pool.increaseCollateral(tokenId, new uint256[](0));
-        (uint256 liquidityBorrowed,) = pool.borrowLiquidity(tokenId, lpTokens/4, new uint256[](0));
+        (uint256 liquidityBorrowed,,uint128[] memory tokensHeld) = pool.borrowLiquidity(tokenId, lpTokens/4, new uint256[](0));
 
         IGammaPool.LoanData memory loanData = viewer.loan(address(pool), tokenId);
         assertEq(loanData.liquidity, liquidityBorrowed);
+        assertEq(loanData.tokensHeld[0], tokensHeld[0]);
+        assertEq(loanData.tokensHeld[1], tokensHeld[1]);
 
         vm.roll(45000000);
 
