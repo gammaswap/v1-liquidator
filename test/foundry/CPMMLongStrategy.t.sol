@@ -18,7 +18,52 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         depositLiquidityInPool(addr2);
     }
 
-    function testBorrowAndRebalanceSlippage() public {
+    function testBorrowAndRebalanceSlippageUp() public {
+        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+
+        uint256 lpTokens = 3000 * 1e18;
+        assertGt(lpTokens, 0);
+
+        uint256[] memory _amounts = new uint256[](2);
+        _amounts[0] = 50*1e18;
+        _amounts[1] = 50_000*1e18;
+
+        vm.startPrank(addr1);
+        uint256 poolBalance = IERC20(address(pool)).balanceOf(addr1);
+
+        uint256[] memory ratio = new uint256[](2);
+        ratio[0] = reserve0 * 3;
+        ratio[1] = reserve1;
+
+        // actual tokensHeld
+        //216144 806073 333229 151542
+        //    72 048268 691111 076383
+
+        uint128[] memory minCollateral = new uint128[](2);
+        minCollateral[0] = 216145 * 1e18; // minimum collateral acceptable. Therefore, if collateral is 216144 it fails. Must be >= 216145
+        minCollateral[1] = 73 * 1e18; // minimum collateral acceptable. Therefore, if collateral is 72 it fails. Must be >= 73
+        IPositionManager.CreateLoanBorrowAndRebalanceParams memory params = IPositionManager.CreateLoanBorrowAndRebalanceParams({
+            protocolId: 1,
+            cfmm: cfmm,
+            to: addr1,
+            refId: 0,
+            amounts: _amounts,
+            lpTokens: lpTokens,
+            ratio: ratio,
+            minBorrowed: new uint256[](2),
+            minCollateral: minCollateral,
+            deadline: type(uint256).max,
+            maxBorrowed: type(uint256).max
+        });
+        vm.expectRevert(
+            abi.encodeWithSelector(PositionManager.AmountsMin.selector, 2)
+        );
+        posMgr.createLoanBorrowAndRebalance(params);
+
+        vm.stopPrank();
+    }
+
+    function testBorrowAndRebalanceSlippageDown() public {
         (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
 
         uint256 lpTokens = 3000 * 1e18;
