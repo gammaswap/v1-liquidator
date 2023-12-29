@@ -85,7 +85,7 @@ contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
 
         factory.addProtocol(address(protocol));
 
-        posMgr = new PositionManager(address(factory), address(weth), address(0), address(0));
+        posMgr = new PositionManager(address(factory), address(weth));
 
         address[] memory tokens = new address[](2);
         tokens[0] = address(weth);

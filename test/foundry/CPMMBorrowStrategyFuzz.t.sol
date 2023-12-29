@@ -47,7 +47,8 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
             tokenId: tokenId,
             deadline: type(uint256).max,
             amounts: amounts,
-            ratio: new uint256[](0)
+            ratio: new uint256[](0),
+            minCollateral: new uint128[](0)
         });
 
         uint256 beforeWethBalance = IERC20(weth).balanceOf(address(pool));
@@ -77,7 +78,8 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
             tokenId: tokenId,
             deadline: type(uint256).max,
             amounts: amounts,
-            ratio: ratio
+            ratio: ratio,
+            minCollateral: new uint128[](0)
         });
 
         tokensHeld = posMgr.increaseCollateral(params);
@@ -123,7 +125,8 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
             tokenId: tokenId,
             deadline: type(uint256).max,
             amounts: amounts,
-            ratio: new uint256[](0)
+            ratio: new uint256[](0),
+            minCollateral: new uint128[](0)
         });
 
         uint256 beforeWeth6Balance = IERC20(weth6).balanceOf(address(pool18x6));
@@ -153,7 +156,8 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
             tokenId: tokenId,
             deadline: type(uint256).max,
             amounts: amounts,
-            ratio: ratio
+            ratio: ratio,
+            minCollateral: new uint128[](0)
         });
 
         tokensHeld = posMgr.increaseCollateral(params);
@@ -196,7 +200,8 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
             tokenId: tokenId,
             deadline: type(uint256).max,
             amounts: amounts,
-            ratio: new uint256[](0)
+            ratio: new uint256[](0),
+            minCollateral: new uint128[](0)
         });
 
         uint256 beforeWeth6Balance = IERC20(weth6).balanceOf(address(pool6x6));
@@ -226,7 +231,8 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
             tokenId: tokenId,
             deadline: type(uint256).max,
             amounts: amounts,
-            ratio: ratio
+            ratio: ratio,
+            minCollateral: new uint128[](0)
         });
 
         tokensHeld = posMgr.increaseCollateral(params);
@@ -263,7 +269,8 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
             tokenId: tokenId,
             deadline: type(uint256).max,
             amounts: amounts,
-            ratio: new uint256[](0)
+            ratio: new uint256[](0),
+            minCollateral: new uint128[](0)
         });
 
         uint128[] memory tokensHeld = posMgr.increaseCollateral(_params);
@@ -289,7 +296,8 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
             tokenId: tokenId,
             deadline: type(uint256).max,
             amounts: _amounts,
-            ratio: new uint256[](0)
+            ratio: new uint256[](0),
+            minCollateral: new uint128[](0)
         });
 
         uint256 beforeWethBalance = IERC20(weth).balanceOf(address(pool));
@@ -319,7 +327,8 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
             tokenId: tokenId,
             deadline: type(uint256).max,
             amounts: _amounts,
-            ratio: ratio
+            ratio: ratio,
+            minCollateral: new uint128[](0)
         });
 
         beforeWethBalance = IERC20(weth).balanceOf(address(pool));
@@ -358,7 +367,8 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
             tokenId: tokenId,
             deadline: type(uint256).max,
             amounts: amounts,
-            ratio: new uint256[](0)
+            ratio: new uint256[](0),
+            minCollateral: new uint128[](0)
         });
 
         uint128[] memory tokensHeld = posMgr.increaseCollateral(_params);
@@ -384,7 +394,8 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
             tokenId: tokenId,
             deadline: type(uint256).max,
             amounts: _amounts,
-            ratio: new uint256[](0)
+            ratio: new uint256[](0),
+            minCollateral: new uint128[](0)
         });
 
         uint256 beforeWethBalance = IERC20(weth6).balanceOf(address(pool18x6));
@@ -414,7 +425,8 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
             tokenId: tokenId,
             deadline: type(uint256).max,
             amounts: _amounts,
-            ratio: ratio
+            ratio: ratio,
+            minCollateral: new uint128[](0)
         });
 
         beforeWethBalance = IERC20(weth6).balanceOf(address(pool18x6));
@@ -452,7 +464,8 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
             tokenId: tokenId,
             deadline: type(uint256).max,
             amounts: amounts,
-            ratio: new uint256[](0)
+            ratio: new uint256[](0),
+            minCollateral: new uint128[](0)
         });
 
         uint128[] memory tokensHeld = posMgr.increaseCollateral(_params);
@@ -478,7 +491,8 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
             tokenId: tokenId,
             deadline: type(uint256).max,
             amounts: _amounts,
-            ratio: new uint256[](0)
+            ratio: new uint256[](0),
+            minCollateral: new uint128[](0)
         });
 
         uint256 beforeWethBalance = IERC20(weth6).balanceOf(address(pool6x6));
@@ -508,7 +522,8 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
             tokenId: tokenId,
             deadline: type(uint256).max,
             amounts: _amounts,
-            ratio: ratio
+            ratio: ratio,
+            minCollateral: new uint128[](0)
         });
 
         beforeWethBalance = IERC20(weth6).balanceOf(address(pool6x6));
@@ -585,8 +600,11 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
         assertEq(params.to, posMgr.ownerOf(tokenId));
         assertGt(liquidityBorrowed,0);
         assertEq(liquidityBorrowed,liquidity);
-        assertEq(tokensHeld[0],_amounts[0]);
-        assertEq(tokensHeld[1],_amounts[1]);
+
+        IGammaPool.LoanData memory loanData = pool.loan(tokenId);
+        assertEq(tokensHeld[0],loanData.tokensHeld[0]);
+        assertEq(tokensHeld[1],loanData.tokensHeld[1]);
+
         assertApproxEqAbs(ratio[0],amounts[0],1e2);
         assertApproxEqAbs(ratio[1],amounts[1],1e2);
 
@@ -628,13 +646,13 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
         assertEq(addr2, posMgr.ownerOf(tokenId));
         assertGt(liquidityBorrowed,0);
         assertEq(liquidityBorrowed,liquidity);
-        assertEq(tokensHeld[0],params.amounts[0]);
-        assertEq(tokensHeld[1],params.amounts[1]);
+        loanData = pool.loan(tokenId);
+        assertEq(tokensHeld[0],loanData.tokensHeld[0]);
+        assertEq(tokensHeld[1],loanData.tokensHeld[1]);
         assertApproxEqAbs(_amounts[0],amounts[0],1e2);
         assertApproxEqAbs(_amounts[1],amounts[1],1e2);
 
         if(ratio.length == 2) {
-            IGammaPool.LoanData memory loanData = pool.loan(tokenId);
             assertApproxEqAbs(uint256(loanData.tokensHeld[1]) * 1e18 / loanData.tokensHeld[0], uint256(ratio[1]) * 1e18 / ratio[0], 1e8);
         }
 
@@ -699,8 +717,9 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
         assertEq(params.to, posMgr.ownerOf(tokenId));
         assertGt(liquidityBorrowed,0);
         assertApproxEqAbs(liquidityBorrowed, liquidity, 1e12);
-        assertEq(tokensHeld[0],_amounts[0]);
-        assertEq(tokensHeld[1],_amounts[1]);
+        IGammaPool.LoanData memory loanData = pool18x6.loan(tokenId);
+        assertEq(tokensHeld[0],loanData.tokensHeld[0]);
+        assertEq(tokensHeld[1],loanData.tokensHeld[1]);
         assertApproxEqAbs(ratio[0],amounts[0],1e2);
         assertApproxEqAbs(ratio[1],amounts[1],1e2);
 
@@ -741,14 +760,14 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
 
         assertEq(addr2, posMgr.ownerOf(tokenId));
         assertGt(liquidityBorrowed,0);
-        assertApproxEqAbs(liquidityBorrowed,liquidity, 1e12);
-        assertEq(tokensHeld[0],params.amounts[0]);
-        assertEq(tokensHeld[1],params.amounts[1]);
+        assertApproxEqAbs(liquidityBorrowed,liquidity, 1e12);loanData = pool.loan(tokenId);
+        loanData = pool18x6.loan(tokenId);
+        assertEq(tokensHeld[0],loanData.tokensHeld[0]);
+        assertEq(tokensHeld[1],loanData.tokensHeld[1]);
         assertApproxEqAbs(_amounts[0],amounts[0],1e14);
         assertApproxEqAbs(_amounts[1],amounts[1],1e14);
 
         if(ratio.length == 2) {
-            IGammaPool.LoanData memory loanData = pool18x6.loan(tokenId);
             assertApproxEqAbs(uint256(loanData.tokensHeld[1]) * 1e18 / loanData.tokensHeld[0], uint256(ratio[1]) * 1e18 / ratio[0], 1e8);
         }
 
@@ -813,8 +832,9 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
         assertEq(params.to, posMgr.ownerOf(tokenId));
         assertGt(liquidityBorrowed,0);
         assertApproxEqAbs(liquidityBorrowed, liquidity, 1e14);
-        assertEq(tokensHeld[0],_amounts[0]);
-        assertEq(tokensHeld[1],_amounts[1]);
+        IGammaPool.LoanData memory loanData = pool6x6.loan(tokenId);
+        assertEq(tokensHeld[0],loanData.tokensHeld[0]);
+        assertEq(tokensHeld[1],loanData.tokensHeld[1]);
         assertApproxEqAbs(ratio[0],amounts[0],1e2);
         assertApproxEqAbs(ratio[1],amounts[1],1e2);
 
@@ -856,13 +876,13 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
         assertEq(addr2, posMgr.ownerOf(tokenId));
         assertGt(liquidityBorrowed,0);
         assertApproxEqAbs(liquidityBorrowed,liquidity, 1e14);
-        assertEq(tokensHeld[0],params.amounts[0]);
-        assertEq(tokensHeld[1],params.amounts[1]);
+        loanData = pool6x6.loan(tokenId);
+        assertEq(tokensHeld[0],loanData.tokensHeld[0]);
+        assertEq(tokensHeld[1],loanData.tokensHeld[1]);
         assertApproxEqAbs(_amounts[0],amounts[0],1e14);
         assertApproxEqAbs(_amounts[1],amounts[1],1e14);
 
         if(ratio.length == 2) {
-            IGammaPool.LoanData memory loanData = pool6x6.loan(tokenId);
             assertApproxEqAbs(uint256(loanData.tokensHeld[1]) * 1e18 / loanData.tokensHeld[0], uint256(ratio[1]) * 1e18 / ratio[0], 1e14);
         }
 
@@ -953,7 +973,7 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
         }
 
         if(ratio.length > 0 || deltas.length > 0) {
-            IPositionManager.RebalanceCollateralParams memory params = IPositionManager.RebalanceCollateralParams({
+            IPositionManager.RebalanceCollateralParams memory params2 = IPositionManager.RebalanceCollateralParams({
                 protocolId: 1,
                 cfmm: cfmm,
                 tokenId: tokenId,
@@ -963,7 +983,7 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
                 deadline: type(uint256).max
             });
 
-            tokensHeld = posMgr.rebalanceCollateral(params);
+            tokensHeld = posMgr.rebalanceCollateral(params2);
 
             if(ratio.length > 0) {
                 assertApproxEqAbs(uint256(tokensHeld[1]) * 1e18 / tokensHeld[0], uint256(ratio[1]) * 1e18 / ratio[0], 1e6);
