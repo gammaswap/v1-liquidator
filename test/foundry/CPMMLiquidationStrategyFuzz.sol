@@ -32,10 +32,10 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
 
         addr3 = vm.addr(123);
 
-        factory.setPoolParams(address(pool), 0, 0, 10, 100, 100, 1, 25, 10, 1e18);// setting ltv threshold to 1%, liqFee to 25bps
-        factory.setPoolParams(address(pool6x6), 0, 0, 10, 100, 100, 1, 25, 10, 1e6);// setting ltv threshold to 1%, liqFee to 25bps
-        factory.setPoolParams(address(pool18x6), 0, 0, 10, 100, 100, 1, 25, 10, 1e12);// setting ltv threshold to 1%, liqFee to 25bps
-        factory.setPoolParams(address(pool6x18), 0, 0, 10, 100, 100, 1, 25, 10, 1e12);// setting ltv threshold to 1%, liqFee to 25bps
+        setPoolParams(address(pool), 0, 0, 10, 100, 100, 1, 25, 10, 1e18);// setting ltv threshold to 1%, liqFee to 25bps
+        setPoolParams(address(pool6x6), 0, 0, 10, 100, 100, 1, 25, 10, 1e6);// setting ltv threshold to 1%, liqFee to 25bps
+        setPoolParams(address(pool18x6), 0, 0, 10, 100, 100, 1, 25, 10, 1e12);// setting ltv threshold to 1%, liqFee to 25bps
+        setPoolParams(address(pool6x18), 0, 0, 10, 100, 100, 1, 25, 10, 1e12);// setting ltv threshold to 1%, liqFee to 25bps
 
         callee = new TestExternalCallee2();
     }

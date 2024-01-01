@@ -118,10 +118,17 @@ contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
             approvePoolAndCFMM(pool6x6, cfmm6x6);
         }
 
-        factory.setPoolParams(address(pool), 0, 0, 10, 100, 100, 1, 250, 200, 1e3);// setting origination fees to zero
+        setPoolParams(address(pool), 0, 0, 10, 100, 100, 1, 250, 200, 1e3);// setting origination fees to zero
 
         approvePool();
         approvePosMgr();
+    }
+
+    function setPoolParams(address pool, uint16 origFee, uint8 extSwapFee, uint8 emaMultiplier, uint8 minUtilRate1, uint8 minUtilRate2,
+        uint16 feeDivisor, uint8 liquidationFee, uint8 ltvThreshold, uint72 minBorrow) internal {
+        vm.startPrank(address(factory));
+        IGammaPool(pool).setPoolParams(origFee, extSwapFee, emaMultiplier, minUtilRate1, minUtilRate2, feeDivisor, liquidationFee, ltvThreshold, minBorrow);// setting origination fees to zero
+        vm.stopPrank();
     }
 
     function approvePosMgr() public {
