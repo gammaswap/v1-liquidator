@@ -337,7 +337,7 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
     }
 
     function testRepayLiquiditySetRatio18x18(uint8 tradeAmtPerc, bool side, uint8 payLiquidityPerc, uint72 ratio0, uint72 ratio1) public {
-        factory.setPoolParams(address(pool), 0, 0, 10, 100, 100, 1, 25, 10, 1e18);// setting origination fees to zero
+        setPoolParams(address(pool), 0, 0, 10, 100, 100, 1, 25, 10, 1e18);// setting origination fees to zero
 
         bool chng = changePrice(tradeAmtPerc, side, address(pool));
 
@@ -420,7 +420,7 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
     }
 
     function testRepayLiquiditySetRatio18x6(uint8 tradeAmtPerc, bool side, uint8 payLiquidityPerc, uint72 ratio0, uint72 ratio1) public {
-        factory.setPoolParams(address(pool18x6), 0, 0, 10, 100, 100, 1, 25, 10, 1e12);// setting origination fees to zero
+        setPoolParams(address(pool18x6), 0, 0, 10, 100, 100, 1, 25, 10, 1e12);// setting origination fees to zero
 
         bool chng = changePrice2(tradeAmtPerc, side, address(pool18x6));
 
@@ -503,7 +503,7 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
     }
 
     function testRepayLiquiditySetRatio6x18(uint8 tradeAmtPerc, bool side, uint8 payLiquidityPerc, uint72 ratio0, uint72 ratio1) public {
-        factory.setPoolParams(address(pool6x18), 0, 0, 10, 100, 100, 1, 25, 10, 1e12);// setting origination fees to zero
+        setPoolParams(address(pool6x18), 0, 0, 10, 100, 100, 1, 25, 10, 1e12);// setting origination fees to zero
 
         bool chng = changePrice2(tradeAmtPerc, side, address(pool6x18));
 
@@ -586,7 +586,7 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
     }
 
     function testRepayLiquiditySetRatio6x6(uint8 tradeAmtPerc, bool side, uint8 payLiquidityPerc, uint72 ratio0, uint72 ratio1) public {
-        factory.setPoolParams(address(pool6x6), 0, 0, 10, 100, 100, 1, 25, 10, 1e6);// setting origination fees to zero
+        setPoolParams(address(pool6x6), 0, 0, 10, 100, 100, 1, 25, 10, 1e6);// setting origination fees to zero
 
         bool chng = changePrice2(tradeAmtPerc, side, address(pool6x6));
 
@@ -671,7 +671,7 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
     function testRepayLiquidityWithLP18x18(uint8 tradeAmtPerc, bool side, uint8 lpTokenPerc, uint8 collateralId, uint8 toNum) public {
         collateralId = uint8(bound(collateralId, 0, 2));
 
-        factory.setPoolParams(address(pool), 0, 0, 10, 100, 100, 1, 25, 10, 1e18);// setting origination fees to zero
+        setPoolParams(address(pool), 0, 0, 10, 100, 100, 1, 25, 10, 1e18);// setting origination fees to zero
 
         bool chng = changePrice(tradeAmtPerc, side, address(pool));
 
@@ -755,7 +755,7 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
     function testRepayLiquidityWithLP18x6(uint8 tradeAmtPerc, bool side, uint8 lpTokenPerc, uint8 collateralId, uint8 toNum) public {
         collateralId = uint8(bound(collateralId, 0, 2));
 
-        factory.setPoolParams(address(pool18x6), 0, 0, 10, 100, 100, 1, 25, 10, 1e12);// setting origination fees to zero
+        setPoolParams(address(pool18x6), 0, 0, 10, 100, 100, 1, 25, 10, 1e12);// setting origination fees to zero
 
         bool chng = changePrice(tradeAmtPerc, side, address(pool18x6));
 
@@ -839,7 +839,7 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
     function testRepayLiquidityWithLP6x18(uint8 tradeAmtPerc, bool side, uint8 lpTokenPerc, uint8 collateralId, uint8 toNum) public {
         collateralId = uint8(bound(collateralId, 0, 2));
 
-        factory.setPoolParams(address(pool6x18), 0, 0, 10, 100, 100, 1, 25, 10, 1e12);// setting origination fees to zero
+        setPoolParams(address(pool6x18), 0, 0, 10, 100, 100, 1, 25, 10, 1e12);// setting origination fees to zero
 
         bool chng = changePrice(tradeAmtPerc, side, address(pool6x18));
 
@@ -923,7 +923,7 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
     function testRepayLiquidityWithLP6x6(uint8 tradeAmtPerc, bool side, uint8 lpTokenPerc, uint8 collateralId, uint8 toNum) public {
         collateralId = uint8(bound(collateralId, 0, 2));
 
-        factory.setPoolParams(address(pool6x6), 0, 0, 10, 100, 100, 1, 25, 10, 1e6);// setting origination fees to zero
+        setPoolParams(address(pool6x6), 0, 0, 10, 100, 100, 1, 25, 10, 1e6);// setting origination fees to zero
 
         bool chng = changePrice(tradeAmtPerc, side, address(pool6x6));
 
