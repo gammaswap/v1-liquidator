@@ -684,7 +684,7 @@ contract LiquidationStrategyTest is CPMMGammaSwapSetup {
             uint256 collateral2 = GSMath.sqrt(uint256(loanData2.tokensHeld[0]) * loanData2.tokensHeld[1]);
             uint256 totCollateral = collateral1 + collateral2;
 
-            (uint256 reserve0, uint256 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+            (uint256 reserve0, uint256 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
             uint256 lpDeposit = (totLiquidity - loanData3.liquidity) * IERC20(cfmm).totalSupply() / GSMath.sqrt(reserve0 * reserve1);
 
             // Send enough lp tokens for full liquidation
@@ -826,12 +826,12 @@ contract LiquidationStrategyTest is CPMMGammaSwapSetup {
             tokenIds[i] = tokenId1;
         }
 
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 px0 = uint256(reserve1) * 1e18 / reserve0;
         sellTokenIn(reserve1/2, address(usdc), address(weth), addr1);
 
-        (reserve0, reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
         px0 = uint256(reserve1) * 1e18 / reserve0;
         IPoolViewer viewer = IPoolViewer(pool.viewer());
         IGammaPool.PoolData memory poolData = viewer.getLatestPoolData(address(pool));

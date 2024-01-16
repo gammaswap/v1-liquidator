@@ -31,7 +31,7 @@ contract CPMMShortStrategyTest is CPMMGammaSwapSetup {
         assertGt(data1.LP_INVARIANT, data.LP_INVARIANT);
         assertGt(data1.LP_TOKEN_BALANCE, data.LP_TOKEN_BALANCE);
 
-        (uint256 reserve0, uint256 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint256 reserve0, uint256 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
         uint256 cfmmInvariant = GSMath.sqrt(reserve0 * reserve1);
         assertEq(data1.LP_TOKEN_BALANCE, IERC20(cfmm).balanceOf(address(pool)));
         assertEq(data1.LP_INVARIANT, data1.LP_TOKEN_BALANCE * cfmmInvariant / IERC20(cfmm).totalSupply());
