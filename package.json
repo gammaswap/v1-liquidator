@@ -63,7 +63,7 @@
   },
   "dependencies": {
     "@gammaswap/v1-core": "^1.1.19",
-    "@gammaswap/v1-implementations": "^1.1.22",
-    "@gammaswap/v1-periphery": "^1.1.11"
+    "@gammaswap/v1-implementations": "^1.1.23",
+    "@gammaswap/v1-periphery": "^1.1.12"
   }
 }
