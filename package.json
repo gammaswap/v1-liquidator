@@ -20,6 +20,7 @@
   "files": [
     "artifacts",
     "contracts",
+    "typechain",
     "typechain-types"
   ],
   "keywords": [
@@ -62,9 +63,9 @@
     "typescript": ">=4.5.0"
   },
   "dependencies": {
-    "@gammaswap/v1-core": "^1.1.19",
-    "@gammaswap/v1-deltaswap": "^0.8.0",
-    "@gammaswap/v1-implementations": "^1.1.23",
-    "@gammaswap/v1-periphery": "^1.1.12"
+    "@gammaswap/v1-core": "^1.1.20",
+    "@gammaswap/v1-deltaswap": "^0.8.1",
+    "@gammaswap/v1-implementations": "^1.1.24",
+    "@gammaswap/v1-periphery": "^1.1.13"
   }
 }
