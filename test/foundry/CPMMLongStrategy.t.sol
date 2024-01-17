@@ -19,7 +19,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testBorrowAndRebalanceSlippageUp() public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 lpTokens = 3000 * 1e18;
         assertGt(lpTokens, 0);
@@ -64,7 +64,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testBorrowAndRebalanceSlippageDown() public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 lpTokens = 3000 * 1e18;
         assertGt(lpTokens, 0);
@@ -123,7 +123,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
             }
         }
 
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * 1e18 / reserve0;
         assertGt(price, 0);
@@ -183,7 +183,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
             }
         }
 
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * 1e18 / reserve0;
         assertGt(price, 0);
@@ -239,7 +239,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testBorrowAndRebalanceWithMarginError() public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price, 0);
@@ -271,7 +271,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testBorrowAndRebalanceWrongRatio() public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 lpTokens = IERC20(cfmm).balanceOf(address(pool));
         assertGt(lpTokens, 0);
@@ -303,7 +303,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testBorrowAndRebalanceWrongRatio2() public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 lpTokens = IERC20(cfmm).balanceOf(address(pool));
         assertGt(lpTokens, 0);
@@ -335,7 +335,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testBorrowAndRebalanceWrongRatio3() public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 lpTokens = IERC20(cfmm).balanceOf(address(pool));
         assertGt(lpTokens, 0);
@@ -367,7 +367,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testLowerStrikePx() public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price, 0);
@@ -416,7 +416,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testHigherStrikePx() public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price, 0);
@@ -466,7 +466,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
 
 
     function testPxUpCloseFullToken0Sync() public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price, 0);
@@ -507,7 +507,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 wethBal0 = weth.balanceOf(addr1);
 
 
-        (reserve0, reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price1 = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price1, 0);
@@ -536,7 +536,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testPxUpCloseFullToken0() public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price, 0);
@@ -577,7 +577,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 wethBal0 = weth.balanceOf(addr1);
 
 
-        (reserve0, reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price1 = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price1, 0);
@@ -600,7 +600,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testPxUpCloseFullToken1() public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price, 0);
@@ -641,7 +641,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 wethBal0 = weth.balanceOf(addr1);
 
 
-        (reserve0, reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price1 = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price1, 0);
@@ -664,7 +664,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testPxUpCloseHalfToken0() public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price, 0);
@@ -705,7 +705,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 wethBal0 = weth.balanceOf(addr1);
 
 
-        (reserve0, reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price1 = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price1, 0);
@@ -728,7 +728,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testPxUpCloseHalfToken1() public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price, 0);
@@ -769,7 +769,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 wethBal0 = weth.balanceOf(addr1);
 
 
-        (reserve0, reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price1 = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price1, 0);
@@ -792,7 +792,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testPxDownCloseFullToken0() public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price, 0);
@@ -834,7 +834,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 usdcBal0 = usdc.balanceOf(addr1);
         uint256 wethBal0 = weth.balanceOf(addr1);
 
-        (reserve0, reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price1 = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price1, 0);
@@ -857,7 +857,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testPxDownCloseFullToken1() public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price, 0);
@@ -898,7 +898,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 wethBal0 = weth.balanceOf(addr1);
 
 
-        (reserve0, reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price1 = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price1, 0);
@@ -921,7 +921,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testPxDownCloseHalfToken0() public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price, 0);
@@ -962,7 +962,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 wethBal0 = weth.balanceOf(addr1);
 
 
-        (reserve0, reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price1 = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price1, 0);
@@ -985,7 +985,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testPxDownCloseHalfToken1() public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price, 0);
@@ -1028,7 +1028,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 wethBal0 = weth.balanceOf(addr1);
 
 
-        (reserve0, reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price1 = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price1, 0);
@@ -1051,7 +1051,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testPxDownCloseToken0(uint8 _amountIn, uint8 _liquidityDiv) public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price, 0);
@@ -1093,7 +1093,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 wethBal0 = weth.balanceOf(addr1);
 
 
-        (reserve0, reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price1 = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price1, 0);
@@ -1120,7 +1120,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testPxDownCloseToken1(uint8 _amountIn, uint8 _liquidityDiv) public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price, 0);
@@ -1160,7 +1160,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 wethBal0 = weth.balanceOf(addr1);
 
 
-        (reserve0, reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price1 = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price1, 0);
@@ -1188,7 +1188,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testPxUpCloseToken0(uint8 _amountIn, uint8 _liquidityDiv) public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price, 0);
@@ -1228,7 +1228,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 wethBal0 = weth.balanceOf(addr1);
 
 
-        (reserve0, reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price1 = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price1, 0);
@@ -1256,7 +1256,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testPxUpCloseToken1(uint8 _amountIn, uint8 _liquidityDiv) public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price, 0);
@@ -1298,7 +1298,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 wethBal0 = weth.balanceOf(addr1);
 
 
-        (reserve0, reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         {
             uint256 price1 = uint256(reserve1) * (1e18) / reserve0;
@@ -1393,7 +1393,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         r0 = bound(r0, 1, 100);
         r1 = bound(r1, 1, 100);
 
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
         uint256[] memory ratio = new uint256[](2);
         ratio[0] = reserve0 * r0;
         ratio[1] = reserve1 * r1;
@@ -1417,7 +1417,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testRebalanceMarginError() public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
         uint256[] memory ratio = new uint256[](2);
         ratio[0] = reserve0 * 200;
         ratio[1] = reserve1 * 10;
@@ -1473,7 +1473,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
 
     /// @dev Try to repay loan debt with huge fees
     function testRepayLiquidityInParts() public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price, 0);
@@ -1723,7 +1723,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
 
         pool.increaseCollateral(tokenId, new uint256[](0));
 
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256[] memory ratio = new uint256[](2);
         ratio[0] = uint256(reserve0) * num1 / 100000;
@@ -1780,7 +1780,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
 
         pool.increaseCollateral(tokenId, new uint256[](0));
 
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256[] memory ratio = new uint256[](2);
         ratio[0] = uint256(reserve0) * num1 / 100000;
@@ -1842,7 +1842,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
 
         pool.increaseCollateral(tokenId, new uint256[](0));
 
-        (uint256 reserve0, uint256 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint256 reserve0, uint256 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256[] memory ratio = new uint256[](2);
         ratio[0] = reserve0 * num1 / 100000;
@@ -1874,7 +1874,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
 
         pool.increaseCollateral(tokenId, ratio);
 
-        (reserve0, reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
         IGammaPool.LoanData memory loanData1 = viewer.loan(address(pool), tokenId);
         assertGe(((loanData1.tokensHeld[0] * reserve1 / reserve0) + loanData1.tokensHeld[1])/1e8,
             ((loanData.tokensHeld[0] * reserve1 / reserve0) + loanData.tokensHeld[1])/1e8);
@@ -1908,7 +1908,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
 
         pool.increaseCollateral(tokenId, new uint256[](0));
 
-        (uint256 reserve0, uint256 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint256 reserve0, uint256 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256[] memory ratio = new uint256[](2);
         ratio[0] = reserve0 * num1 / 100000;
@@ -1956,7 +1956,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
 
         pool.increaseCollateral(tokenId, new uint256[](0));
 
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256[] memory ratio = new uint256[](2);
         ratio[0] = uint256(reserve0) * num1 / 100000;
@@ -2019,7 +2019,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
 
         pool.increaseCollateral(tokenId, new uint256[](0));
 
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256[] memory ratio = new uint256[](2);
         ratio[0] = uint256(reserve0) * num1 / 100000;
@@ -2076,7 +2076,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
 
         pool.increaseCollateral(tokenId, new uint256[](0));
 
-        (uint256 reserve0, uint256 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint256 reserve0, uint256 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256[] memory ratio = new uint256[](2);
         ratio[0] = reserve0 * num1 / 100000;
@@ -2113,7 +2113,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         assertEq(amounts[0] + amounts1[0], weth.balanceOf(addr1));
         assertEq(amounts[1] + amounts1[1], usdc.balanceOf(addr1));
 
-        (reserve0, reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
         IGammaPool.LoanData memory loanData1 = viewer.loan(address(pool), tokenId);
         assertNotEq(((loanData1.tokensHeld[0] * reserve1 / reserve0) + loanData1.tokensHeld[1])/1e8,
             ((loanData.tokensHeld[0] * reserve1 / reserve0) + loanData.tokensHeld[1])/1e8);
@@ -2147,7 +2147,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
 
         pool.increaseCollateral(tokenId, new uint256[](0));
 
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256[] memory ratio = new uint256[](2);
         ratio[0] = uint256(reserve0) * num1 / 100000;
@@ -2183,7 +2183,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testRepayLiquidityWithLPFullToken0Sync() public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price, 0);
@@ -2224,7 +2224,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 usdcBal0 = usdc.balanceOf(addr1);
         uint256 wethBal0 = weth.balanceOf(addr1);
 
-        (reserve0, reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price1 = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price1, 0);
@@ -2260,7 +2260,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testRepayLiquidityWithLPFullToken0() public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price, 0);
@@ -2301,7 +2301,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 usdcBal0 = usdc.balanceOf(addr1);
         uint256 wethBal0 = weth.balanceOf(addr1);
 
-        (reserve0, reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price1 = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price1, 0);
@@ -2330,7 +2330,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testRepayLiquidityWithLPFullToken1() public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price, 0);
@@ -2370,7 +2370,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 usdcBal0 = usdc.balanceOf(addr1);
         uint256 wethBal0 = weth.balanceOf(addr1);
 
-        (reserve0, reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price1 = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price1, 0);
@@ -2399,7 +2399,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testRepayLiquidityWithLPHalfToken0() public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price, 0);
@@ -2440,7 +2440,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 usdcBal0 = usdc.balanceOf(addr1);
         uint256 wethBal0 = weth.balanceOf(addr1);
 
-        (reserve0, reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price1 = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price1, 0);
@@ -2478,7 +2478,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testRepayLiquidityWithLPHalfToken1() public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price, 0);
@@ -2519,7 +2519,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 usdcBal0 = usdc.balanceOf(addr1);
         uint256 wethBal0 = weth.balanceOf(addr1);
 
-        (reserve0, reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price1 = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price1, 0);
@@ -2557,7 +2557,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testRepayLiquiditySetRatioFullSync() public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price, 0);
@@ -2597,7 +2597,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 usdcBal0 = usdc.balanceOf(addr1);
         uint256 wethBal0 = weth.balanceOf(addr1);
 
-        (reserve0, reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price1 = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price1, 0);
@@ -2634,7 +2634,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testRepayLiquiditySetRatioFull() public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price, 0);
@@ -2674,7 +2674,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 usdcBal0 = usdc.balanceOf(addr1);
         uint256 wethBal0 = weth.balanceOf(addr1);
 
-        (reserve0, reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price1 = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price1, 0);
@@ -2704,7 +2704,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testRepayLiquiditySetRatioHalf() public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price, 0);
@@ -2744,7 +2744,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 usdcBal0 = usdc.balanceOf(addr1);
         uint256 wethBal0 = weth.balanceOf(addr1);
 
-        (reserve0, reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price1 = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price1, 0);
@@ -2777,7 +2777,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testRepayLiquiditySetRatioHalfNullRatio() public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price, 0);
@@ -2817,7 +2817,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 usdcBal0 = usdc.balanceOf(addr1);
         uint256 wethBal0 = weth.balanceOf(addr1);
 
-        (reserve0, reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price1 = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price1, 0);
@@ -2847,7 +2847,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testRepayLiquiditySetRatioHalfWrongRatio() public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price, 0);
@@ -2887,7 +2887,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 usdcBal0 = usdc.balanceOf(addr1);
         uint256 wethBal0 = weth.balanceOf(addr1);
 
-        (reserve0, reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price1 = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price1, 0);
@@ -2918,7 +2918,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testRepayLiquiditySetRatioHalfWrong1() public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price, 0);
@@ -2958,7 +2958,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 usdcBal0 = usdc.balanceOf(addr1);
         uint256 wethBal0 = weth.balanceOf(addr1);
 
-        (reserve0, reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price1 = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price1, 0);
@@ -2979,7 +2979,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testRepayLiquiditySetRatioHalfWrong2() public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price, 0);
@@ -3019,7 +3019,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 usdcBal0 = usdc.balanceOf(addr1);
         uint256 wethBal0 = weth.balanceOf(addr1);
 
-        (reserve0, reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price1 = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price1, 0);
@@ -3040,7 +3040,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testRepayLiquiditySetRatioHalfWrong3() public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price, 0);
@@ -3080,7 +3080,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 usdcBal0 = usdc.balanceOf(addr1);
         uint256 wethBal0 = weth.balanceOf(addr1);
 
-        (reserve0, reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price1 = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price1, 0);
@@ -3104,7 +3104,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         num1 = uint8(bound(num1, 1, 10));
         num2 = uint8(bound(num2, 1, 10));
 
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price, 0);
@@ -3146,7 +3146,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 usdcBal0 = usdc.balanceOf(addr1);
         uint256 wethBal0 = weth.balanceOf(addr1);
 
-        (reserve0, reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         {
             uint256 price1 = uint256(reserve1) * (1e18) / reserve0;
@@ -3184,7 +3184,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     function testRepayLiquiditySetRatioHalfChange(uint8 num1, uint8 num2) public {
         num1 = uint8(bound(num1, 1, 3));
         num2 = uint8(bound(num2, 1, 3));
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price, 0);
@@ -3226,7 +3226,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 usdcBal0 = usdc.balanceOf(addr1);
         uint256 wethBal0 = weth.balanceOf(addr1);
 
-        (reserve0, reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         {
             uint256 price1 = uint256(reserve1) * (1e18) / reserve0;
@@ -3267,7 +3267,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         num1 = uint8(bound(num1, 1, 10));
         num2 = uint8(bound(num2, 1, 10));
 
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price, 0);
@@ -3309,7 +3309,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 usdcBal0 = usdc.balanceOf(addr1);
         uint256 wethBal0 = weth.balanceOf(addr1);
 
-        (reserve0, reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         {
             uint256 price1 = uint256(reserve1) * (1e18) / reserve0;
@@ -3332,7 +3332,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         num1 = uint8(bound(num1, 1, 10));
         num2 = uint8(bound(num2, 1, 10));
 
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price, 0);
@@ -3375,7 +3375,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 usdcBal0 = usdc.balanceOf(addr1);
         uint256 wethBal0 = weth.balanceOf(addr1);
 
-        (reserve0, reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         {uint256 price1 = uint256(reserve1) * (1e18) / reserve0;
             assertGt(price1, 0);
@@ -3398,7 +3398,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         num1 = uint8(bound(num1, 1, 10));
         num2 = uint8(bound(num2, 1, 10));
 
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price, 0);
@@ -3441,7 +3441,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 usdcBal0 = usdc.balanceOf(addr1);
         uint256 wethBal0 = weth.balanceOf(addr1);
 
-        (reserve0, reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         {uint256 price1 = uint256(reserve1) * (1e18) / reserve0;
             assertGt(price1, 0);
@@ -3462,7 +3462,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testOriginationFee() public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price, 0);
@@ -3541,7 +3541,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testOriginationFeeLinear() public {
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price, 0);
@@ -3840,7 +3840,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
     function testBorrowAndRebalanceExternally() public {
         setPoolParams(address(pool), 0, 10, 10, 100, 100, 1, 250, 200, 1e18);// setting external fees to 10 bps
 
-        (uint128 reserve0, uint128 reserve1,) = IUniswapV2Pair(cfmm).getReserves();
+        (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
         uint256 price = uint256(reserve1) * 1e18 / reserve0;
         assertGt(price, 0);

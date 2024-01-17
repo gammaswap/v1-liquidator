@@ -4,16 +4,23 @@ import { BigNumber } from "ethers";
 
 const UniswapV2FactoryJSON = require("@uniswap/v2-core/build/UniswapV2Factory.json");
 const UniswapV2PairJSON = require("@uniswap/v2-core/build/UniswapV2Pair.json");
+const DeltaSwapFactoryJSON = require("@gammaswap/v1-deltaswap/artifacts/contracts/DeltaSwapFactory.sol/DeltaSwapFactory.json");
+const DeltaSwapPairJSON = require("@gammaswap/v1-deltaswap/artifacts/contracts/DeltaSwapPair.sol/DeltaSwapPair.json");
+const TestGammaPoolFactoryJSON = require("@gammaswap/v1-implementations/artifacts/contracts/test/TestGammaPoolFactory.sol/TestGammaPoolFactory.json");
 const TestCPMMBaseStrategyJSON = require("@gammaswap/v1-implementations/artifacts/contracts/test/strategies/cpmm/TestCPMMBaseStrategy.sol/TestCPMMBaseStrategy.json");
+
+const IS_DELTASWAP = true;
 
 describe("CPMMBaseStrategy", function () {
   let TestERC20: any;
   let TestStrategy: any;
+  let TestGammaPoolFactory: any;
   let UniswapV2Factory: any;
   let UniswapV2Pair: any;
   let tokenA: any;
   let tokenB: any;
   let cfmm: any;
+  let gsFactory: any;
   let uniFactory: any;
   let strategy: any;
   let owner: any;
@@ -24,14 +31,19 @@ describe("CPMMBaseStrategy", function () {
     // Get the ContractFactory and Signers here.
     TestERC20 = await ethers.getContractFactory("TestERC20");
     [owner] = await ethers.getSigners();
+    TestGammaPoolFactory = new ethers.ContractFactory(
+        TestGammaPoolFactoryJSON.abi,
+        TestGammaPoolFactoryJSON.bytecode,
+        owner
+    );
     UniswapV2Factory = new ethers.ContractFactory(
-      UniswapV2FactoryJSON.abi,
-      UniswapV2FactoryJSON.bytecode,
+        IS_DELTASWAP ? DeltaSwapFactoryJSON.abi : UniswapV2FactoryJSON.abi,
+        IS_DELTASWAP ? DeltaSwapFactoryJSON.bytecode : UniswapV2FactoryJSON.bytecode,
       owner
     );
     UniswapV2Pair = new ethers.ContractFactory(
-      UniswapV2PairJSON.abi,
-      UniswapV2PairJSON.bytecode,
+      IS_DELTASWAP ? DeltaSwapPairJSON.abi : UniswapV2PairJSON.abi,
+      IS_DELTASWAP ? DeltaSwapPairJSON.bytecode : UniswapV2PairJSON.bytecode,
       owner
     );
     TestStrategy = new ethers.ContractFactory(
@@ -43,7 +55,9 @@ describe("CPMMBaseStrategy", function () {
     tokenA = await TestERC20.deploy("Test Token A", "TOKA");
     tokenB = await TestERC20.deploy("Test Token B", "TOKB");
 
-    uniFactory = await UniswapV2Factory.deploy(owner.address);
+    gsFactory = await TestGammaPoolFactory.deploy(owner.address, 10000);
+
+    uniFactory = IS_DELTASWAP ? await UniswapV2Factory.deploy(owner.address, owner.address, gsFactory.address) : await UniswapV2Factory.deploy(owner.address);
 
     cfmm = await createPair(tokenA, tokenB);
 

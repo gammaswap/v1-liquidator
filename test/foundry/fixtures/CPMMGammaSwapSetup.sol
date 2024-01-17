@@ -19,6 +19,8 @@ import "@gammaswap/v1-periphery/contracts/PositionManager.sol";
 
 contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
 
+    bool constant IS_DELTASWAP = true;
+
     struct LogRateParams {
         uint64 baseRate;
         uint80 factor;
@@ -39,6 +41,8 @@ contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
     CPMMGammaPool public pool6x18;
     CPMMGammaPool public pool18x6;
     CPMMGammaPool public pool6x6;
+    CPMMGammaPool public pool6x8;
+    CPMMGammaPool public pool8x18;
     IPoolViewer public viewer;
 
     PositionManager posMgr;
@@ -49,17 +53,24 @@ contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
     address public cfmm6x18;
     address public cfmm18x6;
     address public cfmm6x6;
+    address public cfmm6x8;
+    address public cfmm8x18;
 
     address public owner;
 
     function initCPMMGammaSwap(bool use6Decimals) public {
         owner = address(this);
         super.initTokens(4 * 1e6 * 1e18, use6Decimals);
-        super.initUniswap(owner, address(weth));
-
-        approveRouter();
 
         factory = new GammaPoolFactory(owner);
+
+        if(IS_DELTASWAP) {
+            super.initDeltaSwap(owner, address(weth), address(factory));
+        } else {
+            super.initUniswap(owner, address(weth));
+        }
+
+        approveRouter();
 
         uint16 PROTOCOL_ID = 1;
         uint64 baseRate = 1e16;
@@ -69,15 +80,13 @@ contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
 
         mathLib = new CPMMMath();
         viewer = new PoolViewer();
-        longStrategy = new CPMMBorrowStrategy(address(mathLib), maxTotalApy, 2252571, 997, address(0), baseRate, factor, maxApy);
-        repayStrategy = new CPMMRepayStrategy(address(mathLib), maxTotalApy, 2252571, 997, address(0), baseRate, factor, maxApy);
+        longStrategy = new CPMMBorrowStrategy(address(mathLib), maxTotalApy, 2252571, 997, cfmmFactory, baseRate, factor, maxApy);
+        repayStrategy = new CPMMRepayStrategy(address(mathLib), maxTotalApy, 2252571, 997, cfmmFactory, baseRate, factor, maxApy);
         shortStrategy = new CPMMShortStrategy(maxTotalApy, 2252571, baseRate, factor, maxApy);
-        liquidationStrategy = new CPMMLiquidationStrategy(address(mathLib), maxTotalApy, 2252571, 997, address(0), baseRate, factor, maxApy);
-        batchLiquidationStrategy = new CPMMBatchLiquidationStrategy(address(mathLib), maxTotalApy, 2252571, 997, address(0), baseRate, factor, maxApy);
-        externalRebalanceStrategy = new CPMMExternalRebalanceStrategy(maxTotalApy, 2252571, 997, address(0), baseRate, factor, maxApy);
-        externalLiquidationStrategy = new CPMMExternalLiquidationStrategy(address(mathLib), maxTotalApy, 2252571, 997, address(0), baseRate, factor, maxApy);
-
-        bytes32 cfmmHash = hex'96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f'; // UniV2Pair init_code_hash
+        liquidationStrategy = new CPMMLiquidationStrategy(address(mathLib), maxTotalApy, 2252571, 997, cfmmFactory, baseRate, factor, maxApy);
+        batchLiquidationStrategy = new CPMMBatchLiquidationStrategy(address(mathLib), maxTotalApy, 2252571, 997, cfmmFactory, baseRate, factor, maxApy);
+        externalRebalanceStrategy = new CPMMExternalRebalanceStrategy(maxTotalApy, 2252571, 997, cfmmFactory, baseRate, factor, maxApy);
+        externalLiquidationStrategy = new CPMMExternalLiquidationStrategy(address(mathLib), maxTotalApy, 2252571, 997, cfmmFactory, baseRate, factor, maxApy);
 
         protocol = new CPMMGammaPool(PROTOCOL_ID, address(factory), address(longStrategy), address(repayStrategy), address(shortStrategy),
             address(liquidationStrategy), address(batchLiquidationStrategy), address(viewer), address(externalRebalanceStrategy),
@@ -94,6 +103,9 @@ contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
         cfmm = createPair(tokens[0], tokens[1]);
 
         pool = CPMMGammaPool(factory.createPool(PROTOCOL_ID, cfmm, tokens, new bytes(0)));
+        if(IS_DELTASWAP) {
+            assertEq(IDeltaSwapPair(cfmm).gammaPool(), address(pool));
+        }
 
         if(use6Decimals) {
             // 18x6 = usdc/weth6
@@ -101,6 +113,9 @@ contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
             tokens[1] = address(weth6);
             cfmm18x6 = createPair(tokens[0], tokens[1]);
             pool18x6 = CPMMGammaPool(factory.createPool(PROTOCOL_ID, cfmm18x6, tokens, new bytes(0)));
+            if(IS_DELTASWAP) {
+                assertEq(IDeltaSwapPair(cfmm18x6).gammaPool(), address(pool18x6));
+            }
             approvePoolAndCFMM(pool18x6, cfmm18x6);
 
             // 6x18 = usdc6/weth
@@ -108,6 +123,9 @@ contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
             tokens[1] = address(weth);
             cfmm6x18 = createPair(tokens[0], tokens[1]);
             pool6x18 = CPMMGammaPool(factory.createPool(PROTOCOL_ID, cfmm6x18, tokens, new bytes(0)));
+            if(IS_DELTASWAP) {
+                assertEq(IDeltaSwapPair(cfmm6x18).gammaPool(), address(pool6x18));
+            }
             approvePoolAndCFMM(pool6x18, cfmm6x18);
 
             // 6x6 = usdc6/weth6
@@ -115,7 +133,31 @@ contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
             tokens[1] = address(weth6);
             cfmm6x6 = createPair(tokens[0], tokens[1]);
             pool6x6 = CPMMGammaPool(factory.createPool(PROTOCOL_ID, cfmm6x6, tokens, new bytes(0)));
+            if(IS_DELTASWAP) {
+                assertEq(IDeltaSwapPair(cfmm6x6).gammaPool(), address(pool6x6));
+            }
             approvePoolAndCFMM(pool6x6, cfmm6x6);
+
+            // 6x8 = usdc6/weth8
+            tokens[0] = address(usdc6);
+            tokens[1] = address(weth8);
+            cfmm6x8 = createPair(tokens[0], tokens[1]);
+            pool6x8 = CPMMGammaPool(factory.createPool(PROTOCOL_ID, cfmm6x8, tokens, new bytes(0)));
+            if(IS_DELTASWAP) {
+                assertEq(IDeltaSwapPair(cfmm6x8).gammaPool(), address(pool6x8));
+            }
+            approvePoolAndCFMM(pool6x8, cfmm6x8);
+
+
+            // 8x18 = weth8/usdc
+            tokens[0] = address(usdc);
+            tokens[1] = address(weth8);
+            cfmm8x18 = createPair(tokens[0], tokens[1]);
+            pool8x18 = CPMMGammaPool(factory.createPool(PROTOCOL_ID, cfmm8x18, tokens, new bytes(0)));
+            if(IS_DELTASWAP) {
+                assertEq(IDeltaSwapPair(cfmm8x18).gammaPool(), address(pool8x18));
+            }
+            approvePoolAndCFMM(pool8x18, cfmm8x18);
         }
 
         setPoolParams(address(pool), 0, 0, 10, 100, 100, 1, 250, 200, 1e3);// setting origination fees to zero
@@ -136,6 +178,7 @@ contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
         usdc.approve(address(posMgr), type(uint256).max);
         weth.approve(address(posMgr), type(uint256).max);
         weth6.approve(address(posMgr), type(uint256).max);
+        weth8.approve(address(posMgr), type(uint256).max);
         usdc6.approve(address(posMgr), type(uint256).max);
         usdt.approve(address(posMgr), type(uint256).max);
         vm.stopPrank();
@@ -144,6 +187,7 @@ contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
         usdc.approve(address(posMgr), type(uint256).max);
         weth.approve(address(posMgr), type(uint256).max);
         weth6.approve(address(posMgr), type(uint256).max);
+        weth8.approve(address(posMgr), type(uint256).max);
         usdc6.approve(address(posMgr), type(uint256).max);
         usdt.approve(address(posMgr), type(uint256).max);
         vm.stopPrank();
@@ -155,6 +199,7 @@ contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
         weth.approve(address(uniRouter), type(uint256).max);
         usdc6.approve(address(uniRouter), type(uint256).max);
         weth6.approve(address(uniRouter), type(uint256).max);
+        weth8.approve(address(uniRouter), type(uint256).max);
         usdt.approve(address(uniRouter), type(uint256).max);
         vm.stopPrank();
 
@@ -163,6 +208,7 @@ contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
         weth.approve(address(uniRouter), type(uint256).max);
         usdc6.approve(address(uniRouter), type(uint256).max);
         weth6.approve(address(uniRouter), type(uint256).max);
+        weth8.approve(address(uniRouter), type(uint256).max);
         usdt.approve(address(uniRouter), type(uint256).max);
         vm.stopPrank();
     }
