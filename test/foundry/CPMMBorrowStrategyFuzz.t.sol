@@ -16,6 +16,36 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
         super.initCPMMGammaSwap(true);
     }
 
+    function testEmptyPool() public {
+        IPoolViewer viewer = IPoolViewer(IGammaPool(pool).viewer());
+        IGammaPool.PoolData memory poolData = viewer.getLatestPoolData(address(pool));
+        assertEq(poolData.lastPrice, 0);
+        assertEq(viewer.canLiquidate(address(pool),1), false);
+
+        IGammaPool.LoanData memory loanData = viewer.loan(address(pool),1);
+        assertEq(loanData.liquidity, 0);
+        assertEq(loanData.id, 0);
+
+        IGammaPool.LoanData[] memory _loans = viewer.getLoans(address(pool), 0, 100, true);
+        assertEq(_loans.length, 0);
+
+        uint256[] memory tokenIds = new uint256[](3);
+        tokenIds[0] = 1;
+        tokenIds[1] = 2;
+        tokenIds[2] = 3;
+        _loans = viewer.getLoansById(address(pool), tokenIds, true);
+        assertEq(_loans.length, 3);
+        assertEq(_loans[0].liquidity, 0);
+        assertEq(_loans[0].id, 0);
+        assertEq(_loans[1].liquidity, 0);
+        assertEq(_loans[1].id, 0);
+        assertEq(_loans[2].liquidity, 0);
+        assertEq(_loans[2].id, 0);
+
+        IGammaPool.RateData memory rateData = viewer.getLatestRates(address(pool));
+        assertEq(rateData.accFeeIndex, 1e18);
+    }
+
     function testIncreaseCollateral18x18(uint24 amount0, uint24 amount1, uint72 ratio0, uint72 ratio1) public {
         depositLiquidityInCFMMByToken(address(usdc), address(weth), usdcAmount*1e18, wethAmount*1e18, addr1);
         depositLiquidityInCFMMByToken(address(usdc), address(weth), usdcAmount*1e18, wethAmount*1e18, addr2);
