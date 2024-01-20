@@ -38,6 +38,10 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
         setPoolParams(address(pool6x18), 0, 0, 10, 100, 100, 1, 25, 10, 1e12);// setting ltv threshold to 1%, liqFee to 25bps
 
         callee = new TestExternalCallee2();
+
+        factory.lockProtocol(1);
+        vm.expectRevert(bytes4(keccak256("ProtocolLocked()")));
+        factory.updateProtocol(1,address(protocol2));
     }
 
     function openLoan(address _cfmm) internal returns(uint256 tokenId) {

@@ -97,6 +97,7 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
     }
 
     function testRepayLiquidity18x18(uint8 tradeAmtPerc, bool side, uint8 payLiquidityPerc, bool collateralId, uint8 toNum) public {
+        lockProtocol();
         if(toNum == 0) toNum = 1;
 
         bool chng = changePrice(tradeAmtPerc, side, address(pool));
@@ -337,6 +338,7 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
     }
 
     function testRepayLiquiditySetRatio18x18(uint8 tradeAmtPerc, bool side, uint8 payLiquidityPerc, uint72 ratio0, uint72 ratio1) public {
+        lockProtocol();
         setPoolParams(address(pool), 0, 0, 10, 100, 100, 1, 25, 10, 1e18);// setting origination fees to zero
 
         bool chng = changePrice(tradeAmtPerc, side, address(pool));
@@ -503,6 +505,7 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
     }
 
     function testRepayLiquiditySetRatio6x18(uint8 tradeAmtPerc, bool side, uint8 payLiquidityPerc, uint72 ratio0, uint72 ratio1) public {
+        lockProtocol();
         setPoolParams(address(pool6x18), 0, 0, 10, 100, 100, 1, 25, 10, 1e12);// setting origination fees to zero
 
         bool chng = changePrice2(tradeAmtPerc, side, address(pool6x18));
@@ -837,6 +840,7 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
     }
 
     function testRepayLiquidityWithLP6x18(uint8 tradeAmtPerc, bool side, uint8 lpTokenPerc, uint8 collateralId, uint8 toNum) public {
+        lockProtocol();
         collateralId = uint8(bound(collateralId, 0, 2));
 
         setPoolParams(address(pool6x18), 0, 0, 10, 100, 100, 1, 25, 10, 1e12);// setting origination fees to zero

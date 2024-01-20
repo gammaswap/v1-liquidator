@@ -37,6 +37,7 @@ contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
     CPMMExternalLiquidationStrategy public externalLiquidationStrategy;
     CPMMExternalRebalanceStrategy public externalRebalanceStrategy;
     CPMMGammaPool public protocol;
+    CPMMGammaPool public protocol2;
     CPMMGammaPool public pool;
     CPMMGammaPool public pool6x18;
     CPMMGammaPool public pool18x6;
@@ -89,6 +90,10 @@ contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
         externalLiquidationStrategy = new CPMMExternalLiquidationStrategy(address(mathLib), maxTotalApy, 2252571, 997, cfmmFactory, baseRate, factor, maxApy);
 
         protocol = new CPMMGammaPool(PROTOCOL_ID, address(factory), address(longStrategy), address(repayStrategy), address(shortStrategy),
+            address(liquidationStrategy), address(batchLiquidationStrategy), address(viewer), address(externalRebalanceStrategy),
+            address(externalLiquidationStrategy), address(uniFactory), cfmmHash);
+
+        protocol2 = new CPMMGammaPool(PROTOCOL_ID, address(factory), address(longStrategy), address(repayStrategy), address(shortStrategy),
             address(liquidationStrategy), address(batchLiquidationStrategy), address(viewer), address(externalRebalanceStrategy),
             address(externalLiquidationStrategy), address(uniFactory), cfmmHash);
 
@@ -164,6 +169,12 @@ contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
 
         approvePool();
         approvePosMgr();
+    }
+
+    function lockProtocol() internal {
+        factory.lockProtocol(1);
+        vm.expectRevert(bytes4(keccak256("ProtocolLocked()")));
+        factory.updateProtocol(1,address(protocol2));
     }
 
     function setPoolParams(address pool, uint16 origFee, uint8 extSwapFee, uint8 emaMultiplier, uint8 minUtilRate1, uint8 minUtilRate2,

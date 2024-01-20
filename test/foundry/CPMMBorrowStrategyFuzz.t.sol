@@ -47,6 +47,7 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
     }
 
     function testIncreaseCollateral18x18(uint24 amount0, uint24 amount1, uint72 ratio0, uint72 ratio1) public {
+        lockProtocol();
         depositLiquidityInCFMMByToken(address(usdc), address(weth), usdcAmount*1e18, wethAmount*1e18, addr1);
         depositLiquidityInCFMMByToken(address(usdc), address(weth), usdcAmount*1e18, wethAmount*1e18, addr2);
 
@@ -279,6 +280,7 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
     }
 
     function testDecreaseCollateral18x18(uint8 amount0, uint8 amount1, uint72 ratio0, uint72 ratio1, uint8 _addr) public {
+        lockProtocol();
         depositLiquidityInCFMMByToken(address(usdc), address(weth), usdcAmount*1e18, wethAmount*1e18, addr1);
         depositLiquidityInCFMMByToken(address(usdc), address(weth), usdcAmount*1e18, wethAmount*1e18, addr2);
 
@@ -572,6 +574,7 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
     }
 
     function testBorrowLiquidity18x18(uint8 amount0, uint8 amount1, uint8 lpTokens, uint72 ratio0, uint72 ratio1) public {
+        lockProtocol();
         depositLiquidityInCFMMByToken(address(usdc), address(weth), usdcAmount*1e18, wethAmount*1e18, addr1);
         depositLiquidityInCFMMByToken(address(usdc), address(weth), usdcAmount*1e18, wethAmount*1e18, addr2);
         depositLiquidityInPoolFromCFMM(pool, cfmm, addr2);
@@ -1035,6 +1038,7 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
         }
     }
     function testRebalanceCollateral18x6(uint72 ratio0, uint72 ratio1, bool useRatio, bool side, bool buy) public {
+        lockProtocol();
         depositLiquidityInCFMMByToken(address(usdc), address(weth6), usdcAmount*1e18, wethAmount*1e6, addr1);
         depositLiquidityInCFMMByToken(address(usdc), address(weth6), usdcAmount*1e18, wethAmount*1e6, addr2);
         depositLiquidityInPoolFromCFMM(pool18x6, cfmm18x6, addr2);
@@ -1291,6 +1295,7 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
     }
 
     function testRebalanceCollateral6x6(uint96 ratio0, uint96 ratio1, bool useRatio, bool side, bool buy) public {
+        lockProtocol();
         depositLiquidityInCFMMByToken(address(usdc6), address(weth6), usdcAmount*1e6, wethAmount*1e6, addr1);
         depositLiquidityInCFMMByToken(address(usdc6), address(weth6), usdcAmount*1e6, wethAmount*1e6, addr2);
         depositLiquidityInPoolFromCFMM(pool6x6, cfmm6x6, addr2);

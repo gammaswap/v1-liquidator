@@ -37,6 +37,7 @@ contract CPMMShortStrategyFuzz is CPMMGammaSwapSetup {
     }
 
     function testDepositReserves18x18(uint24 usdcAmount, uint24 wethAmount, uint24 wethDeposit) public {
+        lockProtocol();
         usdcAmount = usdcAmount / 10;
         wethAmount = wethAmount / 10;
         if(usdcAmount == 0) {
@@ -155,6 +156,7 @@ contract CPMMShortStrategyFuzz is CPMMGammaSwapSetup {
         vm.stopPrank();
     }
     function testDepositReserves6x6(uint24 usdc6Amount, uint24 weth6Amount, uint24 weth6Deposit) public {
+        lockProtocol();
         usdc6Amount = usdc6Amount / 10;
         weth6Amount = weth6Amount / 10;
         if(usdc6Amount == 0) {
@@ -271,6 +273,7 @@ contract CPMMShortStrategyFuzz is CPMMGammaSwapSetup {
         vm.stopPrank();
     }
     function testDepositNoPull18x6(uint24 usdcAmount, uint24 weth6Amount, uint80 cfmmDeposit) public {
+        lockProtocol();
         usdcAmount = usdcAmount / 10;
         weth6Amount = weth6Amount / 10;
         if(usdcAmount == 0) {
@@ -427,6 +430,7 @@ contract CPMMShortStrategyFuzz is CPMMGammaSwapSetup {
     }
 
     function testWithdrawReserves18x6(uint80 amount) public {
+        lockProtocol();
         uint256 usdcAmount = 2_500_000 / 2;
         uint256 weth6Amount = 1_250 / 2;
 
@@ -558,6 +562,7 @@ contract CPMMShortStrategyFuzz is CPMMGammaSwapSetup {
         vm.stopPrank();
     }
     function testWithdrawNoPull6x6(uint80 amount) public {
+        lockProtocol();
         uint256 usdc6Amount = 2_500_000 / 2;
         uint256 weth6Amount = 1_250 / 2;
 
