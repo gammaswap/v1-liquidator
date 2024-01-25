@@ -43,7 +43,7 @@ contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
     CPMMGammaPool public pool18x6;
     CPMMGammaPool public pool6x6;
     CPMMGammaPool public pool6x8;
-    CPMMGammaPool public pool8x18;
+    CPMMGammaPool public pool18x8;
     IPoolViewer public viewer;
 
     PositionManager posMgr;
@@ -55,7 +55,7 @@ contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
     address public cfmm18x6;
     address public cfmm6x6;
     address public cfmm6x8;
-    address public cfmm8x18;
+    address public cfmm18x8;
 
     address public owner;
 
@@ -154,15 +154,15 @@ contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
             approvePoolAndCFMM(pool6x8, cfmm6x8);
 
 
-            // 8x18 = weth8/usdc
+            // 18x8 = usdc/weth8
             tokens[0] = address(usdc);
             tokens[1] = address(weth8);
-            cfmm8x18 = createPair(tokens[0], tokens[1]);
-            pool8x18 = CPMMGammaPool(factory.createPool(PROTOCOL_ID, cfmm8x18, tokens, new bytes(0)));
+            cfmm18x8 = createPair(tokens[0], tokens[1]);
+            pool18x8 = CPMMGammaPool(factory.createPool(PROTOCOL_ID, cfmm18x8, tokens, new bytes(0)));
             if(IS_DELTASWAP) {
-                assertEq(IDeltaSwapPair(cfmm8x18).gammaPool(), address(pool8x18));
+                assertEq(IDeltaSwapPair(cfmm18x8).gammaPool(), address(pool18x8));
             }
-            approvePoolAndCFMM(pool8x18, cfmm8x18);
+            approvePoolAndCFMM(pool18x8, cfmm18x8);
         }
 
         setPoolParams(address(pool), 0, 0, 10, 100, 100, 1, 250, 200, 1e3);// setting origination fees to zero
