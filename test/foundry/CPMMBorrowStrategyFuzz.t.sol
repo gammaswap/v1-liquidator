@@ -354,6 +354,87 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
         vm.stopPrank();
     }
 
+    function testIncreaseCollateral18x8(uint24 amount0, uint8 amount1, uint256 ratio0, uint256 ratio1) public {
+        depositLiquidityInCFMMByToken(address(usdc), address(weth8), usdcAmount*1e18, wethAmount*1e12, addr1);
+        depositLiquidityInCFMMByToken(address(usdc), address(weth8), usdcAmount*1e18, wethAmount*1e12, addr2);
+
+        amount0 = amount0 / 10;
+        amount1 = amount1 / 10;
+
+        if(amount0 < 1) amount0 = 1;
+        if(amount1 < 1) amount1 = 1;
+        ratio0 = bound(ratio0, 1e18, 1e20);
+        ratio1 = bound(ratio1, 1e8, 1e10);
+
+        uint256[] memory amounts = new uint256[](2);
+        amounts[0] = uint256(amount0)*1e18;
+        amounts[1] = uint256(amount1)*1e8;
+
+        uint128[] memory reserves = new uint128[](2);
+        (reserves[0], reserves[1],) = ICPMM(cfmm18x8).getReserves();
+        uint256[] memory ratio = new uint256[](2);
+        ratio[0] = ratio0 * reserves[0] / 1e18;
+        ratio[1] = ratio1 * reserves[1] / 1e8;
+
+        vm.startPrank(addr1);
+        uint256 tokenId = posMgr.createLoan(1, cfmm18x8, addr1, 0, type(uint256).max);
+        assertGt(tokenId, 0);
+
+        IPositionManager.AddCollateralParams memory params = IPositionManager.AddCollateralParams({
+            protocolId: 1,
+            cfmm: cfmm18x8,
+            to: address(0),
+            tokenId: tokenId,
+            deadline: type(uint256).max,
+            amounts: amounts,
+            ratio: new uint256[](0),
+            minCollateral: new uint128[](0)
+        });
+
+        uint256 beforeWeth8Balance = IERC20(weth8).balanceOf(address(pool18x8));
+        uint256 beforeUSDCBalance = IERC20(usdc).balanceOf(address(pool18x8));
+
+        uint128[] memory tokensHeld = posMgr.increaseCollateral(params);
+
+        uint256 afterWeth8Balance = IERC20(weth8).balanceOf(address(pool18x8));
+        uint256 afterUSDCBalance = IERC20(usdc).balanceOf(address(pool18x8));
+
+        assertEq(tokensHeld[0], amounts[0]);
+        assertEq(tokensHeld[1], amounts[1]);
+        assertEq(tokensHeld[0], afterUSDCBalance - beforeUSDCBalance);
+        assertEq(tokensHeld[1], afterWeth8Balance - beforeWeth8Balance);
+
+        vm.stopPrank();
+
+        vm.startPrank(addr2);
+
+        tokenId = posMgr.createLoan(1, cfmm18x8, addr2, 0, type(uint256).max);
+        assertGt(tokenId, 0);
+
+        params = IPositionManager.AddCollateralParams({
+            protocolId: 1,
+            cfmm: cfmm18x8,
+            to: address(0),
+            tokenId: tokenId,
+            deadline: type(uint256).max,
+            amounts: amounts,
+            ratio: ratio,
+            minCollateral: new uint128[](0)
+        });
+
+        tokensHeld = posMgr.increaseCollateral(params);
+
+        assertGt(tokensHeld[0], 0);
+        assertGt(tokensHeld[1], 0);
+
+        uint256 strikePx = uint256(tokensHeld[1]) * 1e18 / tokensHeld[0];
+        uint256 expectedStrikePx = ratio[1] * 1e18 / ratio[0];
+
+        assertApproxEqAbs(strikePx, expectedStrikePx, 1e12);    // 0.0001% delta
+
+        vm.stopPrank();
+    }
+
     function testDecreaseCollateral18x18(uint8 amount0, uint8 amount1, uint72 ratio0, uint72 ratio1, uint8 _addr) public {
         lockProtocol();
         depositLiquidityInCFMMByToken(address(usdc), address(weth), usdcAmount*1e18, wethAmount*1e18, addr1);
