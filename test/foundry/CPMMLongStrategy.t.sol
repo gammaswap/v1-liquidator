@@ -18,6 +18,65 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         depositLiquidityInPool(addr2);
     }
 
+    function testBorrowMoreMinBorrow() public {
+        uint72 minBorrow = 2e18;
+        setPoolParams(address(pool), 10, 0, 10, 100, 100, 1, 250, 200, minBorrow);// setting base origination fee to 10, disable dynamic part
+
+        (, uint256 cfmmInvariant, uint256 cfmmTotalSupply) = IGammaPool(pool).getLatestCFMMBalances();
+        uint256 lpTokens = minBorrow * cfmmTotalSupply / cfmmInvariant;
+        assertGt(lpTokens, 0);
+
+        uint256[] memory _amounts = new uint256[](2);
+        _amounts[0] = 5*1e18;
+        _amounts[1] = 5_000*1e18;
+
+        vm.startPrank(addr1);
+
+        IPositionManager.CreateLoanBorrowAndRebalanceParams memory params = IPositionManager.CreateLoanBorrowAndRebalanceParams({
+            protocolId: 1,
+            cfmm: cfmm,
+            to: addr1,
+            refId: 0,
+            amounts: _amounts,
+            lpTokens: 32, // minimum amount of LP tokens you can burn in CFMM
+            ratio: new uint256[](0),
+            minBorrowed: new uint256[](2),
+            minCollateral: new uint128[](2),
+            deadline: type(uint256).max,
+            maxBorrowed: type(uint256).max
+        });
+        vm.expectRevert(bytes4(keccak256("MinBorrow()")));
+        posMgr.createLoanBorrowAndRebalance(params);
+
+        params.lpTokens = lpTokens;
+        vm.expectRevert(bytes4(keccak256("MinBorrow()")));
+        posMgr.createLoanBorrowAndRebalance(params);
+
+        params.lpTokens = lpTokens + 1;
+        (uint256 tokenId,,,) = posMgr.createLoanBorrowAndRebalance(params);
+
+        IGammaPool.LoanData memory loanData = IGammaPool(pool).loan(tokenId);
+        uint256 initLiquidity0 = loanData.initLiquidity;
+        assertGt(initLiquidity0, 0);
+
+        IPositionManager.BorrowLiquidityParams memory params2 = IPositionManager.BorrowLiquidityParams({
+            protocolId: 1,
+            cfmm: cfmm,
+            tokenId: tokenId,
+            lpTokens: 32,
+            ratio: new uint256[](0),
+            deadline: type(uint256).max,
+            minBorrowed: new uint256[](2),
+            maxBorrowed: type(uint256).max,
+            minCollateral: new uint128[](2)
+        });
+        posMgr.borrowLiquidity(params2);
+
+        loanData = IGammaPool(pool).loan(tokenId);
+        assertGt(loanData.initLiquidity, initLiquidity0);
+        vm.stopPrank();
+    }
+
     function testBorrowAndRebalanceSlippageUp() public {
         (uint128 reserve0, uint128 reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
