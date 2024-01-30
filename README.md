@@ -16,6 +16,8 @@
 This is the repository for the liquidation bot smart contract for the GammaSwap V1 protocol. The tests for the
 CPMM implementation of GammaSwap pools that use the UniswapV2 AMM (v1-implementations repo) are also found here.
 
+Tests run against DeltaSwap. To run tests against UniswapV2 change IS_DELTASWAP to false in CPMMGammaSwapSetup.sol
+
 ## Steps to Run GammaSwap Tests Locally
 
 1. Run `yarn` to install GammaSwap dependencies
