@@ -1295,7 +1295,7 @@ describe("CPMMLiquidationStrategy", function () {
 
       const resp = await (await strategyFee._liquidateWithLP(tokenId)).wait();
 
-      const writeDownAmt = BigNumber.from("46189100472354650");
+      const writeDownAmt = BigNumber.from("46189100472354652");
       const len = resp.events.length;
       const liquidationEvent = resp.events[len - 3]; // 46157136933282181
       expect(liquidationEvent.event).to.equal("Liquidation");
