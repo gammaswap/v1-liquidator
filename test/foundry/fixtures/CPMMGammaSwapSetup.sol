@@ -23,8 +23,9 @@ contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
 
     struct LogRateParams {
         uint64 baseRate;
-        uint80 factor;
-        uint80 maxApy;
+        uint64 optimalUtilRate;
+        uint64 slope1;
+        uint64 slope2;
     }
 
     GammaPoolFactory public factory;
@@ -75,19 +76,20 @@ contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
 
         uint16 PROTOCOL_ID = 1;
         uint64 baseRate = 1e16;
-        uint80 factor = 4 * 1e16;
-        uint80 maxApy = 75 * 1e16;
-        uint256 maxTotalApy = 1e19;
+        uint64 optimalUtilRate = 8 * 1e17;
+        uint64 slope1 = 5 * 1e16;
+        uint64 slope2 = 75 * 1e16;
+        uint256 maxTotalApy = 15 * 1e18;
 
         mathLib = new CPMMMath();
         viewer = new PoolViewer();
-        longStrategy = new CPMMBorrowStrategy(address(mathLib), maxTotalApy, 2252571, 997, cfmmFactory, baseRate, factor, maxApy);
-        repayStrategy = new CPMMRepayStrategy(address(mathLib), maxTotalApy, 2252571, 997, cfmmFactory, baseRate, factor, maxApy);
-        shortStrategy = new CPMMShortStrategy(maxTotalApy, 2252571, baseRate, factor, maxApy);
-        liquidationStrategy = new CPMMLiquidationStrategy(address(mathLib), maxTotalApy, 2252571, 997, cfmmFactory, baseRate, factor, maxApy);
-        batchLiquidationStrategy = new CPMMBatchLiquidationStrategy(address(mathLib), maxTotalApy, 2252571, 997, cfmmFactory, baseRate, factor, maxApy);
-        externalRebalanceStrategy = new CPMMExternalRebalanceStrategy(maxTotalApy, 2252571, 997, cfmmFactory, baseRate, factor, maxApy);
-        externalLiquidationStrategy = new CPMMExternalLiquidationStrategy(address(mathLib), maxTotalApy, 2252571, 997, cfmmFactory, baseRate, factor, maxApy);
+        longStrategy = new CPMMBorrowStrategy(address(mathLib), maxTotalApy, 2252571, 997, 1000, cfmmFactory, baseRate, optimalUtilRate, slope1, slope2);
+        repayStrategy = new CPMMRepayStrategy(address(mathLib), maxTotalApy, 2252571, 997, 1000, cfmmFactory, baseRate, optimalUtilRate, slope1, slope2);
+        shortStrategy = new CPMMShortStrategy(maxTotalApy, 2252571, baseRate, optimalUtilRate, slope1, slope2);
+        liquidationStrategy = new CPMMLiquidationStrategy(address(mathLib), maxTotalApy, 2252571, 997, 1000, cfmmFactory, baseRate, optimalUtilRate, slope1, slope2);
+        batchLiquidationStrategy = new CPMMBatchLiquidationStrategy(address(mathLib), maxTotalApy, 2252571, 997, 1000, cfmmFactory, baseRate, optimalUtilRate, slope1, slope2);
+        externalRebalanceStrategy = new CPMMExternalRebalanceStrategy(maxTotalApy, 2252571, 997, 1000, cfmmFactory, baseRate, optimalUtilRate, slope1, slope2);
+        externalLiquidationStrategy = new CPMMExternalLiquidationStrategy(address(mathLib), maxTotalApy, 2252571, 997, 1000, cfmmFactory, baseRate, optimalUtilRate, slope1, slope2);
 
         protocol = new CPMMGammaPool(PROTOCOL_ID, address(factory), address(longStrategy), address(repayStrategy), address(shortStrategy),
             address(liquidationStrategy), address(batchLiquidationStrategy), address(viewer), address(externalRebalanceStrategy),
