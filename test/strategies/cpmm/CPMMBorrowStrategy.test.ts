@@ -6,9 +6,6 @@ const UniswapV2FactoryJSON = require("@uniswap/v2-core/build/UniswapV2Factory.js
 const UniswapV2PairJSON = require("@uniswap/v2-core/build/UniswapV2Pair.json");
 const DeltaSwapFactoryJSON = require("@gammaswap/v1-deltaswap/artifacts/contracts/DeltaSwapFactory.sol/DeltaSwapFactory.json");
 const DeltaSwapPairJSON = require("@gammaswap/v1-deltaswap/artifacts/contracts/DeltaSwapPair.sol/DeltaSwapPair.json");
-const TestERC20WithFeeJSON = require("@gammaswap/v1-implementations/artifacts/contracts/test/TestERC20WithFee.sol/TestERC20WithFee.json");
-const TestGammaPoolFactoryJSON = require("@gammaswap/v1-implementations/artifacts/contracts/test/TestGammaPoolFactory.sol/TestGammaPoolFactory.json");
-const TestCPMMBorrowStrategyJSON = require("@gammaswap/v1-implementations/artifacts/contracts/test/strategies/cpmm/TestCPMMBorrowStrategy.sol/TestCPMMBorrowStrategy.json");
 
 const IS_DELTASWAP = true;
 
@@ -40,11 +37,9 @@ describe("CPMMBorrowStrategy", function () {
     // Get the ContractFactory and Signers here.
     TestERC20 = await ethers.getContractFactory("TestERC20");
     [owner, addr1, addr2, addr3] = await ethers.getSigners();
-    TestERC20WithFee = new ethers.ContractFactory(
-        TestERC20WithFeeJSON.abi,
-        TestERC20WithFeeJSON.bytecode,
-        owner
-    );
+    TestERC20WithFee = await ethers.getContractFactory("TestERC20WithFee");
+    TestGammaPoolFactory = await ethers.getContractFactory("TestGammaPoolFactory");
+    TestStrategy = await ethers.getContractFactory("TestCPMMBorrowStrategy");
     UniswapV2Factory = new ethers.ContractFactory(
         IS_DELTASWAP ? DeltaSwapFactoryJSON.abi : UniswapV2FactoryJSON.abi,
         IS_DELTASWAP ? DeltaSwapFactoryJSON.bytecode : UniswapV2FactoryJSON.bytecode,
@@ -53,16 +48,6 @@ describe("CPMMBorrowStrategy", function () {
     UniswapV2Pair = new ethers.ContractFactory(
         IS_DELTASWAP ? DeltaSwapPairJSON.abi : UniswapV2PairJSON.abi,
         IS_DELTASWAP ? DeltaSwapPairJSON.bytecode : UniswapV2PairJSON.bytecode,
-        owner
-    );
-    TestGammaPoolFactory = new ethers.ContractFactory(
-        TestGammaPoolFactoryJSON.abi,
-        TestGammaPoolFactoryJSON.bytecode,
-        owner
-    );
-    TestStrategy = new ethers.ContractFactory(
-        TestCPMMBorrowStrategyJSON.abi,
-        TestCPMMBorrowStrategyJSON.bytecode,
         owner
     );
     tokenA = await TestERC20.deploy("Test Token A", "TOKA");
@@ -88,16 +73,19 @@ describe("CPMMBorrowStrategy", function () {
 
     const ONE = BigNumber.from(10).pow(18);
     const baseRate = ONE.div(100);
-    const factor = ONE.mul(4).div(100);
-    const maxApy = ONE.mul(75).div(100);
+    const optimalUtilRate = ONE.mul(8).div(10);
+    const slope1 = ONE.mul(5).div(100);
+    const slope2 = ONE.mul(75).div(100);
 
     strategy = await TestStrategy.deploy(
       addr3.address,
       997,
+      1000,
       ethers.constants.AddressZero,
       baseRate,
-      factor,
-      maxApy
+      optimalUtilRate,
+      slope1,
+      slope2
     );
 
     await (
@@ -148,16 +136,19 @@ describe("CPMMBorrowStrategy", function () {
 
     const ONE = BigNumber.from(10).pow(18);
     const baseRate = ONE.div(100);
-    const factor = ONE.mul(4).div(100);
-    const maxApy = ONE.mul(75).div(100);
+    const optimalUtilRate = ONE.mul(8).div(10);
+    const slope1 = ONE.mul(5).div(100);
+    const slope2 = ONE.mul(75).div(100);
 
     strategyFee = await TestStrategy.deploy(
       addr3.address,
       997,
+      1000,
       ethers.constants.AddressZero,
       baseRate,
-      factor,
-      maxApy
+      optimalUtilRate,
+      slope1,
+      slope2
     );
 
     await (
@@ -254,11 +245,13 @@ describe("CPMMBorrowStrategy", function () {
       expect(await strategy.tradingFee2()).to.equal(1000);
       const ONE = BigNumber.from(10).pow(18);
       const baseRate = ONE.div(100);
-      const factor = ONE.mul(4).div(100);
-      const maxApy = ONE.mul(75).div(100);
+      const optimalUtilRate = ONE.mul(8).div(10);
+      const slope1 = ONE.mul(5).div(100);
+      const slope2 = ONE.mul(75).div(100);
       expect(await strategy.baseRate()).to.equal(baseRate);
-      expect(await strategy.factor()).to.equal(factor);
-      expect(await strategy.maxApy()).to.equal(maxApy);
+      expect(await strategy.optimalUtilRate()).to.equal(optimalUtilRate);
+      expect(await strategy.slope1()).to.equal(slope1);
+      expect(await strategy.slope2()).to.equal(slope2);
       expect(await strategy.BLOCKS_PER_YEAR()).to.equal(2252571);
       expect(await strategy.MAX_TOTAL_APY()).to.equal(ONE.mul(10));
     });

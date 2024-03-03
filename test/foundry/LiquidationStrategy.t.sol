@@ -35,7 +35,7 @@ contract LiquidationStrategyTest is CPMMGammaSwapSetup {
         pool.increaseCollateral(tokenId, new uint256[](0));
         pool.borrowLiquidity(tokenId, lpTokens/4, new uint256[](0));
 
-        vm.roll(45000000);
+        vm.roll(20000000);
 
         IPoolViewer viewer = IPoolViewer(pool.viewer());
         IGammaPool.LoanData memory loanData = viewer.loan(address(pool), tokenId);
@@ -94,7 +94,7 @@ contract LiquidationStrategyTest is CPMMGammaSwapSetup {
         pool.increaseCollateral(tokenId, new uint256[](0));
         pool.borrowLiquidity(tokenId, lpTokens/4, new uint256[](0));
 
-        vm.roll(45000000);
+        vm.roll(20000000);
 
         IPoolViewer viewer = IPoolViewer(pool.viewer());
         IGammaPool.LoanData memory loanData = viewer.loan(address(pool), tokenId);
@@ -129,7 +129,7 @@ contract LiquidationStrategyTest is CPMMGammaSwapSetup {
         cfmm: pool.cfmm(), token0: tokens[0], token1: tokens[1], amount0: 0, amount1: 0, lpTokens: lpAmount/2});
 
         // Send some lp tokens for partial liquidation
-        GammaSwapLibrary.safeTransfer(cfmm, address(pool), lpAmount/2);
+        GammaSwapLibrary.safeTransfer(cfmm, address(pool), lpAmount/2 + 1); // + 1 due to rounding error
 
         vm.expectRevert(bytes4(keccak256("InsufficientDeposit()")));
         pool.liquidateExternally(tokenId, amounts, lpAmount, address(callee), abi.encode(swapData));
@@ -195,7 +195,7 @@ contract LiquidationStrategyTest is CPMMGammaSwapSetup {
         pool.increaseCollateral(tokenId, new uint256[](0));
         pool.borrowLiquidity(tokenId, lpTokens/4, new uint256[](0));
 
-        vm.roll(45000000);
+        vm.roll(20000000);
 
         IPoolViewer viewer = IPoolViewer(pool.viewer());
         IGammaPool.LoanData memory loanData = viewer.loan(address(pool), tokenId);
@@ -281,7 +281,7 @@ contract LiquidationStrategyTest is CPMMGammaSwapSetup {
             pool.increaseCollateral(tokenId, new uint256[](0));
             pool.borrowLiquidity(tokenId, lpTokens/4, new uint256[](0));
 
-            vm.roll(45000000);
+            vm.roll(20000000);
 
             tokenId2 = pool.createLoan(0);
 
@@ -454,7 +454,7 @@ contract LiquidationStrategyTest is CPMMGammaSwapSetup {
         assertEq(loanData.tokensHeld[0], tokensHeld[0]);
         assertEq(loanData.tokensHeld[1], tokensHeld[1]);
 
-        vm.roll(45000000);
+        vm.roll(20000000);
 
         loanData = viewer.loan(address(pool), tokenId);
         assertGt(loanData.liquidity, liquidityBorrowed);
@@ -495,7 +495,7 @@ contract LiquidationStrategyTest is CPMMGammaSwapSetup {
         assertEq(loanData.tokensHeld[0], tokensHeld[0]);
         assertEq(loanData.tokensHeld[1], tokensHeld[1]);
 
-        vm.roll(45000000);
+        vm.roll(20000000);
 
         loanData = viewer.loan(address(pool), tokenId);
         assertGt(loanData.liquidity, liquidityBorrowed);
@@ -562,7 +562,7 @@ contract LiquidationStrategyTest is CPMMGammaSwapSetup {
         pool.increaseCollateral(tokenId, new uint256[](0));
         pool.borrowLiquidity(tokenId, lpTokens/4, new uint256[](0));
 
-        vm.roll(45000000);
+        vm.roll(20000000);
 
         IPoolViewer viewer = IPoolViewer(pool.viewer());
         IGammaPool.LoanData memory loanData = viewer.loan(address(pool), tokenId);

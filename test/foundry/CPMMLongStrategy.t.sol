@@ -1752,13 +1752,14 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         IGammaPool.LoanData memory loanData2 = viewer.loan(address(pool), tokenId);
         assertEq(loanData2.liquidity, loanData.liquidity);
 
-        LogRateParams memory params = LogRateParams({ baseRate: 2 * 1e16, factor: 4 * 1e17, maxApy: 75 * 1e16});
+        LogRateParams memory params = LogRateParams({ baseRate: 2 * 1e16, optimalUtilRate: 8 * 1e17,
+            slope1: 75 * 1e16, slope2: 10 * 1e18});
         factory.setRateParams(address(pool), abi.encode(params), true);
 
         loanData2 = viewer.loan(address(pool), tokenId);
         assertGt(loanData2.liquidity, loanData.liquidity);
 
-        params = LogRateParams({ baseRate: 2 * 1e16, factor: 4 * 1e17, maxApy: 75 * 1e16});
+        params = LogRateParams({ baseRate: 2 * 1e16, optimalUtilRate: 8 * 1e17, slope1: 75 * 1e16, slope2: 10 * 1e18});
         factory.setRateParams(address(pool), abi.encode(params), false);
 
         loanData2 = viewer.loan(address(pool), tokenId);

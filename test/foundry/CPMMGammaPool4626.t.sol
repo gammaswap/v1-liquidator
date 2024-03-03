@@ -46,7 +46,7 @@ contract CPMMGammaPool4626 is CPMMGammaSwapSetup {
 
         poolData = viewer.getLatestPoolData(address(pool));
         IGammaPool.PoolData memory poolData0 = viewer.getPoolData(address(pool));
-        (, uint256 utilizationRate) = AbstractRateModel(shortStrategy).calcBorrowRate(poolData.LP_INVARIANT, poolData0.BORROWED_INVARIANT, address(factory), address(pool));
+        (, uint256 utilizationRate,,) = AbstractRateModel(shortStrategy).calcBorrowRate(poolData.LP_INVARIANT, poolData0.BORROWED_INVARIANT, address(factory), address(pool));
         uint256 totalSupply = IShortStrategy(shortStrategy).totalSupply(
             address(factory), address(pool), poolData.lastCFMMFeeIndex, poolData.lastFeeIndex, utilizationRate, poolData.totalSupply
         );
