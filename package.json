@@ -65,7 +65,7 @@
   "dependencies": {
     "@gammaswap/v1-core": "^1.2.1",
     "@gammaswap/v1-deltaswap": "^0.8.1",
-    "@gammaswap/v1-implementations": "^1.2.0",
+    "@gammaswap/v1-implementations": "^1.2.1",
     "@gammaswap/v1-periphery": "^1.2.0"
   }
 }
