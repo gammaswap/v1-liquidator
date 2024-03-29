@@ -45,13 +45,13 @@ contract BountyTests is CPMMGammaSwapSetup {
         assertEq(lastCFMMInvariant,18446744073709551616);// latestCFMMInvariant = type(uint64).max + 1
 
         (accFeeIndex, lastCFMMFeeIndex,) = pool.getRates();
-        assertEq(lastCFMMFeeIndex, 0); // lastCFMMFeeIndex overflowed and was casted to zero
+        assertEq(lastCFMMFeeIndex, 18446744073709551615); // lastCFMMFeeIndex overflowed and was casted to zero
         assertEq(accFeeIndex, 1e18);
         vm.roll(3); //Wait 1 block so the accFeeIndex gets updated
         pool.sync();
         (accFeeIndex, lastCFMMFeeIndex,) = pool.getRates();
         assertEq(lastCFMMFeeIndex, 1e18); // lastCFMMFeeIndex is reset to 1e18
-        assertEq(accFeeIndex, 1e18); // accFeeIndex is still equal to 1e18, funds are safe
+        assertEq(accFeeIndex, 1000006659057583534); // accFeeIndex only went up by max maxApy over a block
         console.log("The accFeeIndex after the attack is :", accFeeIndex);
         vm.stopPrank();
     }
