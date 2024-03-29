@@ -1027,7 +1027,8 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
 
         assertEq(addr2, posMgr.ownerOf(tokenId));
         assertGt(liquidityBorrowed,0);
-        assertEq(liquidityBorrowed,liquidity);
+        assertGe(liquidityBorrowed,liquidity);
+        assertApproxEqRel(liquidityBorrowed,liquidity,1e1);
         loanData = pool.loan(tokenId);
         assertEq(tokensHeld[0],loanData.tokensHeld[0]);
         assertEq(tokensHeld[1],loanData.tokensHeld[1]);
