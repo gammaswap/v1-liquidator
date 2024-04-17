@@ -10,7 +10,7 @@ import "./fixtures/CPMMGammaSwapSetup.sol";
 contract BountyTests is CPMMGammaSwapSetup {
 
     function setUp() public {
-        super.initCPMMGammaSwap(false);
+        super.initCPMMGammaSwap(true);
     }
 
     function testCFMMFeeOverflow() public {

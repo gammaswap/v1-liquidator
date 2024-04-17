@@ -1643,10 +1643,10 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 wethBal = weth.balanceOf(addr1);
         uint256 liquidityDebtGrowth = loanData.liquidity - liquidityBorrowed;
 
-        vm.expectRevert(bytes4(keccak256("Margin()")));
+        vm.expectRevert(bytes4(keccak256("InsufficientTokenRepayment()")));
         pool.repayLiquidity(tokenId, loanData.liquidity/2, 1, addr1);
 
-        vm.expectRevert(bytes4(keccak256("Margin()")));
+        vm.expectRevert(bytes4(keccak256("InsufficientTokenRepayment()")));
         pool.repayLiquidity(tokenId, loanData.liquidity/2, 2, addr1);
     }
 
@@ -1716,10 +1716,10 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 wethBal = weth.balanceOf(addr1);
         uint256 liquidityDebtGrowth = loanData.liquidity - liquidityBorrowed;
 
-        vm.expectRevert(bytes4(keccak256("Margin()")));
+        vm.expectRevert(bytes4(keccak256("InsufficientTokenRepayment()")));
         pool.repayLiquidity(tokenId, loanData.liquidity/2, 1, addr1);
 
-        vm.expectRevert(bytes4(keccak256("Margin()")));
+        vm.expectRevert(bytes4(keccak256("InsufficientTokenRepayment()")));
         pool.repayLiquidity(tokenId, loanData.liquidity/2, 2, addr1);
     }
 
@@ -3503,7 +3503,8 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
 
         (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
-        {uint256 price1 = uint256(reserve1) * (1e18) / reserve0;
+        {
+            uint256 price1 = uint256(reserve1) * (1e18) / reserve0;
             assertGt(price1, 0);
             assertGt(price1,price);
         }
@@ -3513,7 +3514,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         ratio[0] = loanData.tokensHeld[0];
         ratio[1] = loanData.tokensHeld[1];
 
-        vm.expectRevert(bytes4(keccak256("NotEnoughCollateral()")));
+        vm.expectRevert(bytes4(keccak256("InsufficientTokenRepayment()")));
         pool.repayLiquiditySetRatio(tokenId, loanData.liquidity, ratio);
     }
 
@@ -4162,6 +4163,52 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
             assertEq(loanData.liquidity, poolData1.BORROWED_INVARIANT);
         }
 
+        vm.stopPrank();
+    }
+
+    function testMaxUtilizationRate() public {
+        setPoolParams(address(pool), 0, 10, 10, 100, 100, 1, 250, 200, 1e18);// setting external fees to 10 bps
+
+        IPoolViewer viewer = IPoolViewer(IGammaPool(pool).viewer());
+        IGammaPool.PoolData memory poolData = viewer.getLatestPoolData(address(pool));
+
+        address[] memory tokens = pool.tokens();
+        uint256[] memory ratio = new uint256[](2);
+
+        uint256 loanId = pool.createLoan(0);
+        deal(address(tokens[0]), address(pool),57e5);
+        pool.increaseCollateral(loanId, ratio);
+
+        vm.expectRevert(bytes4(keccak256("MaxUtilizationRate()")));
+        pool.borrowLiquidity(loanId, poolData.LP_TOKEN_BALANCE - 1, ratio);
+
+        vm.expectRevert(bytes4(keccak256("Margin()")));
+        pool.borrowLiquidity(loanId, poolData.LP_TOKEN_BALANCE*98/100, ratio);
+
+        deal(address(tokens[0]), address(pool),100000e18);
+        pool.borrowLiquidity(loanId, poolData.LP_TOKEN_BALANCE*98/100 + 1, ratio);
+        pool.increaseCollateral(loanId, ratio);
+
+        poolData = viewer.getLatestPoolData(address(pool));
+
+        uint256 totalInvariant = uint256(poolData.BORROWED_INVARIANT) + poolData.LP_INVARIANT;
+        uint256 utilRate = uint256(poolData.BORROWED_INVARIANT) * 1e18 / totalInvariant;
+        assertEq(poolData.utilizationRate, 98e16);
+        assertEq(utilRate, 98e16);
+
+        vm.expectRevert(bytes4(keccak256("MaxUtilizationRate()")));
+        pool.borrowLiquidity(loanId, 1e5, ratio);
+
+        depositLiquidityInCFMM(addr2, 2*1e24, 2*1e21);
+        depositLiquidityInPool(addr2);
+
+        poolData = viewer.getLatestPoolData(address(pool));
+        pool.borrowLiquidity(loanId, poolData.LP_TOKEN_BALANCE/2, ratio);
+
+        vm.startPrank(addr1);
+        IERC20(address(pool)).transfer(address(pool), (poolData.LP_TOKEN_BALANCE/2)*945/1000);
+        vm.expectRevert(bytes4(keccak256("MaxUtilizationRate()")));
+        pool.withdrawReserves(addr1);
         vm.stopPrank();
     }
 }

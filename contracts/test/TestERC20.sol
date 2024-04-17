@@ -12,7 +12,7 @@ contract TestERC20 is ERC20 {
 
     constructor(string memory name_, string memory symbol_) ERC20(name_, symbol_) {
         owner = msg.sender;
-        _decimals = 18;
+        setMetaData(name_, symbol_, 18);
         _mint(msg.sender, 100000 * (10 ** _decimals));
     }
 

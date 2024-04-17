@@ -639,19 +639,24 @@ contract CPMMShortStrategyFuzz is CPMMGammaSwapSetup {
 
         uint256 expectedAssets = gsLpAmount * IERC20(cfmm).balanceOf(address(pool)) / IERC20(address(pool)).totalSupply();
 
-        (uint256[] memory reserves, uint256 assets) = posMgr.withdrawReserves(params);
+        if(calcExpectedUtilizationRate(expectedAssets, address(pool)) > 98e16) {
+            vm.expectRevert(bytes4(keccak256("MaxUtilizationRate()")));
+            posMgr.withdrawReserves(params);
+        } else {
+            (uint256[] memory reserves, uint256 assets) = posMgr.withdrawReserves(params);
 
-        assertEq(assets, expectedAssets);
+            assertEq(assets, expectedAssets);
 
-        uint256 afterGSLPBalance = IERC20(address(pool)).balanceOf(addr1);
+            uint256 afterGSLPBalance = IERC20(address(pool)).balanceOf(addr1);
 
-        assertEq(gsLpAmount, beforeGSLPBalance - afterGSLPBalance);
+            assertEq(gsLpAmount, beforeGSLPBalance - afterGSLPBalance);
 
-        uint256 wethReceived = IERC20(weth).balanceOf(cfmm) * assets / IERC20(cfmm).totalSupply();
-        uint256 usdcReceived = IERC20(usdc).balanceOf(cfmm) * assets / IERC20(cfmm).totalSupply();
+            uint256 wethReceived = IERC20(weth).balanceOf(cfmm) * assets / IERC20(cfmm).totalSupply();
+            uint256 usdcReceived = IERC20(usdc).balanceOf(cfmm) * assets / IERC20(cfmm).totalSupply();
 
-        assertApproxEqAbs(reserves[0], wethReceived, 1e1);
-        assertApproxEqAbs(reserves[1], usdcReceived, 1e1);
+            assertApproxEqAbs(reserves[0], wethReceived, 1e1);
+            assertApproxEqAbs(reserves[1], usdcReceived, 1e1);
+        }
 
         vm.stopPrank();
     }
@@ -686,19 +691,24 @@ contract CPMMShortStrategyFuzz is CPMMGammaSwapSetup {
 
         uint256 expectedAssets = gsLpAmount * IERC20(cfmm18x6).balanceOf(address(pool18x6)) / IERC20(address(pool18x6)).totalSupply();
 
-        (uint256[] memory reserves, uint256 assets) = posMgr.withdrawReserves(params);
+        if(calcExpectedUtilizationRate(expectedAssets, address(pool18x6)) > 98e16) {
+            vm.expectRevert(bytes4(keccak256("MaxUtilizationRate()")));
+            posMgr.withdrawReserves(params);
+        } else {
+            (uint256[] memory reserves, uint256 assets) = posMgr.withdrawReserves(params);
 
-        assertEq(assets, expectedAssets);
+            assertEq(assets, expectedAssets);
 
-        uint256 afterGSLPBalance = IERC20(address(pool18x6)).balanceOf(addr1);
+            uint256 afterGSLPBalance = IERC20(address(pool18x6)).balanceOf(addr1);
 
-        assertEq(gsLpAmount, beforeGSLPBalance - afterGSLPBalance);
+            assertEq(gsLpAmount, beforeGSLPBalance - afterGSLPBalance);
 
-        uint256 weth6Received = IERC20(weth6).balanceOf(cfmm18x6) * assets / IERC20(cfmm18x6).totalSupply();
-        uint256 usdcReceived = IERC20(usdc).balanceOf(cfmm18x6) * assets / IERC20(cfmm18x6).totalSupply();
+            uint256 weth6Received = IERC20(weth6).balanceOf(cfmm18x6) * assets / IERC20(cfmm18x6).totalSupply();
+            uint256 usdcReceived = IERC20(usdc).balanceOf(cfmm18x6) * assets / IERC20(cfmm18x6).totalSupply();
 
-        assertApproxEqAbs(reserves[1], weth6Received, 1e1);
-        assertApproxEqAbs(reserves[0], usdcReceived, 1e1);
+            assertApproxEqAbs(reserves[1], weth6Received, 1e1);
+            assertApproxEqAbs(reserves[0], usdcReceived, 1e1);
+        }
 
         vm.stopPrank();
     }
@@ -733,19 +743,24 @@ contract CPMMShortStrategyFuzz is CPMMGammaSwapSetup {
 
         uint256 expectedAssets = gsLpAmount * IERC20(cfmm6x6).balanceOf(address(pool6x6)) / IERC20(address(pool6x6)).totalSupply();
 
-        (uint256[] memory reserves, uint256 assets) = posMgr.withdrawReserves(params);
+        if(calcExpectedUtilizationRate(expectedAssets, address(pool6x6)) > 98e16) {
+            vm.expectRevert(bytes4(keccak256("MaxUtilizationRate()")));
+            posMgr.withdrawReserves(params);
+        } else {
+            (uint256[] memory reserves, uint256 assets) = posMgr.withdrawReserves(params);
 
-        assertEq(assets, expectedAssets);
+            assertEq(assets, expectedAssets);
 
-        uint256 afterGSLPBalance = IERC20(address(pool6x6)).balanceOf(addr1);
+            uint256 afterGSLPBalance = IERC20(address(pool6x6)).balanceOf(addr1);
 
-        assertEq(gsLpAmount, beforeGSLPBalance - afterGSLPBalance);
+            assertEq(gsLpAmount, beforeGSLPBalance - afterGSLPBalance);
 
-        uint256 weth6Received = IERC20(weth6).balanceOf(cfmm6x6) * assets / IERC20(cfmm6x6).totalSupply();
-        uint256 usdc6Received = IERC20(usdc6).balanceOf(cfmm6x6) * assets / IERC20(cfmm6x6).totalSupply();
+            uint256 weth6Received = IERC20(weth6).balanceOf(cfmm6x6) * assets / IERC20(cfmm6x6).totalSupply();
+            uint256 usdc6Received = IERC20(usdc6).balanceOf(cfmm6x6) * assets / IERC20(cfmm6x6).totalSupply();
 
-        assertApproxEqAbs(reserves[1], weth6Received, 1e1);
-        assertApproxEqAbs(reserves[0], usdc6Received, 1e1);
+            assertApproxEqAbs(reserves[1], weth6Received, 1e1);
+            assertApproxEqAbs(reserves[0], usdc6Received, 1e1);
+        }
 
         vm.stopPrank();
     }
@@ -780,19 +795,24 @@ contract CPMMShortStrategyFuzz is CPMMGammaSwapSetup {
 
         uint256 expectedAssets = gsLpAmount * IERC20(cfmm6x8).balanceOf(address(pool6x8)) / IERC20(address(pool6x8)).totalSupply();
 
-        (uint256[] memory reserves, uint256 assets) = posMgr.withdrawReserves(params);
+        if(calcExpectedUtilizationRate(expectedAssets, address(pool6x8)) > 98e16) {
+            vm.expectRevert(bytes4(keccak256("MaxUtilizationRate()")));
+            posMgr.withdrawReserves(params);
+        } else {
+            (uint256[] memory reserves, uint256 assets) = posMgr.withdrawReserves(params);
 
-        assertEq(assets, expectedAssets);
+            assertEq(assets, expectedAssets);
 
-        uint256 afterGSLPBalance = IERC20(address(pool6x8)).balanceOf(addr1);
+            uint256 afterGSLPBalance = IERC20(address(pool6x8)).balanceOf(addr1);
 
-        assertEq(gsLpAmount, beforeGSLPBalance - afterGSLPBalance);
+            assertEq(gsLpAmount, beforeGSLPBalance - afterGSLPBalance);
 
-        uint256 weth8Received = IERC20(weth8).balanceOf(cfmm6x8) * assets / IERC20(cfmm6x8).totalSupply();
-        uint256 usdc6Received = IERC20(usdc6).balanceOf(cfmm6x8) * assets / IERC20(cfmm6x8).totalSupply();
+            uint256 weth8Received = IERC20(weth8).balanceOf(cfmm6x8) * assets / IERC20(cfmm6x8).totalSupply();
+            uint256 usdc6Received = IERC20(usdc6).balanceOf(cfmm6x8) * assets / IERC20(cfmm6x8).totalSupply();
 
-        assertApproxEqAbs(reserves[1], weth8Received, 1e1);
-        assertApproxEqAbs(reserves[0], usdc6Received, 1e1);
+            assertApproxEqAbs(reserves[1], weth8Received, 1e1);
+            assertApproxEqAbs(reserves[0], usdc6Received, 1e1);
+        }
 
         vm.stopPrank();
     }
@@ -827,21 +847,39 @@ contract CPMMShortStrategyFuzz is CPMMGammaSwapSetup {
 
         uint256 expectedAssets = gsLpAmount * IERC20(cfmm18x8).balanceOf(address(pool18x8)) / IERC20(address(pool18x8)).totalSupply();
 
-        (uint256[] memory reserves, uint256 assets) = posMgr.withdrawReserves(params);
+        if(calcExpectedUtilizationRate(expectedAssets, address(pool18x8)) > 98e16) {
+            vm.expectRevert(bytes4(keccak256("MaxUtilizationRate()")));
+            posMgr.withdrawReserves(params);
+        } else {
+            (uint256[] memory reserves, uint256 assets) = posMgr.withdrawReserves(params);
 
-        assertEq(assets, expectedAssets);
+            assertEq(assets, expectedAssets);
 
-        uint256 afterGSLPBalance = IERC20(address(pool18x8)).balanceOf(addr1);
+            uint256 afterGSLPBalance = IERC20(address(pool18x8)).balanceOf(addr1);
 
-        assertEq(gsLpAmount, beforeGSLPBalance - afterGSLPBalance);
+            assertEq(gsLpAmount, beforeGSLPBalance - afterGSLPBalance);
 
-        uint256 weth8Received = IERC20(weth8).balanceOf(cfmm18x8) * assets / IERC20(cfmm18x8).totalSupply();
-        uint256 usdcReceived = IERC20(usdc).balanceOf(cfmm18x8) * assets / IERC20(cfmm18x8).totalSupply();
+            uint256 weth8Received = IERC20(weth8).balanceOf(cfmm18x8) * assets / IERC20(cfmm18x8).totalSupply();
+            uint256 usdcReceived = IERC20(usdc).balanceOf(cfmm18x8) * assets / IERC20(cfmm18x8).totalSupply();
 
-        assertApproxEqAbs(reserves[1], weth8Received, 1e1);
-        assertApproxEqAbs(reserves[0], usdcReceived, 1e1);
+            assertApproxEqAbs(reserves[1], weth8Received, 1e1);
+            assertApproxEqAbs(reserves[0], usdcReceived, 1e1);
+        }
 
         vm.stopPrank();
+    }
+
+    function calcExpectedUtilizationRate(uint256 assets, address pool) internal view returns(uint256){
+        IPoolViewer viewer = IPoolViewer(IGammaPool(pool).viewer());
+        IGammaPool.PoolData memory poolData = viewer.getLatestPoolData(pool);
+        uint256 loanInvariant = assets * poolData.lastCFMMInvariant / poolData.lastCFMMTotalSupply;
+        uint256 lpInvariant = poolData.LP_INVARIANT - loanInvariant;
+        uint256 borrowedInvariant = poolData.BORROWED_INVARIANT;
+        uint256 totalInvariant = lpInvariant + borrowedInvariant; // total invariant belonging to liquidity depositors in GammaSwap
+        if(totalInvariant == 0) // avoid division by zero
+            return 0;
+
+        return borrowedInvariant * 1e18 / totalInvariant; // utilization rate will always have 18 decimals
     }
 
     function testWithdrawNoPull18x18(uint80 amount) public {
@@ -874,15 +912,20 @@ contract CPMMShortStrategyFuzz is CPMMGammaSwapSetup {
 
         uint256 expectedAssets = gsLpAmount * IERC20(cfmm).balanceOf(address(pool)) / IERC20(address(pool)).totalSupply();
 
-        uint256 assets = posMgr.withdrawNoPull(params);
+        if(calcExpectedUtilizationRate(expectedAssets, address(pool)) > 98e16) {
+            vm.expectRevert(bytes4(keccak256("MaxUtilizationRate()")));
+            posMgr.withdrawNoPull(params);
+        } else {
+            uint256 assets = posMgr.withdrawNoPull(params);
 
-        assertEq(assets, expectedAssets);
+            assertEq(assets, expectedAssets);
 
-        uint256 afterGSLPBalance = IERC20(address(pool)).balanceOf(addr1);
-        uint256 afterCfmmBalance = IERC20(address(cfmm)).balanceOf(addr1);
+            uint256 afterGSLPBalance = IERC20(address(pool)).balanceOf(addr1);
+            uint256 afterCfmmBalance = IERC20(address(cfmm)).balanceOf(addr1);
 
-        assertEq(gsLpAmount, beforeGSLPBalance - afterGSLPBalance);
-        assertEq(assets, afterCfmmBalance - beforeCfmmBalance);
+            assertEq(gsLpAmount, beforeGSLPBalance - afterGSLPBalance);
+            assertEq(assets, afterCfmmBalance - beforeCfmmBalance);
+        }
 
         vm.stopPrank();
     }
@@ -916,15 +959,20 @@ contract CPMMShortStrategyFuzz is CPMMGammaSwapSetup {
 
         uint256 expectedAssets = gsLpAmount * IERC20(cfmm18x6).balanceOf(address(pool18x6)) / IERC20(address(pool18x6)).totalSupply();
 
-        uint256 assets = posMgr.withdrawNoPull(params);
+        if(calcExpectedUtilizationRate(expectedAssets, address(pool18x6)) > 98e16) {
+            vm.expectRevert(bytes4(keccak256("MaxUtilizationRate()")));
+            posMgr.withdrawNoPull(params);
+        } else {
+            uint256 assets = posMgr.withdrawNoPull(params);
 
-        assertEq(assets, expectedAssets);
+            assertEq(assets, expectedAssets);
 
-        uint256 afterGSLPBalance = IERC20(address(pool18x6)).balanceOf(addr1);
-        uint256 afterCfmmBalance = IERC20(address(cfmm18x6)).balanceOf(addr1);
+            uint256 afterGSLPBalance = IERC20(address(pool18x6)).balanceOf(addr1);
+            uint256 afterCfmmBalance = IERC20(address(cfmm18x6)).balanceOf(addr1);
 
-        assertEq(gsLpAmount, beforeGSLPBalance - afterGSLPBalance);
-        assertEq(assets, afterCfmmBalance - beforeCfmmBalance);
+            assertEq(gsLpAmount, beforeGSLPBalance - afterGSLPBalance);
+            assertEq(assets, afterCfmmBalance - beforeCfmmBalance);
+        }
 
         vm.stopPrank();
     }
@@ -959,15 +1007,20 @@ contract CPMMShortStrategyFuzz is CPMMGammaSwapSetup {
 
         uint256 expectedAssets = gsLpAmount * IERC20(cfmm6x6).balanceOf(address(pool6x6)) / IERC20(address(pool6x6)).totalSupply();
 
-        uint256 assets = posMgr.withdrawNoPull(params);
+        if(calcExpectedUtilizationRate(expectedAssets, address(pool6x6)) > 98e16) {
+            vm.expectRevert(bytes4(keccak256("MaxUtilizationRate()")));
+            posMgr.withdrawNoPull(params);
+        } else {
+            uint256 assets = posMgr.withdrawNoPull(params);
 
-        assertEq(assets, expectedAssets);
+            assertEq(assets, expectedAssets);
 
-        uint256 afterGSLPBalance = IERC20(address(pool6x6)).balanceOf(addr1);
-        uint256 afterCfmmBalance = IERC20(address(cfmm6x6)).balanceOf(addr1);
+            uint256 afterGSLPBalance = IERC20(address(pool6x6)).balanceOf(addr1);
+            uint256 afterCfmmBalance = IERC20(address(cfmm6x6)).balanceOf(addr1);
 
-        assertEq(gsLpAmount, beforeGSLPBalance - afterGSLPBalance);
-        assertEq(assets, afterCfmmBalance - beforeCfmmBalance);
+            assertEq(gsLpAmount, beforeGSLPBalance - afterGSLPBalance);
+            assertEq(assets, afterCfmmBalance - beforeCfmmBalance);
+        }
 
         vm.stopPrank();
     }
@@ -1002,15 +1055,20 @@ contract CPMMShortStrategyFuzz is CPMMGammaSwapSetup {
 
         uint256 expectedAssets = gsLpAmount * IERC20(cfmm6x8).balanceOf(address(pool6x8)) / IERC20(address(pool6x8)).totalSupply();
 
-        uint256 assets = posMgr.withdrawNoPull(params);
+        if(calcExpectedUtilizationRate(expectedAssets, address(pool6x8)) > 98e16) {
+            vm.expectRevert(bytes4(keccak256("MaxUtilizationRate()")));
+            posMgr.withdrawNoPull(params);
+        } else {
+            uint256 assets = posMgr.withdrawNoPull(params);
 
-        assertEq(assets, expectedAssets);
+            assertEq(assets, expectedAssets);
 
-        uint256 afterGSLPBalance = IERC20(address(pool6x8)).balanceOf(addr1);
-        uint256 afterCfmmBalance = IERC20(address(cfmm6x8)).balanceOf(addr1);
+            uint256 afterGSLPBalance = IERC20(address(pool6x8)).balanceOf(addr1);
+            uint256 afterCfmmBalance = IERC20(address(cfmm6x8)).balanceOf(addr1);
 
-        assertEq(gsLpAmount, beforeGSLPBalance - afterGSLPBalance);
-        assertEq(assets, afterCfmmBalance - beforeCfmmBalance);
+            assertEq(gsLpAmount, beforeGSLPBalance - afterGSLPBalance);
+            assertEq(assets, afterCfmmBalance - beforeCfmmBalance);
+        }
 
         vm.stopPrank();
     }
@@ -1044,15 +1102,20 @@ contract CPMMShortStrategyFuzz is CPMMGammaSwapSetup {
 
         uint256 expectedAssets = gsLpAmount * IERC20(cfmm18x8).balanceOf(address(pool18x8)) / IERC20(address(pool18x8)).totalSupply();
 
-        uint256 assets = posMgr.withdrawNoPull(params);
+        if(calcExpectedUtilizationRate(expectedAssets, address(pool18x8)) > 98e16) {
+            vm.expectRevert(bytes4(keccak256("MaxUtilizationRate()")));
+            posMgr.withdrawNoPull(params);
+        } else {
+            uint256 assets = posMgr.withdrawNoPull(params);
 
-        assertEq(assets, expectedAssets);
+            assertEq(assets, expectedAssets);
 
-        uint256 afterGSLPBalance = IERC20(address(pool18x8)).balanceOf(addr1);
-        uint256 afterCfmmBalance = IERC20(address(cfmm18x8)).balanceOf(addr1);
+            uint256 afterGSLPBalance = IERC20(address(pool18x8)).balanceOf(addr1);
+            uint256 afterCfmmBalance = IERC20(address(cfmm18x8)).balanceOf(addr1);
 
-        assertEq(gsLpAmount, beforeGSLPBalance - afterGSLPBalance);
-        assertEq(assets, afterCfmmBalance - beforeCfmmBalance);
+            assertEq(gsLpAmount, beforeGSLPBalance - afterGSLPBalance);
+            assertEq(assets, afterCfmmBalance - beforeCfmmBalance);
+        }
 
         vm.stopPrank();
     }
