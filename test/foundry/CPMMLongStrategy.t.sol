@@ -1643,10 +1643,10 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 wethBal = weth.balanceOf(addr1);
         uint256 liquidityDebtGrowth = loanData.liquidity - liquidityBorrowed;
 
-        vm.expectRevert(bytes4(keccak256("InsufficientTokenRepayment()")));
+        vm.expectRevert(bytes4(keccak256("Margin()")));
         pool.repayLiquidity(tokenId, loanData.liquidity/2, 1, addr1);
 
-        vm.expectRevert(bytes4(keccak256("InsufficientTokenRepayment()")));
+        vm.expectRevert(bytes4(keccak256("Margin()")));
         pool.repayLiquidity(tokenId, loanData.liquidity/2, 2, addr1);
     }
 
@@ -1716,10 +1716,10 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 wethBal = weth.balanceOf(addr1);
         uint256 liquidityDebtGrowth = loanData.liquidity - liquidityBorrowed;
 
-        vm.expectRevert(bytes4(keccak256("InsufficientTokenRepayment()")));
+        vm.expectRevert(bytes4(keccak256("Margin()")));
         pool.repayLiquidity(tokenId, loanData.liquidity/2, 1, addr1);
 
-        vm.expectRevert(bytes4(keccak256("InsufficientTokenRepayment()")));
+        vm.expectRevert(bytes4(keccak256("Margin()")));
         pool.repayLiquidity(tokenId, loanData.liquidity/2, 2, addr1);
     }
 
@@ -2367,7 +2367,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         assertGt(price1, 0);
         assertGt(price1,price);
 
-        IERC20(cfmm).transfer(address(pool), lpTokens/4);
+        IERC20(cfmm).transfer(address(pool), lpTokens/4 + 1000);
 
         uint256 liquidityPaid;
         uint128[] memory tokensHeld;
@@ -2436,7 +2436,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         assertGt(price1, 0);
         assertGt(price1,price);
 
-        IERC20(cfmm).transfer(address(pool), lpTokens/4);
+        IERC20(cfmm).transfer(address(pool), lpTokens/4 + 1000);
 
         uint256 liquidityPaid;
         uint128[] memory tokensHeld;
@@ -2500,7 +2500,11 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 usdcBal0 = usdc.balanceOf(addr1);
         uint256 wethBal0 = weth.balanceOf(addr1);
 
-        (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
+        if(IS_DELTASWAP_V2) {
+            (reserve0, reserve1,) = IDSV2Pair(cfmm).getLPReserves();
+        } else {
+            (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
+        }
 
         uint256 price1 = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price1, 0);
@@ -2519,7 +2523,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         assertEq(diff/1e3,0);
 
         IGammaPool.LoanData memory loanData1 = viewer.loan(address(pool), tokenId);
-        assertEq(loanData1.liquidity/1e3,(loanData.liquidity/2)/1e3);
+        assertApproxEqAbs(loanData1.liquidity,(loanData.liquidity/2),1e1);
         uint256 oldTokensHeld = loanData.tokensHeld[0]/2;
         diff = loanData1.tokensHeld[0] > oldTokensHeld ? loanData1.tokensHeld[0] - oldTokensHeld :
             oldTokensHeld - loanData1.tokensHeld[0];
@@ -2579,7 +2583,11 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 usdcBal0 = usdc.balanceOf(addr1);
         uint256 wethBal0 = weth.balanceOf(addr1);
 
-        (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
+        if(IS_DELTASWAP_V2) {
+            (reserve0, reserve1,) = IDSV2Pair(cfmm).getLPReserves();
+        } else {
+            (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
+        }
 
         uint256 price1 = uint256(reserve1) * (1e18) / reserve0;
         assertGt(price1, 0);
@@ -2598,7 +2606,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         assertEq(diff/1e3,0);
 
         IGammaPool.LoanData memory loanData1 = viewer.loan(address(pool), tokenId);
-        assertEq(loanData1.liquidity/1e3,(loanData.liquidity/2)/1e3);
+        assertApproxEqAbs(loanData1.liquidity,(loanData.liquidity/2),1e1);
         uint256 oldTokensHeld = loanData.tokensHeld[0]/2;
         diff = loanData1.tokensHeld[0] > oldTokensHeld ? loanData1.tokensHeld[0] - oldTokensHeld :
         oldTokensHeld - loanData1.tokensHeld[0];
@@ -3514,7 +3522,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         ratio[0] = loanData.tokensHeld[0];
         ratio[1] = loanData.tokensHeld[1];
 
-        vm.expectRevert(bytes4(keccak256("InsufficientTokenRepayment()")));
+        vm.expectRevert(bytes4(keccak256("Margin()")));
         pool.repayLiquiditySetRatio(tokenId, loanData.liquidity, ratio);
     }
 

@@ -58,21 +58,28 @@ contract TokensSetup is Test {
             usdc.setMetaData("USDC", "USDC", 18);
         }
 
+        usdc.mint(address(this), 100000*1e18);
+        weth.mint(address(this), 100000*1e18);
+        usdt.mint(address(this), 100000*1e18);
+        weth6.mint(address(this), 100000*1e6);
+        usdc6.mint(address(this), 100000*1e6);
+        weth8.mint(address(this), 100000*1e8);
+
         addr1 = vm.addr(5);
-        usdc.mint(addr1, amount);
-        weth.mint(addr1, amount);
-        usdt.mint(addr1, amount);
-        weth6.mint(addr1, amount);
-        usdc6.mint(addr1, amount);
-        weth8.mint(addr1, amount);
+        usdc.mint(addr1, amount*1e18);
+        weth.mint(addr1, amount*1e18);
+        usdt.mint(addr1, amount*1e18);
+        weth6.mint(addr1, amount*1e6);
+        usdc6.mint(addr1, amount*1e6);
+        weth8.mint(addr1, amount*1e8);
 
         addr2 = vm.addr(6);
-        usdc.mint(addr2, amount);
-        weth.mint(addr2, amount);
-        usdt.mint(addr2, amount);
-        weth6.mint(addr2, amount);
-        usdc6.mint(addr2, amount);
-        weth8.mint(addr2, amount);
+        usdc.mint(addr2, amount*1e18);
+        weth.mint(addr2, amount*1e18);
+        usdt.mint(addr2, amount*1e18);
+        weth6.mint(addr2, amount*1e6);
+        usdc6.mint(addr2, amount*1e6);
+        weth8.mint(addr2, amount*1e8);
     }
 
     function sort(address[] memory arr, int left, int right) internal pure {

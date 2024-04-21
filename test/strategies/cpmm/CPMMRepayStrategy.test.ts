@@ -53,6 +53,10 @@ describe("CPMMRepayStrategy", function () {
     tokenA = await TestERC20.deploy("Test Token A", "TOKA");
     tokenB = await TestERC20.deploy("Test Token B", "TOKB");
 
+    const ONE = BigNumber.from(10).pow(18);
+    tokenA.mint(owner.address, ONE.mul(100000));
+    tokenB.mint(owner.address, ONE.mul(100000));
+
     // address _feeToSetter, uint16 _fee
     gsFactory = await TestGammaPoolFactory.deploy(owner.address, 10000);
 
@@ -71,7 +75,6 @@ describe("CPMMRepayStrategy", function () {
       token1addr // The deployed contract address
     );
 
-    const ONE = BigNumber.from(10).pow(18);
     const baseRate = ONE.div(100);
     const optimalUtilRate = ONE.mul(8).div(10);
     const slope1 = ONE.mul(5).div(100);
@@ -316,7 +319,7 @@ describe("CPMMRepayStrategy", function () {
         await strategy.setCFMMReserves(reserves0, reserves1, lastCFMMInvariant, lastCFMMTotalSupply)
       ).wait();
       const expToken0 = liquidity.mul(reserves0).div(lastCFMMInvariant).add(1);
-      const expToken1 = liquidity.mul(reserves1).div(lastCFMMInvariant).add(1);
+      const expToken1 = liquidity.mul(reserves1).div(lastCFMMInvariant).add(2);
       const res0 = await strategy.testCalcTokensToRepay(liquidity);
       expect(res0[0]).to.equal(expToken0);
       expect(res0[1]).to.equal(expToken1);
@@ -337,7 +340,7 @@ describe("CPMMRepayStrategy", function () {
         )
       ).wait();
       const expToken0a = liquidity.mul(reserves0a).div(lastCFMMInvariant1).add(1);
-      const expToken1a = liquidity.mul(reserves1a).div(lastCFMMInvariant1).add(1);
+      const expToken1a = liquidity.mul(reserves1a).div(lastCFMMInvariant1).add(4);
       const res1 = await strategy.testCalcTokensToRepay(liquidity);
       expect(res1[0]).to.equal(expToken0a);
       expect(res1[1]).to.equal(expToken1a);

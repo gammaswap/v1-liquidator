@@ -65,6 +65,31 @@ contract UniswapSetup is Test {
         cfmmFactory = address(uniFactory);
     }
 
+    function initDeltaSwapV2(address owner, address weth, address gsFactory) public {
+        // Let's do the same thing with `getCode`
+        //bytes memory args = abi.encode(arg1, arg2);
+        bytes memory factoryArgs = abi.encode(owner, owner, gsFactory);
+        bytes memory factoryBytecode = abi.encodePacked(vm.getCode("./test/foundry/bytecodes/DeltaSwapV2Factory.json"), factoryArgs);
+        address factoryAddress;
+        assembly {
+            factoryAddress := create(0, add(factoryBytecode, 0x20), mload(factoryBytecode))
+        }
+
+        bytes memory routerArgs = abi.encode(factoryAddress, weth);
+        bytes memory routerBytecode = abi.encodePacked(vm.getCode("./test/foundry/bytecodes/DeltaSwapV2Router02.json"), routerArgs);
+        address routerAddress;
+        assembly {
+            routerAddress := create(0, add(routerBytecode, 0x20), mload(routerBytecode))
+        }
+
+        uniFactory = IDeltaSwapFactory(factoryAddress);
+        uniRouter = IDeltaSwapRouter02(routerAddress);
+        uniFactory.setGSProtocolId(1);
+
+        cfmmHash = hex'e115d9f0a810df66e5fc716c9e92dc1be3231a173421c53bb6d1b028eed8332f'; // DeltaSwapPair init_code_hash
+        cfmmFactory = address(uniFactory);
+    }
+
     function createPair(address token0, address token1) public returns(address) {
         return uniFactory.createPair(token0, token1);
     }
