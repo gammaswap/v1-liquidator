@@ -45,6 +45,10 @@ describe("CPMMShortStrategy", function () {
     tokenA = await TestERC20.deploy("Test Token A", "TOKA");
     tokenB = await TestERC20.deploy("Test Token B", "TOKB");
 
+    const ONE = BigNumber.from(10).pow(18);
+    tokenA.mint(owner.address, ONE.mul(100000));
+    tokenB.mint(owner.address, ONE.mul(100000));
+
     // address _feeToSetter, uint16 _fee
     gsFactory = await TestGammaPoolFactory.deploy(owner.address, 10000);
 
@@ -63,7 +67,6 @@ describe("CPMMShortStrategy", function () {
       token1addr // The deployed contract address
     );
 
-    const ONE = BigNumber.from(10).pow(18);
     const baseRate = ONE.div(100);
     const optimalUtilRate = ONE.mul(8).div(10);
     const slope1 = ONE.mul(5).div(100);
