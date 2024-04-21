@@ -219,33 +219,37 @@ contract CPMMShortStrategyFuzz is CPMMGammaSwapSetup {
     }
     function testDepositReserves6x8(uint24 usdc6Amount, uint24 weth8Amount, uint24 weth8Deposit) public {
         lockProtocol();
-        usdc6Amount = usdc6Amount / 10;
-        weth8Amount = weth8Amount / 10;
-        if(usdc6Amount == 0) {
-            usdc6Amount = 1;
+        uint256 _usdc6Amount = uint256(usdc6Amount) * 1e6;
+        uint256 _weth8Amount = uint256(weth8Amount) * 1e8;
+        if(_usdc6Amount < 1000000*1e6) {
+            _usdc6Amount = 1000000*1e6;
         }
-        if(weth8Amount == 0) {
-            weth8Amount = 1;
+        if(_weth8Amount < 1000000*1e8) {
+            _weth8Amount = 1000000*1e8;
         }
-        if (usdc6Amount < weth8Amount) {
-            (weth8Amount, usdc6Amount) = (usdc6Amount, weth8Amount);
-        }
-        depositLiquidityInCFMMByToken(address(usdc6), address(weth8), uint256(usdc6Amount)*1e6, uint256(weth8Amount)*1e8, addr1);
+
+        depositLiquidityInCFMMByToken(address(usdc6), address(weth8), _usdc6Amount, _weth8Amount, addr1);
 
         vm.startPrank(addr1);
 
-        weth8Deposit = weth8Deposit / 10;
+        weth8Deposit = weth8Deposit;
 
-        if(weth8Deposit == 0) {
+        if(weth8Deposit < 0) {
             weth8Deposit = 1;
         }
 
         uint256 amount1 = uint256(weth8Deposit) * 1e8;
-        uint256[] memory amountsDesired = new uint256[](2);
-        amountsDesired[1] = IERC20(weth8).balanceOf(addr1) < amount1 ? IERC20(weth8).balanceOf(addr1) : amount1;
+        amount1 = IERC20(weth8).balanceOf(addr1) < amount1 ? IERC20(weth8).balanceOf(addr1) : amount1;
+        uint256 amount0 = amount1 * _usdc6Amount / _weth8Amount;
 
-        uint256 amount0 = (amountsDesired[1] * uint256(usdc6Amount) * 1e6 / (uint256(weth8Amount) * 1e8));
-        amountsDesired[0] = IERC20(usdc6).balanceOf(addr1) < amount0 ? IERC20(usdc6).balanceOf(addr1) : amount0;
+        if(IERC20(usdc6).balanceOf(addr1) < amount0) {
+            amount0 = IERC20(usdc6).balanceOf(addr1);
+            amount1 = amount0 * _weth8Amount / _usdc6Amount;
+        }
+
+        uint256[] memory amountsDesired = new uint256[](2);
+        amountsDesired[0] = amount0;
+        amountsDesired[1] = amount1;
 
         uint256[] memory amountsMin = new uint256[](2);
 
@@ -258,21 +262,26 @@ contract CPMMShortStrategyFuzz is CPMMGammaSwapSetup {
             amountsMin: amountsMin
         });
 
-        (uint256[] memory reserves, uint256 shares) = posMgr.depositReserves(params);
+        if(amount0 == 0 || amount1 == 0) {
+            vm.expectRevert(bytes4(keccak256("ZeroDeposits()")));
+            posMgr.depositReserves(params);
+        } else {
+            (uint256[] memory reserves, uint256 shares) = posMgr.depositReserves(params);
 
-        assertApproxEqRel(amountsDesired[0], reserves[0], 1e13);    // 0.001% delta
-        assertApproxEqRel(amountsDesired[1], reserves[1], 1e13);    // 0.001% delta
+            assertApproxEqRel(amountsDesired[0], reserves[0], 1e15);    // 0.1% delta
+            assertApproxEqRel(amountsDesired[1], reserves[1], 1e15);    // 0.1% delta
 
-        IGammaPool.PoolData memory poolData = pool6x8.getPoolData();
+            IGammaPool.PoolData memory poolData = pool6x8.getPoolData();
 
-        uint256 reserve0 = poolData.LP_TOKEN_BALANCE * IERC20(address(usdc6)).balanceOf(address(cfmm6x8)) / IERC20(cfmm6x8).totalSupply();
-        uint256 reserve1 = poolData.LP_TOKEN_BALANCE * IERC20(address(weth8)).balanceOf(address(cfmm6x8)) / IERC20(cfmm6x8).totalSupply();
+            uint256 reserve0 = poolData.LP_TOKEN_BALANCE * IERC20(address(usdc6)).balanceOf(address(cfmm6x8)) / IERC20(cfmm6x8).totalSupply();
+            uint256 reserve1 = poolData.LP_TOKEN_BALANCE * IERC20(address(weth8)).balanceOf(address(cfmm6x8)) / IERC20(cfmm6x8).totalSupply();
 
-        amount0 = shares * reserve0 / IERC20(address(pool6x8)).totalSupply();
-        amount1 = shares * reserve1 / IERC20(address(pool6x8)).totalSupply();
+            amount0 = shares * reserve0 / IERC20(address(pool6x8)).totalSupply();
+            amount1 = shares * reserve1 / IERC20(address(pool6x8)).totalSupply();
 
-        assertApproxEqRel(amount0, reserves[0], 125e13); // 0.125% delta
-        assertApproxEqRel(amount1, reserves[1], 125e13); // 0.125% delta
+            assertApproxEqRel(amount0, reserves[0], 125e13); // 0.125% delta
+            assertApproxEqRel(amount1, reserves[1], 125e13); // 0.125% delta
+        }
 
         vm.stopPrank();
     }

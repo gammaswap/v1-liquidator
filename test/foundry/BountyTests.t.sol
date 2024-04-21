@@ -41,6 +41,8 @@ contract BountyTests is CPMMGammaSwapSetup {
         usdc.transfer(cfmm, amountNeeded);
         pool.sync(); //Overflow
 
+        vm.warp(block.timestamp + 28800);
+        pool.sync();
         (,lastCFMMInvariant,) = pool.getLatestCFMMBalances();
         assertEq(lastCFMMInvariant,18446744073709551616);// latestCFMMInvariant = type(uint64).max + 1
 

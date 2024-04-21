@@ -17,9 +17,19 @@ import "@gammaswap/v1-implementations/contracts/strategies/cpmm/CPMMShortStrateg
 import "@gammaswap/v1-implementations/contracts/libraries/cpmm/CPMMMath.sol";
 import "@gammaswap/v1-periphery/contracts/PositionManager.sol";
 
+import "@gammaswap/v1-implementations/contracts/strategies/deltaswap/lending/DSV2BorrowStrategy.sol";
+import "@gammaswap/v1-implementations/contracts/strategies/deltaswap/lending/DSV2RepayStrategy.sol";
+import "@gammaswap/v1-implementations/contracts/strategies/deltaswap/rebalance/DSV2ExternalRebalanceStrategy.sol";
+import "@gammaswap/v1-implementations/contracts/strategies/deltaswap/liquidation/DSV2LiquidationStrategy.sol";
+import "@gammaswap/v1-implementations/contracts/strategies/deltaswap/liquidation/DSV2BatchLiquidationStrategy.sol";
+import "@gammaswap/v1-implementations/contracts/strategies/deltaswap/liquidation/DSV2ExternalLiquidationStrategy.sol";
+import "@gammaswap/v1-implementations/contracts/strategies/deltaswap/DSV2ShortStrategy.sol";
+import "@gammaswap/v1-implementations/contracts/interfaces/external/deltaswap/IDSV2Pair.sol";
+
 contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
 
     bool constant IS_DELTASWAP = true;
+    bool constant IS_DELTASWAP_V2 = true;
 
     struct LogRateParams {
         uint64 baseRate;
@@ -62,12 +72,16 @@ contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
 
     function initCPMMGammaSwap(bool use6Decimals) public {
         owner = address(this);
-        super.initTokens(4 * 1e6 * 1e18, use6Decimals);
+        super.initTokens(4 * 1e8, use6Decimals);
 
         factory = new GammaPoolFactory(owner);
 
         if(IS_DELTASWAP) {
-            super.initDeltaSwap(owner, address(weth), address(factory));
+            if(IS_DELTASWAP_V2) {
+                super.initDeltaSwapV2(owner, address(weth), address(factory));
+            } else {
+                super.initDeltaSwap(owner, address(weth), address(factory));
+            }
         } else {
             super.initUniswap(owner, address(weth));
         }
@@ -83,13 +97,24 @@ contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
 
         mathLib = new CPMMMath();
         viewer = new PoolViewer();
-        longStrategy = new CPMMBorrowStrategy(address(mathLib), maxTotalApy, 2252571, 997, 1000, cfmmFactory, baseRate, optimalUtilRate, slope1, slope2);
-        repayStrategy = new CPMMRepayStrategy(address(mathLib), maxTotalApy, 2252571, 997, 1000, cfmmFactory, baseRate, optimalUtilRate, slope1, slope2);
-        shortStrategy = new CPMMShortStrategy(maxTotalApy, 2252571, baseRate, optimalUtilRate, slope1, slope2);
-        liquidationStrategy = new CPMMLiquidationStrategy(address(mathLib), maxTotalApy, 2252571, 997, 1000, cfmmFactory, baseRate, optimalUtilRate, slope1, slope2);
-        batchLiquidationStrategy = new CPMMBatchLiquidationStrategy(address(mathLib), maxTotalApy, 2252571, 997, 1000, cfmmFactory, baseRate, optimalUtilRate, slope1, slope2);
-        externalRebalanceStrategy = new CPMMExternalRebalanceStrategy(maxTotalApy, 2252571, 997, 1000, cfmmFactory, baseRate, optimalUtilRate, slope1, slope2);
-        externalLiquidationStrategy = new CPMMExternalLiquidationStrategy(address(mathLib), maxTotalApy, 2252571, 997, 1000, cfmmFactory, baseRate, optimalUtilRate, slope1, slope2);
+
+        if(IS_DELTASWAP_V2) {
+            longStrategy = new DSV2BorrowStrategy(address(mathLib), maxTotalApy, 2252571, 9970, 10000, cfmmFactory, baseRate, optimalUtilRate, slope1, slope2);
+            repayStrategy = new DSV2RepayStrategy(address(mathLib), maxTotalApy, 2252571, 9970, 10000, cfmmFactory, baseRate, optimalUtilRate, slope1, slope2);
+            shortStrategy = new DSV2ShortStrategy(maxTotalApy, 2252571, baseRate, optimalUtilRate, slope1, slope2);
+            liquidationStrategy = new DSV2LiquidationStrategy(address(mathLib), maxTotalApy, 2252571, 9970, 10000, cfmmFactory, baseRate, optimalUtilRate, slope1, slope2);
+            batchLiquidationStrategy = new DSV2BatchLiquidationStrategy(address(mathLib), maxTotalApy, 2252571, 9970, 10000, cfmmFactory, baseRate, optimalUtilRate, slope1, slope2);
+            externalRebalanceStrategy = new DSV2ExternalRebalanceStrategy(maxTotalApy, 2252571, 9970, 10000, cfmmFactory, baseRate, optimalUtilRate, slope1, slope2);
+            externalLiquidationStrategy = new DSV2ExternalLiquidationStrategy(address(mathLib), maxTotalApy, 2252571, 9970, 10000, cfmmFactory, baseRate, optimalUtilRate, slope1, slope2);
+        } else {
+            longStrategy = new CPMMBorrowStrategy(address(mathLib), maxTotalApy, 2252571, 997, 1000, cfmmFactory, baseRate, optimalUtilRate, slope1, slope2);
+            repayStrategy = new CPMMRepayStrategy(address(mathLib), maxTotalApy, 2252571, 997, 1000, cfmmFactory, baseRate, optimalUtilRate, slope1, slope2);
+            shortStrategy = new CPMMShortStrategy(maxTotalApy, 2252571, baseRate, optimalUtilRate, slope1, slope2);
+            liquidationStrategy = new CPMMLiquidationStrategy(address(mathLib), maxTotalApy, 2252571, 997, 1000, cfmmFactory, baseRate, optimalUtilRate, slope1, slope2);
+            batchLiquidationStrategy = new CPMMBatchLiquidationStrategy(address(mathLib), maxTotalApy, 2252571, 997, 1000, cfmmFactory, baseRate, optimalUtilRate, slope1, slope2);
+            externalRebalanceStrategy = new CPMMExternalRebalanceStrategy(maxTotalApy, 2252571, 997, 1000, cfmmFactory, baseRate, optimalUtilRate, slope1, slope2);
+            externalLiquidationStrategy = new CPMMExternalLiquidationStrategy(address(mathLib), maxTotalApy, 2252571, 997, 1000, cfmmFactory, baseRate, optimalUtilRate, slope1, slope2);
+        }
 
         protocol = new CPMMGammaPool(PROTOCOL_ID, address(factory), address(longStrategy), address(repayStrategy), address(shortStrategy),
             address(liquidationStrategy), address(batchLiquidationStrategy), address(viewer), address(externalRebalanceStrategy),
@@ -154,7 +179,6 @@ contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
                 assertEq(IDeltaSwapPair(cfmm6x8).gammaPool(), address(pool6x8));
             }
             approvePoolAndCFMM(pool6x8, cfmm6x8);
-
 
             // 18x8 = usdc/weth8
             tokens[0] = address(usdc);

@@ -89,7 +89,7 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
         address[] memory tokens = IGammaPool(_pool).tokens();
         address tokenIn = side ? tokens[0] : tokens[1];
         address tokenOut = side ? tokens[1] : tokens[0];
-        uint256 tokenAmt = IERC20(tokenIn).balanceOf(addr1) * tradeAmtPerc / 300;
+        uint256 tokenAmt = IERC20(tokenIn).balanceOf(addr1) * tradeAmtPerc / 30000;
 
         chng = tokenAmt > 0;
 
@@ -179,6 +179,7 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
         address to = vm.addr(toNum);
 
         vm.roll(100);
+        vm.warp(100);
 
         IGammaPool.LoanData memory loanData = IPoolViewer(pool18x6.viewer()).loan(address(pool18x6), _tokenId18x6);
         uint256 payLiquidity = GSMath.min(loanData.liquidity * payLiquidityPerc / 250, loanData.liquidity);
@@ -211,7 +212,16 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
             (uint256 liquidityPaid, uint256[] memory amounts) = posMgr.repayLiquidity(params);
 
             IGammaPool.PoolData memory poolData = pool18x6.getPoolData();
-            assertEq(poolData.BORROWED_INVARIANT, prevPoolData.BORROWED_INVARIANT - liquidityPaid);
+            if(IS_DELTASWAP_V2) {
+                if(payLiquidityPerc >= 250) {
+                    assertApproxEqRel(prevPoolData.BORROWED_INVARIANT, liquidityPaid,1e14);
+                    assertApproxEqAbs(poolData.BORROWED_INVARIANT, 0,1e3);
+                } else {
+                    assertApproxEqRel(poolData.BORROWED_INVARIANT, prevPoolData.BORROWED_INVARIANT - liquidityPaid, 1e14);
+                }
+            } else {
+                assertEq(poolData.BORROWED_INVARIANT, prevPoolData.BORROWED_INVARIANT - liquidityPaid);
+            }
             assertGt(poolData.LP_TOKEN_BALANCE, prevPoolData.LP_TOKEN_BALANCE);
             assertApproxEqAbs(liquidityPaid, payLiquidity, 1e8);
             assertLe(liquidityPaid, GSMath.sqrt(amounts[0] * amounts[1]));
@@ -585,12 +595,12 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
         uint256[] memory ratio;
         if(ratio1 == ratio0) {
             ratio = new uint256[](0);
-            strikePx = uint256(loanData.tokensHeld[1]) * 1e18 / loanData.tokensHeld[0];
+            strikePx = uint256(loanData.tokensHeld[1]) * 1e6 / loanData.tokensHeld[0];
         } else {
             ratio = new uint256[](2);
             ratio[1] = uint256(IERC20(address(weth6)).balanceOf(cfmm18x6)) * uint256(ratio1);
             ratio[0] = uint256(IERC20(address(usdc)).balanceOf(cfmm18x6)) * uint256(ratio0);
-            strikePx = uint256(ratio[1]) * 1e18 / ratio[0];
+            strikePx = uint256(ratio[1]) * 1e6 / ratio[0];
         }
 
         vm.startPrank(addr1);
@@ -630,9 +640,9 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
             assertGt(poolData.LP_TOKEN_BALANCE, prevPoolData.LP_TOKEN_BALANCE);
 
             assertApproxEqRel(liquidityPaid, payLiquidity, 1e16);
-            assertApproxEqRel(liquidityPaid, GSMath.sqrt(amounts[0] * amounts[1]), 1e16);
+            assertApproxEqRel(liquidityPaid, GSMath.sqrt(amounts[0] * amounts[1]), 1e17);
 
-            assertApproxEqRel(strikePx, uint256(loanData.tokensHeld[1]) * 1e18 / loanData.tokensHeld[0], 125*1e14);
+            assertApproxEqRel(strikePx, uint256(loanData.tokensHeld[1]) * 1e6 / loanData.tokensHeld[0], 125*1e14);
             if(chng) {
                 assertEq(IERC20(address(weth6)).balanceOf(addr1), wethBalancePrev);
                 assertEq(IERC20(address(usdc)).balanceOf(addr1), usdcBalancePrev);
@@ -797,7 +807,7 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
             assertGt(poolData.LP_TOKEN_BALANCE, prevPoolData.LP_TOKEN_BALANCE);
 
             assertApproxEqRel(liquidityPaid, payLiquidity, 1e16);
-            assertApproxEqRel(liquidityPaid, GSMath.sqrt(amounts[0] * amounts[1]), 1e16);
+            assertApproxEqRel(liquidityPaid, GSMath.sqrt(amounts[0] * amounts[1]), 1e17);
 
             assertApproxEqRel(strikePx, uint256(loanData.tokensHeld[1]) * 1e18 / loanData.tokensHeld[0], 1e16);
             if(chng) {
@@ -986,7 +996,13 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
 
         IGammaPool.LoanData memory loanData = IPoolViewer(pool.viewer()).loan(address(pool), _tokenId);
 
-        poolData.lastCFMMInvariant = uint128(GSMath.sqrt(IERC20(address(weth)).balanceOf(cfmm)*IERC20(address(usdc)).balanceOf(cfmm)));
+        if(IS_DELTASWAP_V2) {
+            uint128[] memory rez = new uint128[](2);
+            (rez[0], rez[1],) = IDSV2Pair(cfmm).getLPReserves();
+            poolData.lastCFMMInvariant = uint128(GSMath.sqrt(uint256(rez[0])*rez[1]));
+        } else {
+            poolData.lastCFMMInvariant = uint128(GSMath.sqrt(IERC20(address(weth)).balanceOf(cfmm)*IERC20(address(usdc)).balanceOf(cfmm)));
+        }
         poolData.lastCFMMTotalSupply = IERC20(cfmm).totalSupply();
 
         uint256 lpTokenDebt = loanData.liquidity * poolData.lastCFMMTotalSupply / poolData.lastCFMMInvariant;
@@ -1030,8 +1046,13 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
                 uint128[] memory tokensHeldPart = new uint128[](2);
                 tokensHeldPart[0] = uint128(GSMath.min(loanData.tokensHeld[0] * expLiquidityPay / lpTokenDebt, uint256(loanData.tokensHeld[0])));
                 tokensHeldPart[1] = uint128(GSMath.min(loanData.tokensHeld[1] * expLiquidityPay / lpTokenDebt, uint256(loanData.tokensHeld[1])));
-                assertApproxEqAbs(tokensHeld[0], loanData.tokensHeld[0] - tokensHeldPart[0], 1e1);
-                assertApproxEqAbs(tokensHeld[1], loanData.tokensHeld[1] - tokensHeldPart[1], 1e1);
+                if(IS_DELTASWAP_V2) {
+                    assertApproxEqRel(tokensHeld[0], loanData.tokensHeld[0] - tokensHeldPart[0], 1e15);
+                    assertApproxEqRel(tokensHeld[1], loanData.tokensHeld[1] - tokensHeldPart[1], 1e15);
+                } else {
+                    assertApproxEqAbs(tokensHeld[0], loanData.tokensHeld[0] - tokensHeldPart[0], 1e1);
+                    assertApproxEqAbs(tokensHeld[1], loanData.tokensHeld[1] - tokensHeldPart[1], 1e1);
+                }
 
                 if(collateralId > 0) {
                     if(collateralId == 1) {
@@ -1044,8 +1065,13 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
                 } else {
                     assertGt(IERC20(address(weth)).balanceOf(params.to), poolData.TOKEN_BALANCE[0]);
                     assertGt(IERC20(address(usdc)).balanceOf(params.to), poolData.TOKEN_BALANCE[1]);
-                    assertApproxEqAbs(tokensHeldPart[0], IERC20(address(weth)).balanceOf(params.to) - poolData.TOKEN_BALANCE[0],1e6);
-                    assertApproxEqAbs(tokensHeldPart[1], IERC20(address(usdc)).balanceOf(params.to) - poolData.TOKEN_BALANCE[1],1e6);
+                    if(IS_DELTASWAP_V2) {
+                        assertApproxEqRel(tokensHeldPart[0], IERC20(address(weth)).balanceOf(params.to) - poolData.TOKEN_BALANCE[0],1e15);
+                        assertApproxEqRel(tokensHeldPart[1], IERC20(address(usdc)).balanceOf(params.to) - poolData.TOKEN_BALANCE[1],1e15);
+                    } else {
+                        assertApproxEqAbs(tokensHeldPart[0], IERC20(address(weth)).balanceOf(params.to) - poolData.TOKEN_BALANCE[0],1e6);
+                        assertApproxEqAbs(tokensHeldPart[1], IERC20(address(usdc)).balanceOf(params.to) - poolData.TOKEN_BALANCE[1],1e6);
+                    }
                 }
             }
 
@@ -1070,14 +1096,20 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
 
         IGammaPool.LoanData memory loanData = IPoolViewer(pool18x6.viewer()).loan(address(pool18x6), _tokenId18x6);
 
-        poolData.lastCFMMInvariant = uint128(GSMath.sqrt(IERC20(address(weth6)).balanceOf(cfmm18x6)*IERC20(address(usdc)).balanceOf(cfmm18x6)));
+        if(IS_DELTASWAP_V2) {
+            uint128[] memory rez = new uint128[](2);
+            (rez[0], rez[1],) = IDSV2Pair(cfmm18x6).getLPReserves();
+            poolData.lastCFMMInvariant = uint128(GSMath.sqrt(uint256(rez[0])*rez[1]));
+        } else {
+            poolData.lastCFMMInvariant = uint128(GSMath.sqrt(IERC20(address(weth6)).balanceOf(cfmm18x6)*IERC20(address(usdc)).balanceOf(cfmm18x6)));
+        }
         poolData.lastCFMMTotalSupply = IERC20(cfmm18x6).totalSupply();
 
         uint256 lpTokenDebt = loanData.liquidity * poolData.lastCFMMTotalSupply / poolData.lastCFMMInvariant;
 
         uint256 lpTokenPay = GSMath.min(uint256(lpTokenPerc) * lpTokenDebt / 250, lpTokenDebt);
 
-        lpTokenPay = lpTokenPay == 0 ? 0 : lpTokenPay + 1000;
+        lpTokenPay = lpTokenPay == 0 ? 0 : lpTokenPay + 2000;
 
         uint256 expLiquidityPay = GSMath.min(lpTokenPay * poolData.lastCFMMInvariant / poolData.lastCFMMTotalSupply, loanData.liquidity);
 
@@ -1108,14 +1140,19 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
             poolData.TOKEN_BALANCE[0] = uint128(IERC20(address(usdc)).balanceOf(params.to)); // prev usdc balance at user
 
             (uint256 liquidityPaid, uint128[] memory tokensHeld) = posMgr.repayLiquidityWithLP(params);
-            assertApproxEqAbs(liquidityPaid, expLiquidityPay, 1e3);
+            assertApproxEqAbs(liquidityPaid, expLiquidityPay, 1e4);
 
             if(params.to != address(0)) {
                 uint128[] memory tokensHeldPart = new uint128[](2);
                 tokensHeldPart[0] = uint128(GSMath.min(loanData.tokensHeld[0] * expLiquidityPay / lpTokenDebt, uint256(loanData.tokensHeld[0])));
                 tokensHeldPart[1] = uint128(GSMath.min(loanData.tokensHeld[1] * expLiquidityPay / lpTokenDebt, uint256(loanData.tokensHeld[1])));
-                assertApproxEqAbs(tokensHeld[0], loanData.tokensHeld[0] - tokensHeldPart[0], 1e1);
-                assertApproxEqAbs(tokensHeld[1], loanData.tokensHeld[1] - tokensHeldPart[1], 1e1);
+                if(IS_DELTASWAP_V2) {
+                    assertApproxEqRel(tokensHeld[0], loanData.tokensHeld[0] - tokensHeldPart[0], 1e12);
+                    assertApproxEqRel(tokensHeld[1], loanData.tokensHeld[1] - tokensHeldPart[1], 1e12);
+                } else {
+                    assertApproxEqAbs(tokensHeld[0], loanData.tokensHeld[0] - tokensHeldPart[0], 1e1);
+                    assertApproxEqAbs(tokensHeld[1], loanData.tokensHeld[1] - tokensHeldPart[1], 1e1);
+                }
 
                 if(collateralId > 0) {
                     if(collateralId == 1) {
@@ -1128,8 +1165,13 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
                 } else {
                     assertGt(IERC20(address(weth6)).balanceOf(params.to), poolData.TOKEN_BALANCE[1]);
                     assertGt(IERC20(address(usdc)).balanceOf(params.to), poolData.TOKEN_BALANCE[0]);
-                    assertApproxEqAbs(tokensHeldPart[1], IERC20(address(weth6)).balanceOf(params.to) - poolData.TOKEN_BALANCE[1],1e6);
-                    assertApproxEqAbs(tokensHeldPart[0], IERC20(address(usdc)).balanceOf(params.to) - poolData.TOKEN_BALANCE[0],1e6);
+                    if(IS_DELTASWAP_V2) {
+                        assertApproxEqRel(tokensHeldPart[1], IERC20(address(weth6)).balanceOf(params.to) - poolData.TOKEN_BALANCE[1],1e12);
+                        assertApproxEqRel(tokensHeldPart[0], IERC20(address(usdc)).balanceOf(params.to) - poolData.TOKEN_BALANCE[0],1e12);
+                    } else {
+                        assertApproxEqAbs(tokensHeldPart[1], IERC20(address(weth6)).balanceOf(params.to) - poolData.TOKEN_BALANCE[1],1e6);
+                        assertApproxEqAbs(tokensHeldPart[0], IERC20(address(usdc)).balanceOf(params.to) - poolData.TOKEN_BALANCE[0],1e6);
+                    }
                 }
             }
 
@@ -1155,7 +1197,13 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
 
         IGammaPool.LoanData memory loanData = IPoolViewer(pool6x18.viewer()).loan(address(pool6x18), _tokenId6x18);
 
-        poolData.lastCFMMInvariant = uint128(GSMath.sqrt(IERC20(address(weth)).balanceOf(cfmm6x18)*IERC20(address(usdc6)).balanceOf(cfmm6x18)));
+        if(IS_DELTASWAP_V2) {
+            uint128[] memory rez = new uint128[](2);
+            (rez[0], rez[1],) = IDSV2Pair(cfmm6x18).getLPReserves();
+            poolData.lastCFMMInvariant = uint128(GSMath.sqrt(uint256(rez[0])*rez[1]));
+        } else {
+            poolData.lastCFMMInvariant = uint128(GSMath.sqrt(IERC20(address(weth)).balanceOf(cfmm6x18)*IERC20(address(usdc6)).balanceOf(cfmm6x18)));
+        }
         poolData.lastCFMMTotalSupply = IERC20(cfmm6x18).totalSupply();
 
         uint256 lpTokenDebt = loanData.liquidity * poolData.lastCFMMTotalSupply / poolData.lastCFMMInvariant;
@@ -1199,8 +1247,13 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
                 uint128[] memory tokensHeldPart = new uint128[](2);
                 tokensHeldPart[0] = uint128(GSMath.min(loanData.tokensHeld[0] * expLiquidityPay / lpTokenDebt, uint256(loanData.tokensHeld[0])));
                 tokensHeldPart[1] = uint128(GSMath.min(loanData.tokensHeld[1] * expLiquidityPay / lpTokenDebt, uint256(loanData.tokensHeld[1])));
-                assertApproxEqAbs(tokensHeld[0], loanData.tokensHeld[0] - tokensHeldPart[0], 1e1);
-                assertApproxEqAbs(tokensHeld[1], loanData.tokensHeld[1] - tokensHeldPart[1], 1e1);
+                if(IS_DELTASWAP_V2) {
+                    assertApproxEqRel(tokensHeld[0], loanData.tokensHeld[0] - tokensHeldPart[0], 1e12);
+                    assertApproxEqRel(tokensHeld[1], loanData.tokensHeld[1] - tokensHeldPart[1], 1e12);
+                } else {
+                    assertApproxEqAbs(tokensHeld[0], loanData.tokensHeld[0] - tokensHeldPart[0], 1e1);
+                    assertApproxEqAbs(tokensHeld[1], loanData.tokensHeld[1] - tokensHeldPart[1], 1e1);
+                }
 
                 if(collateralId > 0) {
                     if(collateralId == 1) {
@@ -1213,8 +1266,13 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
                 } else {
                     assertGt(IERC20(address(weth)).balanceOf(params.to), poolData.TOKEN_BALANCE[1]);
                     assertGt(IERC20(address(usdc6)).balanceOf(params.to), poolData.TOKEN_BALANCE[0]);
-                    assertApproxEqAbs(tokensHeldPart[1], IERC20(address(weth)).balanceOf(params.to) - poolData.TOKEN_BALANCE[1],1e6);
-                    assertApproxEqAbs(tokensHeldPart[0], IERC20(address(usdc6)).balanceOf(params.to) - poolData.TOKEN_BALANCE[0],1e6);
+                    if(IS_DELTASWAP_V2) {
+                        assertApproxEqRel(tokensHeldPart[1], IERC20(address(weth)).balanceOf(params.to) - poolData.TOKEN_BALANCE[1],1e12);
+                        assertApproxEqRel(tokensHeldPart[0], IERC20(address(usdc6)).balanceOf(params.to) - poolData.TOKEN_BALANCE[0],1e12);
+                    } else {
+                        assertApproxEqAbs(tokensHeldPart[1], IERC20(address(weth)).balanceOf(params.to) - poolData.TOKEN_BALANCE[1],1e6);
+                        assertApproxEqAbs(tokensHeldPart[0], IERC20(address(usdc6)).balanceOf(params.to) - poolData.TOKEN_BALANCE[0],1e6);
+                    }
                 }
             }
 
@@ -1239,7 +1297,13 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
 
         IGammaPool.LoanData memory loanData = IPoolViewer(pool6x6.viewer()).loan(address(pool6x6), _tokenId6x6);
 
-        poolData.lastCFMMInvariant = uint128(GSMath.sqrt(IERC20(address(weth6)).balanceOf(cfmm6x6)*IERC20(address(usdc6)).balanceOf(cfmm6x6)));
+        if(IS_DELTASWAP_V2) {
+            uint128[] memory rez = new uint128[](2);
+            (rez[0], rez[1],) = IDSV2Pair(cfmm6x6).getLPReserves();
+            poolData.lastCFMMInvariant = uint128(GSMath.sqrt(uint256(rez[0])*rez[1]));
+        } else {
+            poolData.lastCFMMInvariant = uint128(GSMath.sqrt(IERC20(address(weth6)).balanceOf(cfmm6x6)*IERC20(address(usdc6)).balanceOf(cfmm6x6)));
+        }
         poolData.lastCFMMTotalSupply = IERC20(cfmm6x6).totalSupply();
 
         uint256 lpTokenDebt = loanData.liquidity * poolData.lastCFMMTotalSupply / poolData.lastCFMMInvariant;
@@ -1283,8 +1347,13 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
                 uint128[] memory tokensHeldPart = new uint128[](2);
                 tokensHeldPart[0] = uint128(GSMath.min(loanData.tokensHeld[0] * expLiquidityPay / lpTokenDebt, uint256(loanData.tokensHeld[0])));
                 tokensHeldPart[1] = uint128(GSMath.min(loanData.tokensHeld[1] * expLiquidityPay / lpTokenDebt, uint256(loanData.tokensHeld[1])));
-                assertApproxEqAbs(tokensHeld[0], loanData.tokensHeld[0] - tokensHeldPart[0], 1e1);
-                assertApproxEqAbs(tokensHeld[1], loanData.tokensHeld[1] - tokensHeldPart[1], 1e1);
+                if(IS_DELTASWAP_V2) {
+                    assertApproxEqRel(tokensHeld[0], loanData.tokensHeld[0] - tokensHeldPart[0], 1e14);
+                    assertApproxEqRel(tokensHeld[1], loanData.tokensHeld[1] - tokensHeldPart[1], 1e14);
+                } else {
+                    assertApproxEqAbs(tokensHeld[0], loanData.tokensHeld[0] - tokensHeldPart[0], 1e1);
+                    assertApproxEqAbs(tokensHeld[1], loanData.tokensHeld[1] - tokensHeldPart[1], 1e1);
+                }
 
                 if(collateralId > 0) {
                     if(collateralId == 1) {
@@ -1297,8 +1366,13 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
                 } else {
                     assertGt(IERC20(address(weth6)).balanceOf(params.to), poolData.TOKEN_BALANCE[1]);
                     assertGt(IERC20(address(usdc6)).balanceOf(params.to), poolData.TOKEN_BALANCE[0]);
-                    assertApproxEqAbs(tokensHeldPart[1], IERC20(address(weth6)).balanceOf(params.to) - poolData.TOKEN_BALANCE[1],1e6);
-                    assertApproxEqAbs(tokensHeldPart[0], IERC20(address(usdc6)).balanceOf(params.to) - poolData.TOKEN_BALANCE[0],1e6);
+                    if(IS_DELTASWAP_V2) {
+                        assertApproxEqRel(tokensHeldPart[1], IERC20(address(weth6)).balanceOf(params.to) - poolData.TOKEN_BALANCE[1],1e14);
+                        assertApproxEqRel(tokensHeldPart[0], IERC20(address(usdc6)).balanceOf(params.to) - poolData.TOKEN_BALANCE[0],1e14);
+                    } else {
+                        assertApproxEqAbs(tokensHeldPart[1], IERC20(address(weth6)).balanceOf(params.to) - poolData.TOKEN_BALANCE[1],1e6);
+                        assertApproxEqAbs(tokensHeldPart[0], IERC20(address(usdc6)).balanceOf(params.to) - poolData.TOKEN_BALANCE[0],1e6);
+                    }
                 }
             }
 
@@ -1323,7 +1397,13 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
 
         IGammaPool.LoanData memory loanData = IPoolViewer(pool6x8.viewer()).loan(address(pool6x8), _tokenId6x8);
 
-        poolData.lastCFMMInvariant = uint128(GSMath.sqrt(IERC20(address(weth8)).balanceOf(cfmm6x8)*IERC20(address(usdc6)).balanceOf(cfmm6x8)));
+        if(IS_DELTASWAP_V2) {
+            uint128[] memory rez = new uint128[](2);
+            (rez[0], rez[1],) = IDSV2Pair(cfmm6x8).getLPReserves();
+            poolData.lastCFMMInvariant = uint128(GSMath.sqrt(uint256(rez[0])*rez[1]));
+        } else {
+            poolData.lastCFMMInvariant = uint128(GSMath.sqrt(IERC20(address(weth8)).balanceOf(cfmm6x8)*IERC20(address(usdc6)).balanceOf(cfmm6x8)));
+        }
         poolData.lastCFMMTotalSupply = IERC20(cfmm6x8).totalSupply();
 
         uint256 lpTokenDebt = loanData.liquidity * poolData.lastCFMMTotalSupply / poolData.lastCFMMInvariant;
@@ -1366,8 +1446,13 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
                 uint128[] memory tokensHeldPart = new uint128[](2);
                 tokensHeldPart[0] = uint128(GSMath.min(loanData.tokensHeld[0] * expLiquidityPay / lpTokenDebt, uint256(loanData.tokensHeld[0])));
                 tokensHeldPart[1] = uint128(GSMath.min(loanData.tokensHeld[1] * expLiquidityPay / lpTokenDebt, uint256(loanData.tokensHeld[1])));
-                assertApproxEqRel(tokensHeld[0], loanData.tokensHeld[0] - tokensHeldPart[0], 1e1);
-                assertApproxEqRel(tokensHeld[1], loanData.tokensHeld[1] - tokensHeldPart[1], 1e1);
+                if(IS_DELTASWAP_V2) {
+                    assertApproxEqRel(tokensHeld[0], loanData.tokensHeld[0] - tokensHeldPart[0], 1e14);
+                    assertApproxEqRel(tokensHeld[1], loanData.tokensHeld[1] - tokensHeldPart[1], 1e14);
+                } else {
+                    assertApproxEqAbs(tokensHeld[0], loanData.tokensHeld[0] - tokensHeldPart[0], 1e1);
+                    assertApproxEqAbs(tokensHeld[1], loanData.tokensHeld[1] - tokensHeldPart[1], 1e1);
+                }
 
                 if(collateralId > 0) {
                     if(collateralId == 1) {
@@ -1380,8 +1465,13 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
                 } else {
                     assertGt(IERC20(address(weth8)).balanceOf(params.to), poolData.TOKEN_BALANCE[1]);
                     assertGt(IERC20(address(usdc6)).balanceOf(params.to), poolData.TOKEN_BALANCE[0]);
-                    assertApproxEqRel(tokensHeldPart[1], IERC20(address(weth8)).balanceOf(params.to) - poolData.TOKEN_BALANCE[1],1e6);
-                    assertApproxEqRel(tokensHeldPart[0], IERC20(address(usdc6)).balanceOf(params.to) - poolData.TOKEN_BALANCE[0],1e6);
+                    if(IS_DELTASWAP_V2) {
+                        assertApproxEqRel(tokensHeldPart[1], IERC20(address(weth8)).balanceOf(params.to) - poolData.TOKEN_BALANCE[1],1e14);
+                        assertApproxEqRel(tokensHeldPart[0], IERC20(address(usdc6)).balanceOf(params.to) - poolData.TOKEN_BALANCE[0],1e14);
+                    } else {
+                        assertApproxEqRel(tokensHeldPart[1], IERC20(address(weth8)).balanceOf(params.to) - poolData.TOKEN_BALANCE[1],1e6);
+                        assertApproxEqRel(tokensHeldPart[0], IERC20(address(usdc6)).balanceOf(params.to) - poolData.TOKEN_BALANCE[0],1e6);
+                    }
                 }
             }
 
@@ -1406,7 +1496,13 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
 
         IGammaPool.LoanData memory loanData = IPoolViewer(pool18x8.viewer()).loan(address(pool18x8), _tokenId18x8);
 
-        poolData.lastCFMMInvariant = uint128(GSMath.sqrt(IERC20(address(weth8)).balanceOf(cfmm18x8)*IERC20(address(usdc)).balanceOf(cfmm18x8)));
+        if(IS_DELTASWAP_V2) {
+            uint128[] memory rez = new uint128[](2);
+            (rez[0], rez[1],) = IDSV2Pair(cfmm18x8).getLPReserves();
+            poolData.lastCFMMInvariant = uint128(GSMath.sqrt(uint256(rez[0])*rez[1]));
+        } else {
+            poolData.lastCFMMInvariant = uint128(GSMath.sqrt(IERC20(address(weth8)).balanceOf(cfmm18x8)*IERC20(address(usdc)).balanceOf(cfmm18x8)));
+        }
         poolData.lastCFMMTotalSupply = IERC20(cfmm18x8).totalSupply();
 
         uint256 lpTokenDebt = loanData.liquidity * poolData.lastCFMMTotalSupply / poolData.lastCFMMInvariant;
@@ -1450,8 +1546,13 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
                 uint128[] memory tokensHeldPart = new uint128[](2);
                 tokensHeldPart[0] = uint128(GSMath.min(loanData.tokensHeld[0] * expLiquidityPay / lpTokenDebt, uint256(loanData.tokensHeld[0])));
                 tokensHeldPart[1] = uint128(GSMath.min(loanData.tokensHeld[1] * expLiquidityPay / lpTokenDebt, uint256(loanData.tokensHeld[1])));
-                assertApproxEqAbs(tokensHeld[0], loanData.tokensHeld[0] - tokensHeldPart[0], 1e1);
-                assertApproxEqAbs(tokensHeld[1], loanData.tokensHeld[1] - tokensHeldPart[1], 1e1);
+                if(IS_DELTASWAP_V2) {
+                    assertApproxEqRel(tokensHeld[0], loanData.tokensHeld[0] - tokensHeldPart[0], 1e14);
+                    assertApproxEqRel(tokensHeld[1], loanData.tokensHeld[1] - tokensHeldPart[1], 1e14);
+                } else {
+                    assertApproxEqAbs(tokensHeld[0], loanData.tokensHeld[0] - tokensHeldPart[0], 1e1);
+                    assertApproxEqAbs(tokensHeld[1], loanData.tokensHeld[1] - tokensHeldPart[1], 1e1);
+                }
 
                 if(collateralId > 0) {
                     if(collateralId == 1) {
@@ -1464,8 +1565,13 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
                 } else {
                     assertGt(IERC20(address(weth8)).balanceOf(params.to), poolData.TOKEN_BALANCE[1]);
                     assertGt(IERC20(address(usdc)).balanceOf(params.to), poolData.TOKEN_BALANCE[0]);
-                    assertApproxEqAbs(tokensHeldPart[1], IERC20(address(weth8)).balanceOf(params.to) - poolData.TOKEN_BALANCE[1],1e6);
-                    assertApproxEqAbs(tokensHeldPart[0], IERC20(address(usdc)).balanceOf(params.to) - poolData.TOKEN_BALANCE[0],1e6);
+                    if(IS_DELTASWAP_V2) {
+                        assertApproxEqRel(tokensHeldPart[1], IERC20(address(weth8)).balanceOf(params.to) - poolData.TOKEN_BALANCE[1],1e12);
+                        assertApproxEqRel(tokensHeldPart[0], IERC20(address(usdc)).balanceOf(params.to) - poolData.TOKEN_BALANCE[0],1e12);
+                    } else {
+                        assertApproxEqAbs(tokensHeldPart[1], IERC20(address(weth8)).balanceOf(params.to) - poolData.TOKEN_BALANCE[1],1e6);
+                        assertApproxEqAbs(tokensHeldPart[0], IERC20(address(usdc)).balanceOf(params.to) - poolData.TOKEN_BALANCE[0],1e6);
+                    }
                 }
             }
 

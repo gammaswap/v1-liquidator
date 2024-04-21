@@ -133,11 +133,6 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
             tokenOut = side ? address(usdc) : address(weth8);
         }
         uint256 tokenAmt = IERC20(tokenIn).balanceOf(addr1) * tradeAmtPerc / 300;
-        if (tokenIn == address(weth6) || tokenIn == address(usdc6)) {
-            tokenAmt /= 1e12;
-        } else if (tokenIn == address(weth8)) {
-            tokenAmt /= 1e14;
-        }
         chng = tokenAmt > 0;
 
         if(chng) sellTokenIn(tokenAmt, tokenIn, tokenOut, addr1);
