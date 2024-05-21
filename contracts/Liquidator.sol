@@ -2,6 +2,7 @@
 pragma solidity 0.8.21;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/access/Ownable2Step.sol";
 import "@gammaswap/v1-core/contracts/interfaces/IPoolViewer.sol";
 import "@gammaswap/v1-core/contracts/libraries/GSMath.sol";
 import "./interfaces/ILiquidator.sol";
@@ -9,7 +10,7 @@ import "./interfaces/ILiquidator.sol";
 /// @title Liquidator Smart Contract
 /// @author Daniel D. Alcarraz (https://github.com/0xDanr)
 /// @dev Helps liquidation of loans in GammaPools
-contract Liquidator is ILiquidator {
+contract Liquidator is ILiquidator, Ownable2Step {
 
     constructor(){
     }
