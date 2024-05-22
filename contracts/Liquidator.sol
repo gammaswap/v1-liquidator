@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-v3
 pragma solidity 0.8.21;
 
+import "@openzeppelin/contracts/access/Ownable2Step.sol";
 import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/access/Ownable2Step.sol";
 
 import "@gammaswap/v1-core/contracts/interfaces/IPoolViewer.sol";
 import "@gammaswap/v1-core/contracts/libraries/GSMath.sol";

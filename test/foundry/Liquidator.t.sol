@@ -23,6 +23,25 @@ contract LiquidatorTest is CPMMGammaSwapSetup {
         liquidator.initialize(addr1);
     }
 
+    function testForbiddenLiquidation() public {
+        vm.prank(addr2);
+        vm.expectRevert("Liquidator: caller is not the liquidator");
+        liquidator.liquidate(address(pool), 1, addr2);
+
+
+        vm.prank(addr2);
+        vm.expectRevert("Liquidator: caller is not the liquidator");
+        liquidator.liquidateWithLP(address(pool), 1, 0, false, addr1);
+
+
+        uint256[] memory tokenIds = new uint256[](2);
+        tokenIds[0] = 1;
+        tokenIds[1] = 2;
+        vm.prank(addr2);
+        vm.expectRevert("Liquidator: caller is not the liquidator");
+        liquidator.batchLiquidate(address(pool), tokenIds, addr1);
+    }
+
     ////////////////////////////////////
     ////////// FULL LIQUIDATE //////////
     ////////////////////////////////////
