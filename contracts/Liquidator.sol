@@ -38,7 +38,7 @@ contract Liquidator is ILiquidator, Ownable2Step, Initializable, UUPSUpgradeable
 
     /// @dev Throws if the sender is not the liquidator.
     function _checkLiquidator() internal view virtual {
-        require(liquidator != address(0) && liquidator == _msgSender(), "Liquidator: caller is not the liquidator");
+        require(liquidator == address(0) || liquidator == _msgSender(), "Liquidator: caller is not the liquidator");
     }
 
     /// @dev See {ILiquidator-canLiquidate}.
