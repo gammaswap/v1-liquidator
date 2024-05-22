@@ -87,6 +87,7 @@ describe("CPMMLiquidationStrategy", function () {
     const slope2 = ONE.mul(75).div(100);
 
     strategy = await TestStrategy.deploy(
+      ethers.constants.AddressZero,
       cpmmMath.address,
       maxTotalApy,
       2252571,
@@ -100,6 +101,7 @@ describe("CPMMLiquidationStrategy", function () {
     );
 
     strategyWithLP = await TestStrategyWithLP.deploy(
+        ethers.constants.AddressZero,
         cpmmMath.address,
         maxTotalApy,
         2252571,
@@ -179,6 +181,7 @@ describe("CPMMLiquidationStrategy", function () {
     const slope2 = ONE.mul(75).div(100);
 
     strategyFee = await TestStrategy.deploy(
+      ethers.constants.AddressZero,
       cpmmMath.address,
       maxTotalApy,
       2252571,
@@ -248,6 +251,7 @@ describe("CPMMLiquidationStrategy", function () {
     const slope2 = ONE.mul(75).div(100);
 
     strategyFee = await TestStrategyWithLP.deploy(
+        ethers.constants.AddressZero,
         cpmmMath.address,
         maxTotalApy,
         2252571,

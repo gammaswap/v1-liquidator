@@ -18,6 +18,63 @@ contract LiquidatorTest is CPMMGammaSwapSetup {
         depositLiquidityInPool(addr2);
 
         liquidator = new Liquidator();
+
+        vm.prank(liquidator.owner());
+        liquidator.initialize(addr1);
+    }
+
+    function testForbiddenLiquidation() public {
+        vm.prank(addr2);
+        vm.expectRevert("Liquidator: caller is not the liquidator");
+        liquidator.liquidate(address(pool), 1, addr2);
+
+        vm.prank(addr2);
+        vm.expectRevert("Liquidator: caller is not the liquidator");
+        liquidator.liquidateWithLP(address(pool), 1, 0, false, addr1);
+
+        uint256[] memory tokenIds = new uint256[](2);
+        tokenIds[0] = 1;
+        tokenIds[1] = 2;
+        vm.prank(addr2);
+        vm.expectRevert("Liquidator: caller is not the liquidator");
+        liquidator.batchLiquidate(address(pool), tokenIds, addr1);
+    }
+
+    function testSetLiquidator() public {
+        assertNotEq(liquidator.liquidator(),addr2);
+        assertNotEq(liquidator.owner(), addr1);
+
+        vm.prank(addr1);
+        vm.expectRevert("Ownable: caller is not the owner");
+        liquidator.setLiquidator(addr2);
+
+        vm.prank(liquidator.owner());
+        liquidator.setLiquidator(addr2);
+
+        assertEq(liquidator.liquidator(),addr2);
+
+        vm.prank(liquidator.owner());
+        liquidator.setLiquidator(address(0));
+
+        assertEq(liquidator.liquidator(),address(0));
+
+        address oldOwner = liquidator.owner();
+        vm.prank(oldOwner);
+        liquidator.transferOwnership(addr1);
+
+        vm.prank(addr1);
+        liquidator.acceptOwnership();
+
+        assertNotEq(liquidator.liquidator(),addr2);
+        assertEq(liquidator.owner(), addr1);
+
+        vm.prank(oldOwner);
+        vm.expectRevert("Ownable: caller is not the owner");
+        liquidator.setLiquidator(addr2);
+
+        vm.prank(addr1);
+        liquidator.setLiquidator(addr2);
+        assertEq(liquidator.liquidator(),addr2);
     }
 
     ////////////////////////////////////
@@ -51,6 +108,59 @@ contract LiquidatorTest is CPMMGammaSwapSetup {
         assertGt(loanData.tokensHeld[0]/1e3, 0);
         assertGt(loanData.tokensHeld[1]/1e3, 0);
 
+        liquidator.liquidate(address(pool), tokenId, addr1);
+
+        IGammaPool.LoanData memory loanData1 = viewer.loan(address(pool), tokenId);
+
+        uint256 afterBalance = IERC20(cfmm).balanceOf(addr1);
+        assertGt(afterBalance, beforeBalance);
+
+        assertFalse(viewer.canLiquidate(address(pool), tokenId));
+
+        // All paid out! No collateral left
+        assertEq(loanData1.tokensHeld[0]/1e3, 0);
+        assertEq(loanData1.tokensHeld[1]/1e3, 0);
+    }
+
+    function testLiquidateFull2() public {
+        vm.prank(liquidator.owner());
+        liquidator.setLiquidator(addr2);
+
+        uint256 lpTokens = IERC20(cfmm).balanceOf(address(pool));
+        assertGt(lpTokens, 0);
+
+        vm.startPrank(addr1);
+        uint256 tokenId = pool.createLoan(0);
+        assertGt(tokenId, 0);
+
+        usdc.transfer(address(pool), 150_000 * 1e18);
+        weth.transfer(address(pool), 150 * 1e18);
+
+        pool.increaseCollateral(tokenId, new uint256[](0));
+        pool.borrowLiquidity(tokenId, lpTokens/4, new uint256[](0));
+
+        vm.roll(100000000);  // After a while
+
+        (uint256 liquidity, uint256 collateral) = liquidator.canLiquidate(address(pool), tokenId);
+        assertGt(liquidity, 0);
+        assertGt(collateral, 0);
+
+        IPoolViewer viewer = IPoolViewer(pool.viewer());
+
+        address cfmm = pool.cfmm();
+        uint256 beforeBalance = IERC20(cfmm).balanceOf(addr1);
+        IGammaPool.LoanData memory loanData = viewer.loan(address(pool), tokenId);
+        assertGt(loanData.tokensHeld[0]/1e3, 0);
+        assertGt(loanData.tokensHeld[1]/1e3, 0);
+
+        vm.expectRevert("Liquidator: caller is not the liquidator");
+        liquidator.liquidate(address(pool), tokenId, addr1);
+
+        vm.stopPrank();
+        vm.prank(liquidator.owner());
+        liquidator.setLiquidator(address(0));
+
+        vm.prank(addr1);
         liquidator.liquidate(address(pool), tokenId, addr1);
 
         IGammaPool.LoanData memory loanData1 = viewer.loan(address(pool), tokenId);
