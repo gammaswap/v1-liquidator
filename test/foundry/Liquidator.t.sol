@@ -42,6 +42,11 @@ contract LiquidatorTest is CPMMGammaSwapSetup {
 
     function testSetLiquidator() public {
         assertNotEq(liquidator.liquidator(),addr2);
+        assertNotEq(liquidator.owner(), addr1);
+
+        vm.prank(addr1);
+        vm.expectRevert("Ownable: caller is not the owner");
+        liquidator.setLiquidator(addr2);
 
         vm.prank(liquidator.owner());
         liquidator.setLiquidator(addr2);
@@ -52,6 +57,24 @@ contract LiquidatorTest is CPMMGammaSwapSetup {
         liquidator.setLiquidator(address(0));
 
         assertEq(liquidator.liquidator(),address(0));
+
+        address oldOwner = liquidator.owner();
+        vm.prank(oldOwner);
+        liquidator.transferOwnership(addr1);
+
+        vm.prank(addr1);
+        liquidator.acceptOwnership();
+
+        assertNotEq(liquidator.liquidator(),addr2);
+        assertEq(liquidator.owner(), addr1);
+
+        vm.prank(oldOwner);
+        vm.expectRevert("Ownable: caller is not the owner");
+        liquidator.setLiquidator(addr2);
+
+        vm.prank(addr1);
+        liquidator.setLiquidator(addr2);
+        assertEq(liquidator.liquidator(),addr2);
     }
 
     ////////////////////////////////////
