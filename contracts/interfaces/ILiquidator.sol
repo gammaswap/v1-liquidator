@@ -7,6 +7,10 @@ import "@gammaswap/v1-core/contracts/interfaces/IGammaPool.sol";
 /// @author Daniel D. Alcarraz (https://github.com/0xDanr)
 /// @dev Helps liquidation of loans in GammaPools
 interface ILiquidator {
+    /// @dev Initialized to address(0)
+    /// @dev When set to address(0) anyone can call liquidation functions
+    /// @return Address that is allowed to call liquidation functions
+    function liquidator() external view returns(address);
 
     /// @dev Calculate liquidity debt as CFMM LP Tokens
     /// @param pool - address of GammaPool loan belongs to
