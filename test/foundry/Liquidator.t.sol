@@ -18,6 +18,9 @@ contract LiquidatorTest is CPMMGammaSwapSetup {
         depositLiquidityInPool(addr2);
 
         liquidator = new Liquidator();
+
+        vm.prank(liquidator.owner());
+        liquidator.initialize(addr1);
     }
 
     ////////////////////////////////////

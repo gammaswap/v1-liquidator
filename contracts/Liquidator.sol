@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: GPL-v3
 pragma solidity 0.8.21;
 
+import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable2Step.sol";
+
 import "@gammaswap/v1-core/contracts/interfaces/IPoolViewer.sol";
 import "@gammaswap/v1-core/contracts/libraries/GSMath.sol";
 import "./interfaces/ILiquidator.sol";
@@ -10,9 +13,32 @@ import "./interfaces/ILiquidator.sol";
 /// @title Liquidator Smart Contract
 /// @author Daniel D. Alcarraz (https://github.com/0xDanr)
 /// @dev Helps liquidation of loans in GammaPools
-contract Liquidator is ILiquidator, Ownable2Step {
+contract Liquidator is ILiquidator, Ownable2Step, Initializable, UUPSUpgradeable {
 
-    constructor(){
+    /// @dev Address allowed to call liquidation functions
+    address public liquidator;
+
+    /// @dev Throws if called by any account other than the liquidator.
+    modifier onlyLiquidator() {
+        _checkLiquidator();
+        _;
+    }
+
+    constructor() {
+    }
+
+    function initialize(address _liquidator) public virtual initializer {
+        _transferOwnership(msg.sender);
+        liquidator = _liquidator;
+    }
+
+    function setLiquidator(address _liquidator) public virtual onlyOwner {
+        liquidator = _liquidator;
+    }
+
+    /// @dev Throws if the sender is not the liquidator.
+    function _checkLiquidator() internal view virtual {
+        require(liquidator == _msgSender(), "Liquidator: caller is not the liquidator");
     }
 
     /// @dev See {ILiquidator-canLiquidate}.
@@ -67,7 +93,7 @@ contract Liquidator is ILiquidator, Ownable2Step {
     }
 
     /// @dev See {ILiquidator-liquidate}.
-    function liquidate(address pool, uint256 tokenId, address to) external override virtual returns(uint256 refund) {
+    function liquidate(address pool, uint256 tokenId, address to) external override virtual onlyLiquidator returns(uint256 refund) {
         IPoolViewer viewer = IPoolViewer(IGammaPool(pool).viewer());
         if(viewer.canLiquidate(pool, tokenId)) {
             address cfmm = IGammaPool(pool).cfmm();
@@ -91,7 +117,7 @@ contract Liquidator is ILiquidator, Ownable2Step {
     }
 
     /// @dev See {ILiquidator-liquidateWithLP}.
-    function liquidateWithLP(address pool, uint256 tokenId, uint256 lpTokens, bool calcLpTokens, address to) external override virtual returns(uint256[] memory refunds) {
+    function liquidateWithLP(address pool, uint256 tokenId, uint256 lpTokens, bool calcLpTokens, address to) external override virtual onlyLiquidator returns(uint256[] memory refunds) {
         //check can liquidate first
         IPoolViewer viewer = IPoolViewer(IGammaPool(pool).viewer());
         if(viewer.canLiquidate(pool, tokenId)){
@@ -112,7 +138,7 @@ contract Liquidator is ILiquidator, Ownable2Step {
     }
 
     /// @dev See {ILiquidator-batchLiquidate}.
-    function batchLiquidate(address pool, uint256[] calldata tokenIds, address to) external override virtual returns(uint256[] memory _tokenIds, uint256[] memory refunds) {
+    function batchLiquidate(address pool, uint256[] calldata tokenIds, address to) external override virtual onlyLiquidator returns(uint256[] memory _tokenIds, uint256[] memory refunds) {
         //call canLiquidate first
         uint256 _liquidity;
         (_tokenIds, _liquidity,) = _canBatchLiquidate(pool, tokenIds);
@@ -202,4 +228,6 @@ contract Liquidator is ILiquidator, Ownable2Step {
 
         return 0;
     }
+
+    function _authorizeUpgrade(address) internal override onlyOwner {}
 }
