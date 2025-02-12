@@ -25,12 +25,14 @@ describe("CPMMGammaPool", function () {
   let addr4: any;
   let addr5: any;
   let addr6: any;
+  let addr7: any;
   let pool: any;
   let viewer: any;
   let gsFactoryAddress: any;
   let cfmmHash: any;
   let longStrategyAddr: any;
   let repayStrategyAddr: any;
+  let rebalanceStrategyAddr: any;
   let shortStrategyAddr: any;
   let liquidationStrategyAddr: any;
   let externalRebalanceStrategyAddr: any;
@@ -44,7 +46,7 @@ describe("CPMMGammaPool", function () {
   // time. It receives a callback, which can be async.
   beforeEach(async function () {
     // Get the ContractFactory and Signers here.
-    [owner, addr1, addr2, addr3, addr4, addr5, addr6] = await ethers.getSigners();
+    [owner, addr1, addr2, addr3, addr4, addr5, addr6, addr7] = await ethers.getSigners();
     TestERC20 = await ethers.getContractFactory("TestERC20");
     CPMMGammaPool = new ethers.ContractFactory(
         CPMMGammaPoolJSON.abi,
@@ -83,58 +85,62 @@ describe("CPMMGammaPool", function () {
       "0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f";
     longStrategyAddr = addr1.address;
     repayStrategyAddr = addr4.address;
+    rebalanceStrategyAddr = addr7.address;
     shortStrategyAddr = addr2.address;
     liquidationStrategyAddr = addr3.address;
     externalRebalanceStrategyAddr = addr5.address;
     externalLiquidationStrategyAddr = addr6.address;
 
-    pool = await CPMMGammaPool.deploy(
-      PROTOCOL_ID,
-      owner.address,
-      longStrategyAddr,
-      repayStrategyAddr,
-      shortStrategyAddr,
-      liquidationStrategyAddr,
-      liquidationStrategyAddr,
-      viewer.address,
-      externalRebalanceStrategyAddr,
-      externalLiquidationStrategyAddr,
-      uniFactory.address,
-      cfmmHash
-    );
+    pool = await CPMMGammaPool.deploy({
+      protocolId: PROTOCOL_ID,
+      factory: owner.address,
+      borrowStrategy: longStrategyAddr,
+      repayStrategy: repayStrategyAddr,
+      rebalanceStrategy: rebalanceStrategyAddr,
+      shortStrategy: shortStrategyAddr,
+      liquidationStrategy: liquidationStrategyAddr,
+      batchLiquidationStrategy: liquidationStrategyAddr,
+      viewer: viewer.address,
+      externalRebalanceStrategy: externalRebalanceStrategyAddr,
+      externalLiquidationStrategy: externalLiquidationStrategyAddr,
+      cfmmFactory: uniFactory.address,
+      cfmmInitCodeHash: cfmmHash
+    });
 
     const badCfmmHash =
       "0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845e";
 
-    badPool = await CPMMGammaPool.deploy(
-      PROTOCOL_ID,
-      owner.address,
-      longStrategyAddr,
-      repayStrategyAddr,
-      shortStrategyAddr,
-      liquidationStrategyAddr,
-      liquidationStrategyAddr,
-      viewer.address,
-      externalRebalanceStrategyAddr,
-      externalLiquidationStrategyAddr,
-      uniFactory.address,
-      badCfmmHash
-    );
+    badPool = await CPMMGammaPool.deploy({
+      protocolId: PROTOCOL_ID,
+      factory: owner.address,
+      borrowStrategy: longStrategyAddr,
+      repayStrategy: repayStrategyAddr,
+      rebalanceStrategy: rebalanceStrategyAddr,
+      shortStrategy: shortStrategyAddr,
+      liquidationStrategy: liquidationStrategyAddr,
+      batchLiquidationStrategy: liquidationStrategyAddr,
+      viewer: viewer.address,
+      externalRebalanceStrategy: externalRebalanceStrategyAddr,
+      externalLiquidationStrategy: externalLiquidationStrategyAddr,
+      cfmmFactory: uniFactory.address,
+      cfmmInitCodeHash: badCfmmHash
+    });
 
-    badPool2 = await CPMMGammaPool.deploy(
-      PROTOCOL_ID,
-      owner.address,
-      longStrategyAddr,
-      repayStrategyAddr,
-      shortStrategyAddr,
-      liquidationStrategyAddr,
-      liquidationStrategyAddr,
-      viewer.address,
-      externalRebalanceStrategyAddr,
-      externalLiquidationStrategyAddr,
-      gsFactoryAddress,
-      cfmmHash
-    );
+    badPool2 = await CPMMGammaPool.deploy({
+      protocolId: PROTOCOL_ID,
+      factory: owner.address,
+      borrowStrategy: longStrategyAddr,
+      repayStrategy: repayStrategyAddr,
+      rebalanceStrategy: rebalanceStrategyAddr,
+      shortStrategy: shortStrategyAddr,
+      liquidationStrategy: liquidationStrategyAddr,
+      batchLiquidationStrategy: liquidationStrategyAddr,
+      viewer: viewer.address,
+      externalRebalanceStrategy: externalRebalanceStrategyAddr,
+      externalLiquidationStrategy: externalLiquidationStrategyAddr,
+      cfmmFactory: gsFactoryAddress,
+      cfmmInitCodeHash: cfmmHash
+    });
   });
 
   async function createPair(token1: any, token2: any) {
@@ -169,7 +175,7 @@ describe("CPMMGammaPool", function () {
       expect(await pool.protocolId()).to.equal(1);
       expect(await pool.borrowStrategy()).to.equal(addr1.address);
       expect(await pool.repayStrategy()).to.equal(addr4.address);
-      expect(await pool.rebalanceStrategy()).to.equal(addr1.address);
+      expect(await pool.rebalanceStrategy()).to.equal(addr7.address);
       expect(await pool.shortStrategy()).to.equal(addr2.address);
       expect(await pool.singleLiquidationStrategy()).to.equal(addr3.address);
       expect(await pool.batchLiquidationStrategy()).to.equal(addr3.address);
