@@ -18,6 +18,47 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         depositLiquidityInPool(addr2);
     }
 
+    function testMaxTotalAPY() public {
+        uint256 maxTotalAPY = pool.getMaxTotalAPY();
+        assertEq(maxTotalAPY,0);
+
+        vm.expectRevert(bytes4(keccak256("Forbidden()")));
+        pool.setMaxTotalAPY(1);
+
+        vm.startPrank(owner);
+
+        bytes memory data = abi.encodeWithSelector(ICPMMGammaPool.setMaxTotalAPY.selector, 1);
+        vm.expectRevert(bytes4(keccak256("MaxTotalApy()")));
+        IGammaPoolFactory(factory).execute(address(pool), data);
+
+        uint256 baseRate = LinearKinkedRateModel(address(rebalanceStrategy)).baseRate();
+        uint256 slope1 = LinearKinkedRateModel(address(rebalanceStrategy)).slope1();
+        uint256 slope2 = LinearKinkedRateModel(address(rebalanceStrategy)).slope2();
+
+        uint256 maxRate = baseRate + slope1 + slope2 - 1;
+        data = abi.encodeWithSelector(ICPMMGammaPool.setMaxTotalAPY.selector, maxRate);
+        vm.expectRevert(bytes4(keccak256("MaxTotalApy()")));
+        IGammaPoolFactory(factory).execute(address(pool), data);
+
+        maxTotalAPY = pool.getMaxTotalAPY();
+        assertEq(maxTotalAPY,0);
+
+        maxRate = baseRate + slope1 + slope2;
+        data = abi.encodeWithSelector(ICPMMGammaPool.setMaxTotalAPY.selector, maxRate);
+        IGammaPoolFactory(factory).execute(address(pool), data);
+
+        maxTotalAPY = pool.getMaxTotalAPY();
+        assertEq(maxTotalAPY,maxRate);
+
+        data = abi.encodeWithSelector(ICPMMGammaPool.setMaxTotalAPY.selector, 0);
+        IGammaPoolFactory(factory).execute(address(pool), data);
+
+        maxTotalAPY = pool.getMaxTotalAPY();
+        assertEq(maxTotalAPY,0);
+
+        vm.stopPrank();
+    }
+
     function testBorrowMoreMinBorrow() public {
         uint72 minBorrow = 2e18;
         setPoolParams(address(pool), 10, 0, 10, 100, 100, 1, 250, 200, minBorrow);// setting base origination fee to 10, disable dynamic part

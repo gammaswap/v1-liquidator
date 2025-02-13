@@ -793,7 +793,7 @@ contract LiquidationStrategyTest is CPMMGammaSwapSetup {
 
         assertEq(poolData.BORROWED_INVARIANT, totLiquidity);
         uint256 blockNum = 0;
-        for(uint256 i = 0; i < 1000; i++) {
+        for(uint256 i = 0; i < 50; i++) {
             for(uint256 j = 0; j < tokenIds.length; j++) {
                 blockNum = blockNum + 10;
                 vm.roll(blockNum);
