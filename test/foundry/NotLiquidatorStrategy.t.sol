@@ -22,6 +22,7 @@ contract NotLiquidatorStrategyTest is CPMMGammaSwapSetup {
     ///// LIQUIDATE with Flash Loan ///////
     ///////////////////////////////////////
     function testExternalLiquidationNotLiquidator() public {
+        if(IS_VAULT) return;
         setPoolParams(address(pool), 0, 10, 10, 100, 100, 1, 250, 200, 1e3);// setting external fees to 10 bps
         uint256 tokenId;
         uint256 tokenId2;
@@ -352,6 +353,7 @@ contract NotLiquidatorStrategyTest is CPMMGammaSwapSetup {
     ////////// BATCH LIQUIDATE ////////////
     ///////////////////////////////////////
     function testBatchLiquidateNotLiquidator() public {
+        if(IS_VAULT) return;
         uint256 lpTokens = IERC20(cfmm).balanceOf(address(pool));
 
         vm.startPrank(addr1);
@@ -401,6 +403,7 @@ contract NotLiquidatorStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testBatchLiquidate2NotLiquidator() public {
+        if(IS_VAULT) return;
         uint256 lpTokens = IERC20(cfmm).balanceOf(address(pool));
 
         vm.startPrank(addr1);

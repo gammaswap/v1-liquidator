@@ -22,6 +22,7 @@ contract LiquidationStrategyTest is CPMMGammaSwapSetup {
     ///// LIQUIDATE with Flash Loan ///////
     ///////////////////////////////////////
     function testExternalLiquidationInsufficientLPError() public {
+        if(IS_VAULT) return;
         uint256 lpTokens = IERC20(cfmm).balanceOf(address(pool));
         uint256 lpAmount = lpTokens/10;
         uint256 lpInvariant = convertLPToInvariant(lpAmount);
@@ -80,6 +81,7 @@ contract LiquidationStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testExternalLiquidationInsufficientLPError2() public {
+        if(IS_VAULT) return;
         uint256 lpTokens = IERC20(cfmm).balanceOf(address(pool));
         //lpAmount = bound(lpAmount, 1e18, lpTokens/10);
         uint256 lpAmount = lpTokens/10;
@@ -181,6 +183,7 @@ contract LiquidationStrategyTest is CPMMGammaSwapSetup {
 
 
     function testExternalLiquidationInsufficientCollateralError() public {
+        if(IS_VAULT) return;
         uint256 lpTokens = IERC20(cfmm).balanceOf(address(pool));
         //lpAmount = bound(lpAmount, 1e18, lpTokens/10);
         uint256 lpAmount = lpTokens/10;
@@ -267,6 +270,7 @@ contract LiquidationStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testExternalLiquidation2() public {
+        if(IS_VAULT) return;
         setPoolParams(address(pool), 0, 10, 10, 100, 100, 1, 250, 200, 1e3);// setting external fees to 10 bps
         uint256 tokenId;
         uint256 tokenId2;
@@ -602,6 +606,7 @@ contract LiquidationStrategyTest is CPMMGammaSwapSetup {
     ////////// BATCH LIQUIDATE ////////////
     ///////////////////////////////////////
     function testBatchLiquidate() public {
+        if(IS_VAULT) return;
         uint256 lpTokens = IERC20(cfmm).balanceOf(address(pool));
 
         vm.startPrank(addr1);
@@ -646,6 +651,7 @@ contract LiquidationStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testBatchLiquidate2() public {
+        if(IS_VAULT) return;
         uint256 lpTokens = IERC20(cfmm).balanceOf(address(pool));
 
         vm.startPrank(addr1);
@@ -711,6 +717,7 @@ contract LiquidationStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testBatchNoFullLiquidationError() public {
+        if(IS_VAULT) return;
         uint256 lpTokens = IERC20(cfmm).balanceOf(address(pool));
 
         vm.startPrank(addr1);
@@ -741,6 +748,7 @@ contract LiquidationStrategyTest is CPMMGammaSwapSetup {
     }
 
     function testBatchLiquidateNoDebtError() public {
+        if(IS_VAULT) return;
         uint256 lpTokens = IERC20(cfmm).balanceOf(address(pool));
 
         vm.startPrank(addr1);

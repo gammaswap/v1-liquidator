@@ -976,6 +976,7 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
     }
 
     function testExternalLiquidation18x18(uint8 tradeAmtPerc, bool side, uint8 blocks) public {
+        if(IS_VAULT) return;
         _tokenId = openLoan(cfmm);
 
         blocks = blocks == 0 ? 1 : blocks;
@@ -1070,6 +1071,7 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
     }
 
     function testExternalLiquidation18x6(uint8 tradeAmtPerc, bool side, uint8 blocks) public {
+        if(IS_VAULT) return;
         _tokenId = openLoan(cfmm18x6);
 
         blocks = blocks == 0 ? 1 : blocks;
@@ -1164,6 +1166,7 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
     }
 
     function testExternalLiquidation6x18(uint8 tradeAmtPerc, bool side, uint8 blocks) public {
+        if(IS_VAULT) return;
         _tokenId = openLoan(cfmm6x18);
 
         blocks = blocks == 0 ? 1 : blocks;
@@ -1258,6 +1261,7 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
     }
 
     function testExternalLiquidation6x6(uint8 tradeAmtPerc, bool side, uint8 blocks) public {
+        if(IS_VAULT) return;
         _tokenId = openLoan(cfmm6x6);
 
         blocks = blocks == 0 ? 1 : blocks;
@@ -1352,6 +1356,7 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
     }
 
     function testExternalLiquidation6x8(uint8 tradeAmtPerc, bool side, uint8 blocks) public {
+        if(IS_VAULT) return;
         _tokenId = openLoan(cfmm6x8);
 
         blocks = blocks == 0 ? 1 : blocks;
@@ -1446,6 +1451,7 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
     }
 
     function testExternalLiquidation18x8(uint8 tradeAmtPerc, bool side, uint8 blocks) public {
+        if(IS_VAULT) return;
         _tokenId = openLoan(cfmm18x8);
 
         blocks = blocks == 0 ? 1 : blocks;

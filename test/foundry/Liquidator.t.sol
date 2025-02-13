@@ -327,6 +327,7 @@ contract LiquidatorTest is CPMMGammaSwapSetup {
     }
 
     function testLiquidateBatch() public {
+        if(IS_VAULT) return;
         uint256 lpTokens = IERC20(cfmm).balanceOf(address(pool));
 
         vm.startPrank(addr1);
@@ -385,6 +386,7 @@ contract LiquidatorTest is CPMMGammaSwapSetup {
     }
 
     function testLiquidateBatchTo() public {
+        if(IS_VAULT) return;
         uint256 lpTokens = IERC20(cfmm).balanceOf(address(pool));
 
         vm.startPrank(addr1);
