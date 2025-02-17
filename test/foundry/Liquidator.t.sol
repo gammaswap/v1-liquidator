@@ -217,7 +217,7 @@ contract LiquidatorTest is CPMMGammaSwapSetup {
         assertEq(loanData1.tokensHeld[1]/1e3, 0);
     }
 
-    function testFailLiquidatePartialWithLp(uint256 lpAmount) public {
+    function testLiquidatePartialWithLpError(uint256 lpAmount) public {
         uint256 lpTokens = IERC20(cfmm).balanceOf(address(pool));
         lpAmount = bound(lpAmount, 1e18, lpTokens/10);
 
@@ -234,6 +234,8 @@ contract LiquidatorTest is CPMMGammaSwapSetup {
         vm.roll(100000000); // After a while
 
         GammaSwapLibrary.safeApprove(cfmm, address(liquidator), lpAmount);
+
+        vm.expectRevert();
         liquidator.liquidateWithLP(address(pool), tokenId, lpAmount, false, addr1);
     }
 

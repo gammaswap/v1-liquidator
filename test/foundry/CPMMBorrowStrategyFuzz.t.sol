@@ -961,13 +961,14 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
             to: _addr == 0 ? addr1 : vm.addr(_addr),
             refId: 0,
             amounts: _amounts,
-            lpTokens: uint256(lpTokens)*1e18,
+            lpTokens: lpTokens,
             ratio: new uint256[](0),
             minBorrowed: new uint256[](2),
             minCollateral: new uint128[](2),
             deadline: type(uint256).max,
             maxBorrowed: type(uint256).max
         });
+        params.lpTokens = params.lpTokens * 1e18;
 
         IGammaPool.PoolData memory poolData = pool.getPoolData();
         uint256 liquidity = params.lpTokens * poolData.lastCFMMInvariant / poolData.lastCFMMTotalSupply;
@@ -1010,13 +1011,14 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
             to: addr2,
             refId: 0,
             amounts: _amounts,
-            lpTokens: uint256(lpTokens)*1e18,
+            lpTokens: lpTokens,
             ratio: ratio,
             minBorrowed: new uint256[](2),
             minCollateral: new uint128[](2),
             deadline: type(uint256).max,
             maxBorrowed: type(uint256).max
         });
+        params.lpTokens = params.lpTokens * 1e18;
 
         poolData.lastCFMMInvariant = uint128(GSMath.sqrt(IERC20(address(weth)).balanceOf(cfmm)*IERC20(address(usdc)).balanceOf(cfmm)));
 
@@ -1079,13 +1081,14 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
             to: _addr == 0 ? addr1 : vm.addr(_addr),
             refId: 0,
             amounts: _amounts,
-            lpTokens: uint256(lpTokens)*1e12,
+            lpTokens: lpTokens,
             ratio: new uint256[](0),
             minBorrowed: new uint256[](2),
             minCollateral: new uint128[](2),
             deadline: type(uint256).max,
             maxBorrowed: type(uint256).max
         });
+        params.lpTokens = params.lpTokens * 1e12;
 
         IGammaPool.PoolData memory poolData = pool18x6.getPoolData();
         uint256 liquidity = params.lpTokens * poolData.lastCFMMInvariant / poolData.lastCFMMTotalSupply;
@@ -1126,13 +1129,14 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
             to: addr2,
             refId: 0,
             amounts: _amounts,
-            lpTokens: uint256(lpTokens)*1e12,
+            lpTokens: lpTokens,
             ratio: ratio,
             minBorrowed: new uint256[](2),
             minCollateral: new uint128[](2),
             deadline: type(uint256).max,
             maxBorrowed: type(uint256).max
         });
+        params.lpTokens = params.lpTokens * 1e12;
 
         poolData.lastCFMMInvariant = uint128(GSMath.sqrt(IERC20(address(weth6)).balanceOf(cfmm18x6)*IERC20(address(usdc)).balanceOf(cfmm18x6)));
 
@@ -1194,13 +1198,14 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
             to: _addr == 0 ? addr1 : vm.addr(_addr),
             refId: 0,
             amounts: _amounts,
-            lpTokens: uint256(lpTokens)*1e6,
+            lpTokens: lpTokens,
             ratio: new uint256[](0),
             minBorrowed: new uint256[](2),
             minCollateral: new uint128[](2),
             deadline: type(uint256).max,
             maxBorrowed: type(uint256).max
         });
+        params.lpTokens = params.lpTokens * 1e6;
 
         IGammaPool.PoolData memory poolData = pool6x6.getPoolData();
         uint256 liquidity = params.lpTokens * poolData.lastCFMMInvariant / poolData.lastCFMMTotalSupply;
@@ -1241,13 +1246,14 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
             to: addr2,
             refId: 0,
             amounts: _amounts,
-            lpTokens: uint256(lpTokens)*1e6,
+            lpTokens: lpTokens,
             ratio: ratio,
             minBorrowed: new uint256[](2),
             minCollateral: new uint128[](2),
             deadline: type(uint256).max,
             maxBorrowed: type(uint256).max
         });
+        params.lpTokens = params.lpTokens * 1e6;
 
         poolData.lastCFMMInvariant = uint128(GSMath.sqrt(IERC20(address(weth6)).balanceOf(cfmm6x6)*IERC20(address(usdc6)).balanceOf(cfmm6x6)));
 
@@ -1309,13 +1315,14 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
             to: _addr == 0 ? addr1 : vm.addr(_addr),
             refId: 0,
             amounts: _amounts,
-            lpTokens: uint256(lpTokens)*1e7,
+            lpTokens: lpTokens,
             ratio: new uint256[](0),
             minBorrowed: new uint256[](2),
             minCollateral: new uint128[](2),
             deadline: type(uint256).max,
             maxBorrowed: type(uint256).max
         });
+        params.lpTokens = params.lpTokens * 1e7;
 
         IGammaPool.PoolData memory poolData = pool6x8.getPoolData();
         uint256 liquidity = params.lpTokens * poolData.lastCFMMInvariant / poolData.lastCFMMTotalSupply;
@@ -1356,13 +1363,14 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
             to: addr2,
             refId: 0,
             amounts: _amounts,
-            lpTokens: uint256(lpTokens)*1e7,
+            lpTokens: lpTokens,
             ratio: ratio,
             minBorrowed: new uint256[](2),
             minCollateral: new uint128[](2),
             deadline: type(uint256).max,
             maxBorrowed: type(uint256).max
         });
+        params.lpTokens = params.lpTokens * 1e7;
 
         poolData.lastCFMMInvariant = uint128(GSMath.sqrt(IERC20(address(weth8)).balanceOf(cfmm6x8)*IERC20(address(usdc6)).balanceOf(cfmm6x8)));
 
@@ -1424,13 +1432,14 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
             to: _addr == 0 ? addr1 : vm.addr(_addr),
             refId: 0,
             amounts: _amounts,
-            lpTokens: uint256(lpTokens)*1e13,
+            lpTokens: lpTokens,
             ratio: new uint256[](0),
             minBorrowed: new uint256[](2),
             minCollateral: new uint128[](2),
             deadline: type(uint256).max,
             maxBorrowed: type(uint256).max
         });
+        params.lpTokens = params.lpTokens * 1e13;
 
         IGammaPool.PoolData memory poolData = pool18x8.getPoolData();
         uint256 liquidity = params.lpTokens * poolData.lastCFMMInvariant / poolData.lastCFMMTotalSupply;
@@ -1471,13 +1480,14 @@ contract CPMMBorrowStrategyFuzz is CPMMGammaSwapSetup {
             to: addr2,
             refId: 0,
             amounts: _amounts,
-            lpTokens: uint256(lpTokens)*1e13,
+            lpTokens: lpTokens,
             ratio: ratio,
             minBorrowed: new uint256[](2),
             minCollateral: new uint128[](2),
             deadline: type(uint256).max,
             maxBorrowed: type(uint256).max
         });
+        params.lpTokens = params.lpTokens * 1e13;
 
         poolData.lastCFMMInvariant = uint128(GSMath.sqrt(IERC20(address(weth8)).balanceOf(cfmm18x8)*IERC20(address(usdc)).balanceOf(cfmm18x8)));
 

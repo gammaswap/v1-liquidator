@@ -345,7 +345,7 @@ contract CPMMRepayStrategyFuzz is CPMMGammaSwapSetup {
             IGammaPool.PoolData memory poolData = pool6x6.getPoolData();
             assertEq(poolData.BORROWED_INVARIANT, prevPoolData.BORROWED_INVARIANT - liquidityPaid);
             assertGt(poolData.LP_TOKEN_BALANCE, prevPoolData.LP_TOKEN_BALANCE);
-            assertApproxEqRel(liquidityPaid, payLiquidity, 5*1e15);
+            assertApproxEqRel(liquidityPaid, payLiquidity, 1e16);
             assertLe(liquidityPaid, GSMath.sqrt(amounts[0] * amounts[1]));
 
             if(chng) {

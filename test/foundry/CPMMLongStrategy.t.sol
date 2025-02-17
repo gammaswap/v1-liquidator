@@ -1230,14 +1230,14 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 lpTokens = IERC20(cfmm).balanceOf(address(pool));
         assertGt(lpTokens, 0);
 
-        weth.mint(addr1, 1000 * 1_000_000 * 1e18);
+        weth.mint(addr1, 1000000000e18);
 
         vm.startPrank(addr1);
         uint256 tokenId = pool.createLoan(0);
         assertGt(tokenId, 0);
 
-        usdc.transfer(address(pool), 200_000 * 1e18);
-        weth.transfer(address(pool), 200 * 1e18);
+        usdc.transfer(address(pool), 200000e18);
+        weth.transfer(address(pool), 200e18);
 
         pool.increaseCollateral(tokenId, new uint256[](0));
         (uint256 liquidityBorrowed, uint256[] memory amounts,) = pool.borrowLiquidity(tokenId, lpTokens/4, new uint256[](0));
@@ -1254,11 +1254,10 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 strikePx = uint256(loanData.tokensHeld[1]) * 1e18 / loanData.tokensHeld[0];
         assertEq(strikePx/1e9,price/1e9);
 
-        uint256 amountIn =  (uint256(_amountIn) + 1) * 1_000_000 * 1e18;
+        uint256 amountIn =  (uint256(_amountIn) + 1) * 1000000e18;
         sellTokenIn(amountIn, address(weth), address(usdc), addr1);
         uint256 usdcBal0 = usdc.balanceOf(addr1);
         uint256 wethBal0 = weth.balanceOf(addr1);
-
 
         (reserve0, reserve1,) = IDeltaSwapPair(cfmm).getReserves();
 
@@ -1266,7 +1265,8 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         assertGt(price1, 0);
         assertLt(price1,price);
 
-        uint256 liquidityDiv = uint256(_liquidityDiv) + 1;
+        uint256 liquidityDiv = _liquidityDiv;
+        liquidityDiv++;
         {
             uint256 liquidityPaid;
             (liquidityPaid, amounts) = pool.repayLiquidity(tokenId, loanData.liquidity/liquidityDiv, 2, addr1);
@@ -1298,14 +1298,14 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 lpTokens = IERC20(cfmm).balanceOf(address(pool));
         assertGt(lpTokens, 0);
 
-        usdc.mint(addr1, 1000 * 1_000_000 * 1e18);
+        usdc.mint(addr1, 1000000000e18);
 
         vm.startPrank(addr1);
         uint256 tokenId = pool.createLoan(0);
         assertGt(tokenId, 0);
 
-        usdc.transfer(address(pool), 200_000 * 1e18);
-        weth.transfer(address(pool), 200 * 1e18);
+        usdc.transfer(address(pool), 200000e18);
+        weth.transfer(address(pool), 200e18);
 
         pool.increaseCollateral(tokenId, new uint256[](0));
         (uint256 liquidityBorrowed, uint256[] memory amounts,) = pool.borrowLiquidity(tokenId, lpTokens/4, new uint256[](0));
@@ -1322,7 +1322,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 strikePx = uint256(loanData.tokensHeld[1]) * 1e18 / loanData.tokensHeld[0];
         assertEq(strikePx/1e9,price/1e9);
 
-        uint256 amountIn =  (uint256(_amountIn) + 1) * 1_000_000 * 1e18;
+        uint256 amountIn =  (uint256(_amountIn) + 1) * 1000000e18;
         sellTokenIn(amountIn, address(usdc), address(weth), addr1);
         uint256 usdcBal0 = usdc.balanceOf(addr1);
         uint256 wethBal0 = weth.balanceOf(addr1);
@@ -1334,7 +1334,8 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         assertGt(price1, 0);
         assertGt(price1,price);
 
-        uint256 liquidityDiv = uint256(_liquidityDiv) + 1;
+        uint256 liquidityDiv = _liquidityDiv;
+        liquidityDiv++;
         {
             uint256 liquidityPaid;
             (liquidityPaid, amounts) = pool.repayLiquidity(tokenId, loanData.liquidity/liquidityDiv, 1, addr1);
@@ -1366,14 +1367,14 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 lpTokens = IERC20(cfmm).balanceOf(address(pool));
         assertGt(lpTokens, 0);
 
-        usdc.mint(addr1, 1000 * 1_000_000 * 1e18);
+        usdc.mint(addr1, 1000000000e18);
 
         vm.startPrank(addr1);
         uint256 tokenId = pool.createLoan(0);
         assertGt(tokenId, 0);
 
-        usdc.transfer(address(pool), 200_000 * 1e18);
-        weth.transfer(address(pool), 200 * 1e18);
+        usdc.transfer(address(pool), 200000e18);
+        weth.transfer(address(pool), 200e18);
 
         pool.increaseCollateral(tokenId, new uint256[](0));
         {
@@ -1392,7 +1393,7 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 strikePx = uint256(loanData.tokensHeld[1]) * 1e18 / loanData.tokensHeld[0];
         assertEq(strikePx/1e9,price/1e9);
 
-        uint256 amountIn =  (uint256(_amountIn) + 1) * 1_000_000 * 1e18;
+        uint256 amountIn =  (uint256(_amountIn) + 1) * 1000000e18;
         sellTokenIn(amountIn, address(usdc), address(weth), addr1);
         uint256 usdcBal0 = usdc.balanceOf(addr1);
         uint256 wethBal0 = weth.balanceOf(addr1);
@@ -1406,7 +1407,8 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
             assertGt(price1,price);
         }
 
-        uint256 liquidityDiv = uint256(_liquidityDiv) + 1;
+        uint256 liquidityDiv = _liquidityDiv;
+        liquidityDiv++;
         {
             uint256 liquidityPaid;
             (liquidityPaid,) = pool.repayLiquidity(tokenId, loanData.liquidity/liquidityDiv, 2, addr1);
@@ -1845,17 +1847,24 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
 
         uint256 strikePx = uint256(loanData.tokensHeld[1]) * 1e18 / loanData.tokensHeld[0];
 
-        // increase collateral
-        usdc.transfer(address(pool), uint256(num3) * 1e18);
-        weth.transfer(address(pool), uint256(num4) * 1e18);
+        {
+            uint256 transferAmt = uint256(num3) * 1e18;
+            // increase collateral
+            usdc.transfer(address(pool), transferAmt);
+
+            transferAmt = uint256(num4) * 1e18;
+            weth.transfer(address(pool), transferAmt);
+        }
 
         pool.increaseCollateral(tokenId, new uint256[](0));
 
-        IGammaPool.LoanData memory loanData1 = viewer.loan(address(pool), tokenId);
-        assertGe(loanData1.tokensHeld[0], loanData.tokensHeld[0]);
-        assertGe(loanData1.tokensHeld[1], loanData.tokensHeld[1]);
-
-        uint256 strikePx1 = uint256(loanData1.tokensHeld[1]) * 1e18 / loanData1.tokensHeld[0];
+        uint256 strikePx1;
+        {
+            IGammaPool.LoanData memory loanData1 = viewer.loan(address(pool), tokenId);
+            assertGe(loanData1.tokensHeld[0], loanData.tokensHeld[0]);
+            assertGe(loanData1.tokensHeld[1], loanData.tokensHeld[1]);
+            strikePx1 = uint256(loanData1.tokensHeld[1]) * 1e18 / loanData1.tokensHeld[0];
+        }
 
         if(num3 == 0 && num4 == 0) {
             assertEq(strikePx1, strikePx);
@@ -1876,8 +1885,8 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 tokenId = pool.createLoan(0);
         assertGt(tokenId, 0);
 
-        usdc.transfer(address(pool), 130_000 * 1e18);
-        weth.transfer(address(pool), 130 * 1e18);
+        usdc.transfer(address(pool), 130000e18);
+        weth.transfer(address(pool), 130e18);
 
         pool.increaseCollateral(tokenId, new uint256[](0));
 
@@ -1908,8 +1917,8 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 strikePx = uint256(loanData.tokensHeld[1]) * 1e18 / loanData.tokensHeld[0];
 
         // increase collateral
-        usdc.transfer(address(pool), uint256(num3) * 1e18);
-        weth.transfer(address(pool), uint256(num4) * 1e18);
+        usdc.transfer(address(pool), uint256(1e18) * num3);
+        weth.transfer(address(pool), uint256(1e18) * num4);
 
         pool.increaseCollateral(tokenId, ratio);
 
@@ -1938,8 +1947,8 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 tokenId = pool.createLoan(0);
         assertGt(tokenId, 0);
 
-        usdc.transfer(address(pool), 130_000 * 1e18);
-        weth.transfer(address(pool), 130 * 1e18);
+        usdc.transfer(address(pool), 130000e18);
+        weth.transfer(address(pool), 130e18);
 
         pool.increaseCollateral(tokenId, new uint256[](0));
 
@@ -1967,8 +1976,8 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 strikePx = uint256(loanData.tokensHeld[1]) * 1e18 / loanData.tokensHeld[0];
 
         // increase collateral
-        usdc.transfer(address(pool), uint256(num3) * 1e18);
-        weth.transfer(address(pool), uint256(num4) * 1e18);
+        usdc.transfer(address(pool), uint256(1e18) * num3);
+        weth.transfer(address(pool), uint256(1e18) * num4);
 
         ratio[0] = ratio[0] * (flip ? 1 : num5);
         ratio[1] = ratio[1] * (flip ? num5 : 1);
@@ -2004,8 +2013,8 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         uint256 tokenId = pool.createLoan(0);
         assertGt(tokenId, 0);
 
-        usdc.transfer(address(pool), 130_000 * 1e18);
-        weth.transfer(address(pool), 130 * 1e18);
+        usdc.transfer(address(pool), 130000e18);
+        weth.transfer(address(pool), 130e18);
 
         pool.increaseCollateral(tokenId, new uint256[](0));
 
@@ -2028,8 +2037,8 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         assertEq(loanData.liquidity, liquidityBorrowed);
 
         // increase collateral
-        usdc.transfer(address(pool), uint256(num3) * 1e18);
-        weth.transfer(address(pool), uint256(num4) * 1e18);
+        usdc.transfer(address(pool), uint256(1e18) * num3);
+        weth.transfer(address(pool), uint256(1e18) * num4);
 
         ratio[0] = ratio[0] * (flip ? 1 : num5);
         ratio[1] = ratio[1] * (flip ? num5 : 1);
@@ -2088,11 +2097,13 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         amounts1[1] = uint128(num4) * 1e16;
         pool.decreaseCollateral(tokenId, amounts1, addr1, new uint256[](0));
 
-        IGammaPool.LoanData memory loanData1 = viewer.loan(address(pool), tokenId);
-        assertLe(loanData1.tokensHeld[0], loanData.tokensHeld[0]);
-        assertLe(loanData1.tokensHeld[1], loanData.tokensHeld[1]);
-
-        uint256 strikePx1 = uint256(loanData1.tokensHeld[1]) * 1e18 / loanData1.tokensHeld[0];
+        uint256 strikePx1;
+        {
+            IGammaPool.LoanData memory loanData1 = viewer.loan(address(pool), tokenId);
+            assertLe(loanData1.tokensHeld[0], loanData.tokensHeld[0]);
+            assertLe(loanData1.tokensHeld[1], loanData.tokensHeld[1]);
+            strikePx1 = uint256(loanData1.tokensHeld[1]) * 1e18 / loanData1.tokensHeld[0];
+        }
 
         if(num3 == 0 && num4 == 0) {
             assertEq(strikePx1, strikePx);
@@ -2142,14 +2153,21 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
 
         uint256 strikePx = uint256(loanData.tokensHeld[1]) * 1e18 / loanData.tokensHeld[0];
 
-        uint128[] memory amounts1 = new uint128[](2);
-        amounts1[0] = uint128(num3) * 1e17;
-        amounts1[1] = uint128(num4) * 1e17;
-        pool.decreaseCollateral(tokenId, amounts1, addr1, ratio);
+        {
+            uint128[] memory amounts1 = new uint128[](2);
+            amounts1[0] = uint128(num3) * 1e17;
+            amounts1[1] = uint128(num4) * 1e17;
+            pool.decreaseCollateral(tokenId, amounts1, addr1, ratio);
+        }
 
         IGammaPool.LoanData memory loanData1 = viewer.loan(address(pool), tokenId);
-        assertLe(loanData1.tokensHeld[0]/1e8, loanData.tokensHeld[0]/1e8);
-        assertLe(loanData1.tokensHeld[1]/1e8, loanData.tokensHeld[1]/1e8);
+        if(num3 > 0 || num4 > 0) {
+            assertLe(loanData1.tokensHeld[0]/1e8, loanData.tokensHeld[0]/1e8);
+            assertLe(loanData1.tokensHeld[1]/1e8, loanData.tokensHeld[1]/1e8);
+        } else {
+            assertApproxEqRel(loanData1.tokensHeld[0]/1e8, loanData.tokensHeld[0]/1e8, 1e15);
+            assertApproxEqRel(loanData1.tokensHeld[1]/1e8, loanData.tokensHeld[1]/1e8, 1e15);
+        }
 
         uint256 strikePx1 = uint256(loanData1.tokensHeld[1]) * 1e18 / loanData1.tokensHeld[0];
 
@@ -2207,8 +2225,8 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         amounts[0] = weth.balanceOf(addr1);
         amounts[1] = usdc.balanceOf(addr1);
         uint128[] memory amounts1 = new uint128[](2);
-        amounts1[0] = uint128(num3) * 1e18;
-        amounts1[1] = uint128(num4) * 1e18;
+        amounts1[0] = uint128(1e18) * num3;
+        amounts1[1] = uint128(1e18) * num4;
         pool.decreaseCollateral(tokenId, amounts1, addr1, ratio);
 
         assertEq(amounts[0] + amounts1[0], weth.balanceOf(addr1));

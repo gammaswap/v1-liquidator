@@ -3,6 +3,8 @@ pragma solidity ^0.8.0;
 
 import "@gammaswap/v1-core/contracts/GammaPoolFactory.sol";
 import "@gammaswap/v1-core/contracts/base/PoolViewer.sol";
+import "@gammaswap/v1-implementations/contracts/viewers/vault/VaultPoolViewer.sol";
+import "@gammaswap/v1-implementations/contracts/interfaces/vault/IVaultPoolViewer.sol";
 
 import "./UniswapSetup.sol";
 import "./TokensSetup.sol";
@@ -42,7 +44,7 @@ contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
 
     bool constant IS_DELTASWAP = true;
     bool constant IS_DELTASWAP_V2 = false;
-    bool constant IS_VAULT = true;
+    bool IS_VAULT = true;
 
     struct LogRateParams {
         uint64 baseRate;
@@ -115,7 +117,12 @@ contract CPMMGammaSwapSetup is UniswapSetup, TokensSetup {
         uint256 maxTotalApy = 15 * 1e18;
 
         mathLib = new CPMMMath();
-        viewer = new PoolViewer();
+
+        if(IS_VAULT) {
+            viewer = IPoolViewer(address(new VaultPoolViewer()));
+        } else {
+            viewer = new PoolViewer();
+        }
 
         address liquidator = hasLiquidator ? owner : address(0);
         if(IS_DELTASWAP_V2) {
