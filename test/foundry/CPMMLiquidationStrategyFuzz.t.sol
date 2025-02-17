@@ -172,7 +172,7 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
 
         uint256 expLiqReward = GSMath.min(internalCollateral,loanData.liquidity) * 25 / 10000;
         uint256 expLpReward = expLiqReward * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
-        uint256 lpTokenReduction = loanData.liquidity * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
+        uint256 lpTokenReduction = (loanData.liquidity * loanData.lastCFMMTotalSupply + (loanData.lastCFMMInvariant - 1)) / loanData.lastCFMMInvariant;
         expLpReward = expLpReward > 1000 ? expLpReward - 1000 : 0;
         uint256 beforeCFMMBalance = IERC20(cfmm).balanceOf(addr3);
 
@@ -232,7 +232,7 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
 
         uint256 expLiqReward = GSMath.min(internalCollateral,loanData.liquidity) * 25 / 10000;
         uint256 expLpReward = expLiqReward * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
-        uint256 lpTokenReduction = loanData.liquidity * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
+        uint256 lpTokenReduction = (loanData.liquidity * loanData.lastCFMMTotalSupply + (loanData.lastCFMMInvariant - 1)) / loanData.lastCFMMInvariant;
         expLpReward = expLpReward > 1000 ? expLpReward - 1000 : 0;
         uint256 beforeCFMMBalance = IERC20(cfmm18x6).balanceOf(addr3);
 
@@ -292,7 +292,7 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
 
         uint256 expLiqReward = GSMath.min(internalCollateral,loanData.liquidity) * 25 / 10000;
         uint256 expLpReward = expLiqReward * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
-        uint256 lpTokenReduction = loanData.liquidity * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
+        uint256 lpTokenReduction = (loanData.liquidity * loanData.lastCFMMTotalSupply + (loanData.lastCFMMInvariant - 1)) / loanData.lastCFMMInvariant;
         expLpReward = expLpReward > 1000 ? expLpReward - 1000 : 0;
         uint256 beforeCFMMBalance = IERC20(cfmm6x18).balanceOf(addr3);
 
@@ -352,7 +352,7 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
 
         uint256 expLiqReward = GSMath.min(internalCollateral,loanData.liquidity) * 25 / 10000;
         uint256 expLpReward = expLiqReward * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
-        uint256 lpTokenReduction = loanData.liquidity * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
+        uint256 lpTokenReduction = (loanData.liquidity * loanData.lastCFMMTotalSupply + (loanData.lastCFMMInvariant - 1)) / loanData.lastCFMMInvariant;
         expLpReward = expLpReward > 1000 ? expLpReward - 1000 : 0;
         uint256 beforeCFMMBalance = IERC20(cfmm6x6).balanceOf(addr3);
 
@@ -412,7 +412,7 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
 
         uint256 expLiqReward = GSMath.min(internalCollateral,loanData.liquidity) * 25 / 10000;
         uint256 expLpReward = expLiqReward * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
-        uint256 lpTokenReduction = loanData.liquidity * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
+        uint256 lpTokenReduction = (loanData.liquidity * loanData.lastCFMMTotalSupply + (loanData.lastCFMMInvariant - 1)) / loanData.lastCFMMInvariant;
         expLpReward = expLpReward > 1000 ? expLpReward - 1000 : 0;
         uint256 beforeCFMMBalance = IERC20(cfmm6x8).balanceOf(addr3);
 
@@ -472,7 +472,7 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
 
         uint256 expLiqReward = GSMath.min(internalCollateral,loanData.liquidity) * 25 / 10000;
         uint256 expLpReward = expLiqReward * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
-        uint256 lpTokenReduction = loanData.liquidity * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
+        uint256 lpTokenReduction = (loanData.liquidity * loanData.lastCFMMTotalSupply + (loanData.lastCFMMInvariant - 1)) / loanData.lastCFMMInvariant;
         expLpReward = expLpReward > 1000 ? expLpReward - 1000 : 0;
         uint256 beforeCFMMBalance = IERC20(cfmm18x8).balanceOf(addr3);
 
@@ -538,7 +538,7 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
             expLiqReward = internalCollateral;
         }
         uint256 lpTokenPay = GSMath.min(expLiqReward,loanData.liquidity) * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
-        uint256 lpTokenReduction = loanData.liquidity * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
+        uint256 lpTokenReduction = (loanData.liquidity * loanData.lastCFMMTotalSupply + (loanData.lastCFMMInvariant - 1)) / loanData.lastCFMMInvariant;
 
         uint256 beforeWethBalance = IERC20(address(weth)).balanceOf(addr1);
         uint256 beforeUsdcBalance = IERC20(address(usdc)).balanceOf(addr1);
@@ -617,7 +617,7 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
             expLiqReward = internalCollateral;
         }
         uint256 lpTokenPay = GSMath.min(expLiqReward,loanData.liquidity) * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
-        uint256 lpTokenReduction = loanData.liquidity * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
+        uint256 lpTokenReduction = (loanData.liquidity * loanData.lastCFMMTotalSupply + (loanData.lastCFMMInvariant - 1)) / loanData.lastCFMMInvariant;
 
         uint256 beforeWethBalance = IERC20(address(weth6)).balanceOf(addr1);
         uint256 beforeUsdcBalance = IERC20(address(usdc)).balanceOf(addr1);
@@ -696,7 +696,7 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
             expLiqReward = internalCollateral;
         }
         uint256 lpTokenPay = GSMath.min(expLiqReward,loanData.liquidity) * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
-        uint256 lpTokenReduction = loanData.liquidity * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
+        uint256 lpTokenReduction = (loanData.liquidity * loanData.lastCFMMTotalSupply + (loanData.lastCFMMInvariant - 1)) / loanData.lastCFMMInvariant;
 
         uint256 beforeWethBalance = IERC20(address(weth)).balanceOf(addr1);
         uint256 beforeUsdcBalance = IERC20(address(usdc6)).balanceOf(addr1);
@@ -775,7 +775,7 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
             expLiqReward = internalCollateral;
         }
         uint256 lpTokenPay = GSMath.min(expLiqReward,loanData.liquidity) * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
-        uint256 lpTokenReduction = loanData.liquidity * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
+        uint256 lpTokenReduction = (loanData.liquidity * loanData.lastCFMMTotalSupply + (loanData.lastCFMMInvariant - 1)) / loanData.lastCFMMInvariant;
 
         uint256 beforeWethBalance = IERC20(address(weth6)).balanceOf(addr1);
         uint256 beforeUsdcBalance = IERC20(address(usdc6)).balanceOf(addr1);
@@ -854,7 +854,7 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
             expLiqReward = internalCollateral;
         }
         uint256 lpTokenPay = GSMath.min(expLiqReward,loanData.liquidity) * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
-        uint256 lpTokenReduction = loanData.liquidity * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
+        uint256 lpTokenReduction = (loanData.liquidity * loanData.lastCFMMTotalSupply + (loanData.lastCFMMInvariant - 1)) / loanData.lastCFMMInvariant;
 
         uint256 beforeWethBalance = IERC20(address(weth8)).balanceOf(addr1);
         uint256 beforeUsdcBalance = IERC20(address(usdc6)).balanceOf(addr1);
@@ -933,7 +933,7 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
             expLiqReward = internalCollateral;
         }
         uint256 lpTokenPay = GSMath.min(expLiqReward,loanData.liquidity) * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
-        uint256 lpTokenReduction = loanData.liquidity * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
+        uint256 lpTokenReduction = (loanData.liquidity * loanData.lastCFMMTotalSupply + (loanData.lastCFMMInvariant - 1)) / loanData.lastCFMMInvariant;
 
         uint256 beforeWethBalance = IERC20(address(weth8)).balanceOf(addr1);
         uint256 beforeUsdcBalance = IERC20(address(usdc)).balanceOf(addr1);
@@ -976,6 +976,7 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
     }
 
     function testExternalLiquidation18x18(uint8 tradeAmtPerc, bool side, uint8 blocks) public {
+        if(IS_VAULT) return;
         _tokenId = openLoan(cfmm);
 
         blocks = blocks == 0 ? 1 : blocks;
@@ -1011,7 +1012,7 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
             expLiqReward = internalCollateral;
         }
         uint256 lpTokenPay = GSMath.min(expLiqReward,loanData.liquidity) * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
-        uint256 lpTokenReduction = loanData.liquidity * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
+        uint256 lpTokenReduction = (loanData.liquidity * loanData.lastCFMMTotalSupply + (loanData.lastCFMMInvariant - 1)) / loanData.lastCFMMInvariant;
 
         IERC20(address(weth)).transfer(address(callee), 10);
 
@@ -1070,6 +1071,7 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
     }
 
     function testExternalLiquidation18x6(uint8 tradeAmtPerc, bool side, uint8 blocks) public {
+        if(IS_VAULT) return;
         _tokenId = openLoan(cfmm18x6);
 
         blocks = blocks == 0 ? 1 : blocks;
@@ -1105,7 +1107,7 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
             expLiqReward = internalCollateral;
         }
         uint256 lpTokenPay = GSMath.min(expLiqReward,loanData.liquidity) * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
-        uint256 lpTokenReduction = loanData.liquidity * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
+        uint256 lpTokenReduction = (loanData.liquidity * loanData.lastCFMMTotalSupply + (loanData.lastCFMMInvariant - 1)) / loanData.lastCFMMInvariant;
 
         IERC20(address(weth6)).transfer(address(callee), 10);
 
@@ -1164,6 +1166,7 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
     }
 
     function testExternalLiquidation6x18(uint8 tradeAmtPerc, bool side, uint8 blocks) public {
+        if(IS_VAULT) return;
         _tokenId = openLoan(cfmm6x18);
 
         blocks = blocks == 0 ? 1 : blocks;
@@ -1199,7 +1202,7 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
             expLiqReward = internalCollateral;
         }
         uint256 lpTokenPay = GSMath.min(expLiqReward,loanData.liquidity) * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
-        uint256 lpTokenReduction = loanData.liquidity * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
+        uint256 lpTokenReduction = (loanData.liquidity * loanData.lastCFMMTotalSupply + (loanData.lastCFMMInvariant - 1)) / loanData.lastCFMMInvariant;
 
         IERC20(address(weth)).transfer(address(callee), 10);
 
@@ -1258,6 +1261,7 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
     }
 
     function testExternalLiquidation6x6(uint8 tradeAmtPerc, bool side, uint8 blocks) public {
+        if(IS_VAULT) return;
         _tokenId = openLoan(cfmm6x6);
 
         blocks = blocks == 0 ? 1 : blocks;
@@ -1293,7 +1297,7 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
             expLiqReward = internalCollateral;
         }
         uint256 lpTokenPay = GSMath.min(expLiqReward,loanData.liquidity) * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
-        uint256 lpTokenReduction = loanData.liquidity * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
+        uint256 lpTokenReduction = (loanData.liquidity * loanData.lastCFMMTotalSupply + (loanData.lastCFMMInvariant - 1)) / loanData.lastCFMMInvariant;
 
         IERC20(address(weth6)).transfer(address(callee), 10);
 
@@ -1352,6 +1356,7 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
     }
 
     function testExternalLiquidation6x8(uint8 tradeAmtPerc, bool side, uint8 blocks) public {
+        if(IS_VAULT) return;
         _tokenId = openLoan(cfmm6x8);
 
         blocks = blocks == 0 ? 1 : blocks;
@@ -1387,7 +1392,7 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
             expLiqReward = internalCollateral;
         }
         uint256 lpTokenPay = GSMath.min(expLiqReward,loanData.liquidity) * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
-        uint256 lpTokenReduction = loanData.liquidity * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
+        uint256 lpTokenReduction = (loanData.liquidity * loanData.lastCFMMTotalSupply + (loanData.lastCFMMInvariant - 1)) / loanData.lastCFMMInvariant;
 
         IERC20(address(weth8)).transfer(address(callee), 10);
 
@@ -1446,6 +1451,7 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
     }
 
     function testExternalLiquidation18x8(uint8 tradeAmtPerc, bool side, uint8 blocks) public {
+        if(IS_VAULT) return;
         _tokenId = openLoan(cfmm18x8);
 
         blocks = blocks == 0 ? 1 : blocks;
@@ -1481,7 +1487,7 @@ contract CPMMLiquidationStrategyFuzz is CPMMGammaSwapSetup {
             expLiqReward = internalCollateral;
         }
         uint256 lpTokenPay = GSMath.min(expLiqReward,loanData.liquidity) * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
-        uint256 lpTokenReduction = loanData.liquidity * loanData.lastCFMMTotalSupply / loanData.lastCFMMInvariant;
+        uint256 lpTokenReduction = (loanData.liquidity * loanData.lastCFMMTotalSupply + (loanData.lastCFMMInvariant - 1)) / loanData.lastCFMMInvariant;
 
         IERC20(address(weth8)).transfer(address(callee), 10);
 
