@@ -4278,4 +4278,85 @@ contract CPMMLongStrategyTest is CPMMGammaSwapSetup {
         pool.withdrawReserves(addr1);
         vm.stopPrank();
     }
+
+    function testCalcRepaymentTokens1(uint256 lastCfmmTotalSupply, uint8 share, bool isLiquidation) public {
+        TestCalcTokensToRepay testLongStrategy;
+        {
+            uint256 blocksPerYear = 24*60*60*365/12;
+            testLongStrategy = new TestCalcTokensToRepay(15e18, blocksPerYear, 997, 1000, address(0), 1e16, 8e17, 5e16, 1e18);
+        }
+
+        share = uint8(bound(share, 1, type(uint8).max));
+
+        uint128[] memory reserves = new uint128[](2);
+        reserves[0] = 180954994140218058;
+        reserves[1] = 302198208563046217591;
+
+        uint256 lastCfmmInvariant = GSMath.sqrt(uint256(reserves[0])*reserves[1]);
+
+        lastCfmmTotalSupply = bound(lastCfmmTotalSupply, 79660, lastCfmmInvariant);
+        testLongStrategy.setLastCFMMTotalSupply(lastCfmmTotalSupply);
+        uint256 liquidity = uint256(share) * lastCfmmInvariant / 260;
+
+        uint256[] memory amounts = testLongStrategy.testCalcTokensToRepay(reserves, liquidity, new uint128[](0), isLiquidation);
+
+        uint256 expLPTokens = GSMath.min(amounts[0] * lastCfmmTotalSupply / reserves[0], amounts[1] * lastCfmmTotalSupply / reserves[1]);
+        reserves[0] = uint128(reserves[0]) + uint128(amounts[0]);
+        reserves[1] = uint128(reserves[1]) + uint128(amounts[1]);
+        lastCfmmInvariant = GSMath.sqrt(uint256(reserves[0])*reserves[1]);
+        lastCfmmTotalSupply += expLPTokens;
+        expLPTokens = expLPTokens * lastCfmmInvariant / lastCfmmTotalSupply;
+        assertGe(expLPTokens,liquidity);
+    }
+
+    function testCalcRepaymentTokens2(uint256 lastCfmmTotalSupply, uint8 share, uint120 rez0, uint120 rez1) public {
+        TestCalcTokensToRepay testLongStrategy;
+        {
+            uint256 blocksPerYear = 24*60*60*365/12;
+            testLongStrategy = new TestCalcTokensToRepay(15e18, blocksPerYear, 997, 1000, address(0), 1e16, 8e17, 5e16, 1e18);
+        }
+        share = uint8(bound(share, 1, type(uint8).max));
+        rez0 = uint120(bound(rez0, 1e3, type(uint120).max));
+        rez1 = uint120(bound(rez1, 1e3, type(uint120).max));
+
+        uint128[] memory reserves = new uint128[](2);
+        reserves[0] = rez0;
+        reserves[1] = rez1;
+
+        uint256 lastCfmmInvariant = GSMath.sqrt(uint256(reserves[0])*reserves[1]);
+
+        lastCfmmTotalSupply = bound(lastCfmmTotalSupply, 1e3, type(uint128).max);
+        testLongStrategy.setLastCFMMTotalSupply(lastCfmmTotalSupply);
+        uint256 liquidity = uint256(share) * lastCfmmInvariant / 260;
+
+        uint256[] memory amounts = testLongStrategy.testCalcTokensToRepay(reserves, liquidity, new uint128[](0), false);
+
+        uint256 expLPTokens = GSMath.min(amounts[0] * lastCfmmTotalSupply / reserves[0], amounts[1] * lastCfmmTotalSupply / reserves[1]);
+        reserves[0] = uint128(reserves[0]) + uint128(amounts[0]);
+        reserves[1] = uint128(reserves[1]) + uint128(amounts[1]);
+        lastCfmmInvariant = GSMath.sqrt(uint256(reserves[0])*reserves[1]);
+        lastCfmmTotalSupply += expLPTokens;
+        expLPTokens = expLPTokens * lastCfmmInvariant / lastCfmmTotalSupply;
+        assertGe(expLPTokens,liquidity);
+    }
+}
+
+contract TestCalcTokensToRepay is CPMMBaseLongStrategy {
+
+    constructor(uint256 maxTotalApy_, uint256 blocksPerYear_, uint24 tradingFee1_, uint24 tradingFee2_, address _feeSource,
+        uint64 baseRate_, uint64 optimalUtilRate_, uint64 slope1_, uint64 slope2_) CPMMBaseLongStrategy(maxTotalApy_, blocksPerYear_,
+        tradingFee1_, tradingFee2_, _feeSource, baseRate_, optimalUtilRate_, slope1_, slope2_) {
+    }
+
+    function checkMargin(uint256 collateral, uint256 liquidity) internal virtual override view {
+    }
+
+    function setLastCFMMTotalSupply(uint256 lastCfmmTotalSupply) external virtual {
+        s.lastCFMMTotalSupply = lastCfmmTotalSupply;
+    }
+
+    function testCalcTokensToRepay(uint128[] memory reserves, uint256 liquidity, uint128[] memory maxAmounts, bool isLiquidation) external virtual view
+        returns(uint256[] memory amounts) {
+        return calcTokensToRepay(reserves, liquidity, maxAmounts, isLiquidation);
+    }
 }
