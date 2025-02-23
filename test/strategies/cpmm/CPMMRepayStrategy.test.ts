@@ -340,7 +340,7 @@ describe("CPMMRepayStrategy", function () {
         )
       ).wait();
       const expToken0a = liquidity.mul(reserves0a).div(lastCFMMInvariant1).add(1);
-      const expToken1a = liquidity.mul(reserves1a).div(lastCFMMInvariant1).add(4);
+      const expToken1a = liquidity.mul(reserves1a).div(lastCFMMInvariant1).add(5);
       const res1 = await strategy.testCalcTokensToRepay(liquidity);
       expect(res1[0]).to.equal(expToken0a);
       expect(res1[1]).to.equal(expToken1a);
@@ -360,8 +360,8 @@ describe("CPMMRepayStrategy", function () {
           lastCFMMTotalSupply2
         )
       ).wait();
-      const expToken0b = liquidity.mul(reserves0b).div(lastCFMMInvariant2).add(1);
-      const expToken1b = liquidity.mul(reserves1b).div(lastCFMMInvariant2).add(1);
+      const expToken0b = liquidity.mul(reserves0b).div(lastCFMMInvariant2).add(2);
+      const expToken1b = liquidity.mul(reserves1b).div(lastCFMMInvariant2).add(2);
       const res2 = await strategy.testCalcTokensToRepay(liquidity);
       expect(res2[0]).to.equal(expToken0b);
       expect(res2[1]).to.equal(expToken1b);
@@ -512,8 +512,8 @@ describe("CPMMRepayStrategy", function () {
       expect(loan2.liquidity).gt(0);
       expect(loan2.lpTokens).gt(0);
       expect(loan2.tokensHeld.length).to.equal(2);
-      expect(loan2.tokensHeld[0]).to.equal(tokensHeld0);
-      expect(loan2.tokensHeld[1]).to.equal(tokensHeld1);
+      expect(loan2.tokensHeld[0]).to.equal(tokensHeld0.sub(1));
+      expect(loan2.tokensHeld[1]).to.equal(tokensHeld1.sub(1));
 
       await (
         await strategyFee._repayLiquidity(
@@ -679,7 +679,7 @@ describe("CPMMRepayStrategy", function () {
       expect(loan2.lpTokens).gt(0);
       expect(loan2.tokensHeld.length).to.equal(2);
       expect(loan2.tokensHeld[0]).lt(tokensHeld0);
-      expect(loan2.tokensHeld[1]).to.equal(tokensHeld1.add(1));
+      expect(loan2.tokensHeld[1]).to.equal(tokensHeld1.sub(2));
 
       await (
         await strategyFee._repayLiquidity(
@@ -771,7 +771,7 @@ describe("CPMMRepayStrategy", function () {
       expect(loan2.liquidity).gt(0);
       expect(loan2.lpTokens).gt(0);
       expect(loan2.tokensHeld.length).to.equal(2);
-      expect(loan2.tokensHeld[0]).to.equal(tokensHeld0);
+      expect(loan2.tokensHeld[0]).to.equal(tokensHeld0.sub(1));
       expect(loan2.tokensHeld[1]).lt(tokensHeld1);
 
       await (
