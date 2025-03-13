@@ -481,10 +481,10 @@
   dependencies:
     "@gammaswap/v1-core" "^1.1.20"
 
-"@gammaswap/v1-implementations@^1.2.16":
-  version "1.2.16"
-  resolved "https://npm.pkg.github.com/download/@gammaswap/v1-implementations/1.2.16/1e3fa00c14afacf2d7ba1f37e9fb354ad5416249#1e3fa00c14afacf2d7ba1f37e9fb354ad5416249"
-  integrity sha512-APnl3QZvRzPwB8nmRbdua4QlAvbU2mR1Iajxewj7ogVywQ2hhjHhWQIlfNFHM5DVteb2KhQ3sTYreiueXQ0e2g==
+"@gammaswap/v1-implementations@^1.2.17":
+  version "1.2.17"
+  resolved "https://npm.pkg.github.com/download/@gammaswap/v1-implementations/1.2.17/1ba0dbe1c7406833019f6e58af440dbaf3166e50#1ba0dbe1c7406833019f6e58af440dbaf3166e50"
+  integrity sha512-N6j71+ZwOZTg/WRqLRC3N/W09cfqxgRJPUVCrdTd4hVbnRggXwB9Tim4KQpsndrxNYwvATo7wEI3EqkwtXIewg==
   dependencies:
     "@gammaswap/v1-core" "^1.2.16"
     "@openzeppelin/contracts" "^4.7.0"
